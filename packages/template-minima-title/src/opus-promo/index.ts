@@ -16,6 +16,13 @@ export { RectangularReveal } from './components/RectangularReveal';
 export { AnimatedTweetCard } from './components/AnimatedTweetCard';
 export { AnimatedGeometricOverlay } from './components/AnimatedGeometricOverlay';
 
+// V3 Advanced components (from comprehensive analysis)
+export { PhotoMosaicTransition, defaultMosaicImages } from './components/PhotoMosaicTransition';
+export { AnimatedRectangleOverlay, defaultRectangles, boldRectangles } from './components/AnimatedRectangleOverlay';
+export { CapabilityShowcase, defaultCapabilities } from './components/CapabilityShowcase';
+export { VideoLayer, VideoLayerWithZoom } from './components/VideoLayer';
+export { TweetCardWithProfile } from './components/TweetCardWithProfile';
+
 // Original scenes
 export { TestimonialScene } from './scenes/TestimonialScene';
 export { OpusIntro } from './scenes/OpusIntro';
@@ -25,3 +32,16 @@ export { EndCard } from './scenes/EndCard';
 // V2 Animated scenes (frame-accurate)
 export { AnimatedTestimonialScene } from './scenes/AnimatedTestimonialScene';
 export { AnimatedOpusIntro } from './scenes/AnimatedOpusIntro';
+
+// V3 Advanced scenes (from comprehensive analysis)
+export { NewsArticleMontage, TextZoom, defaultNewsArticles } from './scenes/NewsArticleMontage';
+
+// Asset Management
+export {
+  defaultAssetManifest,
+  getAssetPath,
+  checkRequiredAssets,
+  getUploadProgress,
+  markAssetUploaded,
+} from './assets/AssetManager';
+export type { AssetDefinition, AssetManifest } from './assets/AssetManager';

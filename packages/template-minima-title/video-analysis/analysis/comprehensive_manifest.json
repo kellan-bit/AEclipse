@@ -1,0 +1,607 @@
+{
+  "version": "2.0",
+  "videoInfo": {
+    "name": "ClaudeTest.mp4",
+    "totalFrames": 946,
+    "fps": 30,
+    "duration": "31.5 seconds"
+  },
+  "segments": [
+    {
+      "id": 1,
+      "name": "news_article_montage",
+      "type": "match_cut_sequence",
+      "frameRange": [1, 95],
+      "description": "Rapid cuts between news articles/websites featuring Claude headlines",
+      "style": {
+        "aesthetic": "newspaper_digital_media",
+        "transitionType": "hard_cut",
+        "textTreatment": "integrated_into_scene"
+      },
+      "scenes": [
+        {
+          "frames": [1, 19],
+          "source": "tech_news_website",
+          "headline": "Claude now integrations",
+          "typography": "sans_serif_bold",
+          "layout": "news_article_with_sidebar"
+        },
+        {
+          "frames": [20, 29],
+          "source": "newspaper_style",
+          "headline": "Claude Is Taking [the] Storm",
+          "typography": "serif_newspaper",
+          "hasWatermark": true,
+          "watermarkText": "Claude",
+          "watermarkStyle": "script_italic"
+        },
+        {
+          "frames": [30, 45],
+          "source": "blog_article",
+          "headline": "how Claude is be[ing used]",
+          "typography": "sans_serif_heavy"
+        },
+        {
+          "frames": [40, 55],
+          "source": "chat_interface",
+          "element": "green_pill_button",
+          "text": "Go to Claude",
+          "style": "ui_screenshot"
+        },
+        {
+          "frames": [55, 75],
+          "source": "news_collage",
+          "headline": "of Claude Co[de] / w era",
+          "hasOverlayImages": true,
+          "overlayImages": ["statue", "crowd_scene"]
+        },
+        {
+          "frames": [75, 95],
+          "source": "article_zoom",
+          "text": "model, Claude, their work",
+          "animation": "zoom_in_on_text"
+        }
+      ],
+      "assetsRequired": [
+        {
+          "id": "news_bg_1",
+          "type": "image",
+          "description": "Tech news website screenshot with Claude headline",
+          "canGenerate": false,
+          "mustUpload": true
+        },
+        {
+          "id": "news_bg_2",
+          "type": "image",
+          "description": "Newspaper-style article with Claude headline",
+          "canGenerate": false,
+          "mustUpload": true
+        },
+        {
+          "id": "news_bg_3",
+          "type": "image",
+          "description": "Blog article screenshot",
+          "canGenerate": false,
+          "mustUpload": true
+        }
+      ],
+      "componentsNeeded": ["MatchCutText", "NewsArticleScene", "ZoomOnText"]
+    },
+    {
+      "id": 2,
+      "name": "claude_text_transition",
+      "type": "transition",
+      "frameRange": [95, 100],
+      "description": "Claude text on textured paper, transitions to video",
+      "style": {
+        "background": "textured_paper",
+        "textStyle": "serif_centered",
+        "texture": "subtle_paper_grain"
+      },
+      "assetsRequired": [
+        {
+          "id": "paper_texture",
+          "type": "texture",
+          "description": "Subtle paper grain texture",
+          "canGenerate": true
+        }
+      ],
+      "componentsNeeded": ["TexturedBackground"]
+    },
+    {
+      "id": 3,
+      "name": "testimonial_video_intro",
+      "type": "video_with_overlay",
+      "frameRange": [100, 130],
+      "description": "Live video of woman walking with geometric rectangle overlay and tweet appearing",
+      "layers": [
+        {
+          "layer": 0,
+          "type": "video",
+          "content": "woman_walking_stone_wall",
+          "description": "Woman with dark hair walking past stone wall"
+        },
+        {
+          "layer": 1,
+          "type": "animated_overlay",
+          "content": "geometric_rectangles",
+          "description": "White outlined rectangles of various sizes animating in",
+          "animationStyle": "draw_in_from_edges",
+          "rectangleCount": "12-15",
+          "strokeColor": "#FFFFFF",
+          "strokeWidth": 2
+        },
+        {
+          "layer": 2,
+          "type": "tweet_card",
+          "appearFrame": 110,
+          "username": "ohnohanajo",
+          "animation": "fade_in_slide_up"
+        }
+      ],
+      "assetsRequired": [
+        {
+          "id": "woman_walking_video",
+          "type": "video",
+          "description": "Woman walking past stone wall (2-3 seconds)",
+          "canGenerate": false,
+          "mustUpload": true
+        }
+      ],
+      "componentsNeeded": ["VideoLayer", "AnimatedRectangleOverlay", "TweetCardOverlay"]
+    },
+    {
+      "id": 4,
+      "name": "testimonials_main",
+      "type": "testimonial_carousel",
+      "frameRange": [130, 550],
+      "description": "Series of testimonials with contextual backgrounds",
+      "commonStyle": {
+        "tweetCardStyle": "clean_white_rounded",
+        "profilePicture": "real_photo_circular",
+        "verifiedBadge": true,
+        "cardPosition": "bottom_left_or_center",
+        "backgroundTreatment": "ken_burns_zoom"
+      },
+      "testimonials": [
+        {
+          "id": "math",
+          "frameRange": [130, 180],
+          "username": "ohnohanajo",
+          "handle": null,
+          "text": "Math just made a little more sense. Thanks Claude.",
+          "verified": true,
+          "background": {
+            "type": "image",
+            "description": "Chalkboard with mathematical equations",
+            "style": "dark_academic"
+          },
+          "profilePicture": "real_photo",
+          "cardPosition": "bottom_left"
+        },
+        {
+          "id": "hardware",
+          "frameRange": [180, 230],
+          "username": "abe's projects",
+          "handle": null,
+          "text": "I built the ultimate retro mini PC (it uses game cartridges!)",
+          "verified": true,
+          "background": {
+            "type": "image",
+            "description": "Hands working on electronic hardware/PCB",
+            "style": "maker_workspace"
+          },
+          "profilePicture": "cartoon_avatar",
+          "cardPosition": "bottom_left"
+        },
+        {
+          "id": "mri",
+          "frameRange": [230, 280],
+          "username": "tobi lutke",
+          "handle": "@tobi",
+          "text": "My annual MRI scan gives me a USB stick.",
+          "verified": true,
+          "background": {
+            "type": "image",
+            "description": "MRI brain scan on dark medical display",
+            "style": "medical_imaging"
+          },
+          "profilePicture": "real_photo",
+          "cardPosition": "center"
+        },
+        {
+          "id": "ocean",
+          "frameRange": [280, 330],
+          "username": "filmwcolleen",
+          "handle": null,
+          "text": "Filmed this with the help of one of my favorite tools: Claude.",
+          "verified": true,
+          "background": {
+            "type": "split_image",
+            "description": "Black and white ocean waves / blue sky split",
+            "style": "cinematic_film"
+          },
+          "profilePicture": "real_photo",
+          "cardPosition": "center"
+        },
+        {
+          "id": "knitter",
+          "frameRange": [330, 380],
+          "username": "(Abi)gail",
+          "handle": "@proofofgail",
+          "text": "Most people: I use Claude to vibe code.\nMe: I use Claude to vibe knit.",
+          "verified": true,
+          "background": {
+            "type": "image",
+            "description": "Woman laughing wearing knitted sweater with cow pattern",
+            "style": "lifestyle_candid"
+          },
+          "profilePicture": "real_photo",
+          "cardPosition": "top_left"
+        },
+        {
+          "id": "plumbing",
+          "frameRange": [380, 430],
+          "username": null,
+          "background": {
+            "type": "image",
+            "description": "Copper plumbing pipes and heating system",
+            "style": "technical_industrial"
+          },
+          "note": "This may be b-roll without tweet"
+        },
+        {
+          "id": "mountain",
+          "frameRange": [480, 530],
+          "username": "Ryan Wigley",
+          "handle": null,
+          "text": "Every morning my wife asks me if the mountains are out.\nSo I built her a website.",
+          "verified": true,
+          "background": {
+            "type": "image",
+            "description": "Mount Rainier with town in foreground",
+            "style": "landscape_photography"
+          },
+          "profilePicture": "real_photo",
+          "cardPosition": "center"
+        }
+      ],
+      "assetsRequired": [
+        {
+          "id": "bg_chalkboard",
+          "type": "image",
+          "description": "Chalkboard with math equations",
+          "mustUpload": true
+        },
+        {
+          "id": "bg_hardware",
+          "type": "image",
+          "description": "Electronics/PCB workspace",
+          "mustUpload": true
+        },
+        {
+          "id": "bg_mri",
+          "type": "image",
+          "description": "MRI brain scan display",
+          "mustUpload": true
+        },
+        {
+          "id": "bg_ocean",
+          "type": "image",
+          "description": "Ocean/sky split cinematic",
+          "mustUpload": true
+        },
+        {
+          "id": "bg_knitter",
+          "type": "image",
+          "description": "Woman in knitted sweater",
+          "mustUpload": true
+        },
+        {
+          "id": "bg_plumbing",
+          "type": "image",
+          "description": "Copper plumbing system",
+          "mustUpload": true
+        },
+        {
+          "id": "bg_mountain",
+          "type": "image",
+          "description": "Mount Rainier landscape",
+          "mustUpload": true
+        },
+        {
+          "id": "profile_ohnohanajo",
+          "type": "image",
+          "description": "Profile picture for ohnohanajo",
+          "mustUpload": true
+        },
+        {
+          "id": "profile_abes_projects",
+          "type": "image",
+          "description": "Cartoon avatar for abe's projects",
+          "mustUpload": true
+        },
+        {
+          "id": "profile_tobi",
+          "type": "image",
+          "description": "Profile picture for tobi lutke",
+          "mustUpload": true
+        },
+        {
+          "id": "profile_filmwcolleen",
+          "type": "image",
+          "description": "Profile picture for filmwcolleen",
+          "mustUpload": true
+        },
+        {
+          "id": "profile_abigail",
+          "type": "image",
+          "description": "Profile picture for (Abi)gail",
+          "mustUpload": true
+        },
+        {
+          "id": "profile_ryan",
+          "type": "image",
+          "description": "Profile picture for Ryan Wigley",
+          "mustUpload": true
+        }
+      ],
+      "componentsNeeded": ["TestimonialWithRealProfile", "ContextualBackground", "KenBurnsImage"]
+    },
+    {
+      "id": 5,
+      "name": "photo_mosaic_transition",
+      "type": "transition",
+      "frameRange": [540, 570],
+      "description": "Multiple overlapping images/screenshots scaling and rotating to fill frame",
+      "style": {
+        "imageCount": "8-12",
+        "arrangement": "scattered_overlapping",
+        "animation": "scale_in_with_rotation",
+        "hasDropShadow": true,
+        "rotationRange": "-15deg to +15deg"
+      },
+      "elements": [
+        "after_effects_timeline",
+        "nature_footage",
+        "various_screenshots",
+        "app_interfaces"
+      ],
+      "assetsRequired": [
+        {
+          "id": "mosaic_images",
+          "type": "image_collection",
+          "count": "8-12",
+          "description": "Various screenshots and images for mosaic",
+          "mustUpload": true
+        }
+      ],
+      "componentsNeeded": ["PhotoMosaicTransition", "ScatterLayout", "AnimatedImageCard"]
+    },
+    {
+      "id": 6,
+      "name": "opus_intro",
+      "type": "text_reveal",
+      "frameRange": [570, 620],
+      "description": "Opus 4.5 text on clean white background",
+      "style": {
+        "background": "white",
+        "typography": "serif_georgia",
+        "animation": "fade_in_scale"
+      },
+      "componentsNeeded": ["CleanTextReveal"]
+    },
+    {
+      "id": 7,
+      "name": "capability_showcase",
+      "type": "mosaic_with_text",
+      "frameRange": [620, 750],
+      "description": "Screenshots of Claude use cases scattered around Opus text",
+      "centerElement": {
+        "text": "Introducing Opus",
+        "typography": "serif"
+      },
+      "screenshotCards": [
+        {
+          "prompt": "Build me a drum machine where I can record my own samples",
+          "visual": "piano_keyboard_app"
+        },
+        {
+          "prompt": "Help me analyze how our different foams affect the ride and impact levels",
+          "visual": "data_dashboard"
+        },
+        {
+          "prompt": "I want to build a custom typography generator",
+          "visual": "typography_tool"
+        },
+        {
+          "prompt": "Create a style guide for our new brand identity",
+          "visual": "brand_guide_mockup"
+        },
+        {
+          "prompt": "Let's make an interactive dashboard to track our Q1 campaign",
+          "visual": "analytics_dashboard"
+        }
+      ],
+      "style": {
+        "cardStyle": "screenshot_with_prompt_bubble",
+        "arrangement": "scattered_around_center",
+        "animation": "float_in_staggered"
+      },
+      "assetsRequired": [
+        {
+          "id": "capability_screenshots",
+          "type": "image_collection",
+          "count": "8-10",
+          "description": "Screenshots showing Claude capabilities",
+          "mustUpload": true
+        }
+      ],
+      "componentsNeeded": ["CapabilityShowcase", "PromptCard", "ScatteredLayout"]
+    },
+    {
+      "id": 8,
+      "name": "quote_carousel",
+      "type": "quote_rotation",
+      "frameRange": [750, 900],
+      "description": "Opus 4.6 with rotating quotes - INSTANT cuts between quotes",
+      "style": {
+        "background": "white",
+        "productText": "Opus 4.6",
+        "productTypography": "serif_georgia",
+        "quoteTypography": "sans_serif",
+        "quoteStyle": "paper_snippet",
+        "transitionType": "instant_cut"
+      },
+      "quotes": [
+        { "text": "just gets it.", "frameRange": [750, 775] },
+        { "text": "feels state of the art.", "frameRange": [776, 800] },
+        { "text": "is a huge leap.", "frameRange": [801, 825] },
+        { "text": "flipped the script.", "frameRange": [826, 850] },
+        { "text": "is incredible, no notes.", "frameRange": [851, 875] },
+        { "text": "is redefining what we thought was possible.", "frameRange": [876, 900] }
+      ],
+      "componentsNeeded": ["QuoteCarouselInstantCut"]
+    },
+    {
+      "id": 9,
+      "name": "end_card",
+      "type": "end_card",
+      "frameRange": [900, 946],
+      "description": "Final branding card",
+      "style": {
+        "background": "white",
+        "layout": "product_by_brand"
+      },
+      "componentsNeeded": ["EndCard"]
+    }
+  ],
+  "globalAssets": {
+    "fonts": [
+      { "name": "Georgia", "usage": "product_name", "style": "serif" },
+      { "name": "System UI", "usage": "tweet_text", "style": "sans-serif" },
+      { "name": "Newspaper Serif", "usage": "headlines", "style": "serif_bold" }
+    ],
+    "colors": {
+      "background": "#FFFFFF",
+      "text_primary": "#1A1A1A",
+      "text_secondary": "#536471",
+      "accent_blue": "#1DA1F2",
+      "geometric_overlay": "#FFFFFF"
+    },
+    "textures": [
+      { "id": "paper_grain", "usage": "text_backgrounds" }
+    ]
+  },
+  "componentLibraryRequired": [
+    {
+      "name": "MatchCutText",
+      "description": "Text that appears integrated into newspaper/article backgrounds",
+      "priority": "high",
+      "complexity": "medium"
+    },
+    {
+      "name": "VideoLayer",
+      "description": "Plays video file as background layer",
+      "priority": "high",
+      "complexity": "low",
+      "remotionSupport": "native"
+    },
+    {
+      "name": "AnimatedRectangleOverlay",
+      "description": "Multiple white-outlined rectangles that animate in from edges",
+      "priority": "high",
+      "complexity": "medium"
+    },
+    {
+      "name": "TestimonialWithRealProfile",
+      "description": "Tweet card with real profile picture support (not colored circle)",
+      "priority": "high",
+      "complexity": "low"
+    },
+    {
+      "name": "PhotoMosaicTransition",
+      "description": "Multiple images scaling/rotating to fill frame",
+      "priority": "high",
+      "complexity": "high"
+    },
+    {
+      "name": "CapabilityShowcase",
+      "description": "Screenshots with prompt bubbles scattered around center text",
+      "priority": "medium",
+      "complexity": "high"
+    },
+    {
+      "name": "KenBurnsImage",
+      "description": "Image with slow zoom animation",
+      "priority": "medium",
+      "complexity": "low",
+      "exists": true
+    }
+  ],
+  "assetUploadManifest": {
+    "required": [
+      {
+        "category": "backgrounds",
+        "items": [
+          "news_website_screenshot_1",
+          "news_website_screenshot_2",
+          "newspaper_article",
+          "blog_screenshot",
+          "chalkboard_math",
+          "hardware_workspace",
+          "mri_scan",
+          "ocean_sky_split",
+          "knitter_photo",
+          "plumbing_system",
+          "mountain_landscape"
+        ]
+      },
+      {
+        "category": "videos",
+        "items": [
+          "woman_walking_clip"
+        ]
+      },
+      {
+        "category": "profile_pictures",
+        "items": [
+          "ohnohanajo",
+          "abes_projects",
+          "tobi_lutke",
+          "filmwcolleen",
+          "abigail_proofofgail",
+          "ryan_wigley"
+        ]
+      },
+      {
+        "category": "capability_screenshots",
+        "items": [
+          "drum_machine_app",
+          "data_dashboard",
+          "typography_tool",
+          "brand_guide",
+          "analytics_dashboard"
+        ]
+      },
+      {
+        "category": "mosaic_images",
+        "items": [
+          "after_effects_timeline",
+          "nature_footage_still",
+          "various_app_screenshots"
+        ]
+      }
+    ],
+    "optional": [
+      {
+        "category": "textures",
+        "items": [
+          "paper_grain",
+          "newspaper_texture"
+        ],
+        "note": "Can be generated procedurally"
+      }
+    ]
+  }
+}
