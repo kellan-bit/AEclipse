@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "description": "Minima animated logo and title card template",
   "scripts": {
+    "setup": "bash setup.sh",
+    "postinstall": "bash setup.sh",
     "dev": "remotion studio",
     "build": "remotion bundle",
     "render": "remotion render",
