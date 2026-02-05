@@ -68,16 +68,16 @@ export const ProductQuoteCarousel: React.FC<ProductQuoteCarouselProps> = ({
     <AbsoluteFill
       style={{
         backgroundColor: '#FFFFFF',
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 24,
       }}
     >
-      {/* Product name */}
+      {/* Product name - fixed position */}
       <div
         style={{
+          position: 'absolute',
+          left: '50%',
+          top: '50%',
+          transform: 'translate(-100%, -50%)',
+          marginLeft: -16,
           fontFamily,
           fontSize: productFontSize,
           fontWeight: 400,
@@ -88,11 +88,15 @@ export const ProductQuoteCarousel: React.FC<ProductQuoteCarouselProps> = ({
         {productName}
       </div>
 
-      {/* Quote box */}
+      {/* Quote box - fixed left edge position */}
       <div
         style={{
+          position: 'absolute',
+          left: '50%',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          marginLeft: 16,
           opacity: quoteOpacity,
-          transform: `translateY(${quoteY}px)`,
         }}
       >
         <div
@@ -100,6 +104,7 @@ export const ProductQuoteCarousel: React.FC<ProductQuoteCarouselProps> = ({
             backgroundColor: '#F5F5F5',
             padding: '10px 16px',
             borderRadius: 2,
+            transform: `translateY(${quoteY}px)`,
           }}
         >
           <span
