@@ -15,17 +15,44 @@ import { LogoScene } from './scenes/LogoScene';
 import { TitleCardScene } from './scenes/TitleCardScene';
 import { themes } from '@minima/brand';
 
+/**
+ * VIDEO ASSET CONFIGURATION
+ *
+ * To use your own video:
+ * 1. Place your video file in the public/ folder
+ * 2. Update the videoSrc path below
+ *
+ * Example:
+ *   videoSrc: staticFile('my-property-tour.mp4')
+ *
+ * For a static image instead:
+ *   imageSrc: staticFile('hero-image.jpg')
+ */
+import { staticFile } from 'remotion';
+
 // Default props for the full title sequence
 const defaultTitleProps: MinimaTitleProps = {
+  // Content
   title: 'The Rosa Blanca',
   subtitle: 'A Minima Residence',
   accentText: 'Where design meets discipline',
+
+  // Video/Image asset (uncomment one):
+  // videoSrc: staticFile('property-video.mp4'),  // ← Your video
+  // imageSrc: staticFile('hero-image.jpg'),      // ← Or static image
+
+  // Styling
   theme: 'dark',
   logoFontSize: 120,
-  logoDuration: 90,
-  titleCardDuration: 75,
-  transitionDuration: 30,
+
+  // Timing (in frames at 30fps)
+  logoDuration: 90,        // 3 seconds - logo animation
+  titleCardDuration: 75,   // 2.5 seconds - title display
+  transitionDuration: 30,  // 1 second - transition to video
+
+  // Transition style: 'fade' | 'fadeToBlack' | 'scaleReveal' | 'slideUp' | 'maskWipe' | 'zoomThrough'
   transitionType: 'fade',
+
   showTagline: true,
 };
 
