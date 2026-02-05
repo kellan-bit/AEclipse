@@ -9,7 +9,7 @@
  */
 
 import { AbsoluteFill, useCurrentFrame, interpolate, Easing } from 'remotion';
-import { colors, fonts, brand } from '@minima/brand';
+import { colors, fonts, logo } from '@minima/brand';
 import { AnimatedLetter, LetterAnimation } from './AnimatedLetter';
 
 type AnimatedWordmarkProps = {
@@ -42,7 +42,7 @@ export const AnimatedWordmark: React.FC<AnimatedWordmarkProps> = ({
   uniformAnimation = 'slideUp',
 }) => {
   const frame = useCurrentFrame();
-  const letters = brand.logo.wordmark.text.split(''); // ['M', 'I', 'N', 'I', 'M', 'A']
+  const letters = logo.wordmark.text.split(''); // ['M', 'I', 'N', 'I', 'M', 'A']
 
   // Trademark animation (appears after all letters)
   const tmStartFrame = startFrame + (letters.length * 4) + 15;
@@ -142,7 +142,7 @@ export const AnimatedWordmark: React.FC<AnimatedWordmarkProps> = ({
               textTransform: 'uppercase',
             }}
           >
-            {brand.logo.withTagline.tagline}
+            {logo.withTagline.tagline}
           </span>
         </div>
       )}
