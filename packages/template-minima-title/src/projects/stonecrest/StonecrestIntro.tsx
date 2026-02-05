@@ -1,19 +1,21 @@
 /**
- * Stonecrest Introduction Video - v2
+ * Stonecrest Introduction Video - v0.2
  *
- * DESIGN PRINCIPLES:
- * - Luxury = slow, deliberate, confident
- * - Less is more - restraint over spectacle
- * - Let the photography breathe
- * - Every movement has PURPOSE
- * - Stillness is powerful
+ * LAYERED DEPTH APPROACH:
+ * Every scene is composed of multiple layers that move independently,
+ * creating depth and atmosphere even with single images.
  *
- * VISUAL LANGUAGE:
- * - Slow, smooth reveals (no snappy springs)
- * - Horizontal movement = progress through space
- * - Subtle scale = depth and presence
- * - Clean cuts with brief overlaps
- * - Typography: elegant, unhurried appearance
+ * LAYER STRUCTURE:
+ * 1. Base image (slowest motion)
+ * 2. Atmospheric grain
+ * 3. Light/lens effects (independent motion)
+ * 4. Dynamic vignette
+ * 5. Typography (interacts with composition)
+ *
+ * PRINCIPLES:
+ * - Depth through parallax
+ * - Atmosphere through overlays
+ * - Typography as design element, not afterthought
  */
 
 import React from 'react';
@@ -26,9 +28,9 @@ import {
   Easing,
   Sequence,
   staticFile,
+  random,
 } from 'remotion';
 
-// Asset paths
 const ASSETS = {
   logo: 'assets/minima/Photos/Logo-White.svg',
   exteriors: [
@@ -45,275 +47,471 @@ const ASSETS = {
   ],
 };
 
-// Single easing for consistency - smooth, luxurious
-const EASE = Easing.bezier(0.4, 0, 0.2, 1);
+// ============================================
+// LAYER COMPONENTS
+// ============================================
 
-// ============================================
-// SCENE 1: LOGO (Simple, confident)
-// ============================================
-const LogoScene: React.FC = () => {
+/**
+ * Film Grain Layer - Adds texture and life
+ */
+const FilmGrain: React.FC<{ opacity?: number; speed?: number }> = ({
+  opacity = 0.04,
+  speed = 1,
+}) => {
   const frame = useCurrentFrame();
-  const { durationInFrames } = useVideoConfig();
 
-  // Simple fade in, hold, fade out
-  const opacity = interpolate(
-    frame,
-    [0, 30, durationInFrames - 20, durationInFrames],
-    [0, 1, 1, 0],
-    { easing: EASE }
-  );
-
-  // Very subtle scale - barely perceptible
-  const scale = interpolate(
-    frame,
-    [0, durationInFrames],
-    [1, 1.02],
-    { easing: EASE }
-  );
+  // Animated grain pattern using noise
+  const grainOffset = (frame * speed) % 1000;
 
   return (
-    <AbsoluteFill
+    <div
       style={{
-        backgroundColor: '#0A0A0A',
-        justifyContent: 'center',
-        alignItems: 'center',
+        position: 'absolute',
+        inset: 0,
+        opacity,
+        mixBlendMode: 'overlay',
+        background: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' seed='${Math.floor(grainOffset)}' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+        pointerEvents: 'none',
       }}
-    >
-      <Img
-        src={staticFile(ASSETS.logo)}
-        style={{
-          width: 120,
-          opacity,
-          transform: `scale(${scale})`,
-        }}
-      />
-    </AbsoluteFill>
+    />
   );
 };
 
-// ============================================
-// SCENE 2: PROPERTY NAME (Elegant reveal)
-// ============================================
-const PropertyName: React.FC = () => {
-  const frame = useCurrentFrame();
-  const { durationInFrames } = useVideoConfig();
-
-  // Mask reveal from center - clean, not gimmicky
-  const revealWidth = interpolate(
-    frame,
-    [0, 45],
-    [0, 100],
-    { easing: EASE, extrapolateRight: 'clamp' }
-  );
-
-  // Subtitle fades in after main title
-  const subtitleOpacity = interpolate(
-    frame,
-    [50, 70],
-    [0, 1],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
-  );
-
-  // Fade out at end
-  const fadeOut = interpolate(
-    frame,
-    [durationInFrames - 15, durationInFrames],
-    [1, 0],
-    { extrapolateLeft: 'clamp' }
-  );
-
-  return (
-    <AbsoluteFill
-      style={{
-        backgroundColor: '#0A0A0A',
-        justifyContent: 'center',
-        alignItems: 'center',
-        opacity: fadeOut,
-      }}
-    >
-      {/* Main title with clip mask */}
-      <div
-        style={{
-          overflow: 'hidden',
-          width: `${revealWidth}%`,
-          display: 'flex',
-          justifyContent: 'center',
-        }}
-      >
-        <h1
-          style={{
-            fontFamily: 'Georgia, "Times New Roman", serif',
-            fontSize: 90,
-            fontWeight: 400,
-            color: '#FFFFFF',
-            letterSpacing: '0.2em',
-            margin: 0,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          STONECREST
-        </h1>
-      </div>
-
-      {/* Subtitle */}
-      <p
-        style={{
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          fontSize: 16,
-          fontWeight: 300,
-          color: '#666',
-          letterSpacing: '0.3em',
-          textTransform: 'uppercase',
-          marginTop: 30,
-          opacity: subtitleOpacity,
-        }}
-      >
-        A Minima Residence
-      </p>
-    </AbsoluteFill>
-  );
-};
-
-// ============================================
-// SCENE 3+: PROPERTY IMAGE (Slow, purposeful)
-// ============================================
-interface PropertyImageProps {
-  src: string;
-  direction?: 'left' | 'right'; // Slow pan direction
-}
-
-const PropertyImage: React.FC<PropertyImageProps> = ({
-  src,
-  direction = 'right',
+/**
+ * Light Leak Layer - Drifting warm highlights
+ */
+const LightLeak: React.FC<{
+  color?: string;
+  startX?: number;
+  startY?: number;
+}> = ({
+  color = 'rgba(255, 200, 150, 0.15)',
+  startX = 70,
+  startY = 20,
 }) => {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
 
-  // Slow pan - 3% movement over entire duration
-  const panAmount = 3;
+  // Slow drift across frame
+  const x = interpolate(frame, [0, durationInFrames], [startX, startX - 15]);
+  const y = interpolate(frame, [0, durationInFrames], [startY, startY + 10]);
+
+  // Subtle pulse
+  const pulse = 1 + Math.sin(frame * 0.03) * 0.1;
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        background: `radial-gradient(ellipse 60% 80% at ${x}% ${y}%, ${color}, transparent 70%)`,
+        opacity: pulse,
+        mixBlendMode: 'screen',
+        pointerEvents: 'none',
+      }}
+    />
+  );
+};
+
+/**
+ * Dynamic Vignette - Breathes with the scene
+ */
+const DynamicVignette: React.FC<{
+  intensity?: number;
+  breathe?: boolean;
+}> = ({ intensity = 0.6, breathe = true }) => {
+  const frame = useCurrentFrame();
+
+  // Subtle breathing
+  const breatheAmount = breathe ? Math.sin(frame * 0.02) * 0.05 : 0;
+  const currentIntensity = intensity + breatheAmount;
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        background: `radial-gradient(ellipse 80% 70% at 50% 50%, transparent 20%, rgba(0,0,0,${currentIntensity}) 100%)`,
+        pointerEvents: 'none',
+      }}
+    />
+  );
+};
+
+/**
+ * Edge Gradient - Directional atmosphere
+ */
+const EdgeGradient: React.FC<{
+  direction: 'top' | 'bottom' | 'left' | 'right';
+  color?: string;
+  size?: number;
+}> = ({ direction, color = 'rgba(0,0,0,0.4)', size = 30 }) => {
+  const gradients: Record<string, string> = {
+    top: `linear-gradient(to bottom, ${color}, transparent ${size}%)`,
+    bottom: `linear-gradient(to top, ${color}, transparent ${size}%)`,
+    left: `linear-gradient(to right, ${color}, transparent ${size}%)`,
+    right: `linear-gradient(to left, ${color}, transparent ${size}%)`,
+  };
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        background: gradients[direction],
+        pointerEvents: 'none',
+      }}
+    />
+  );
+};
+
+// ============================================
+// SCENE COMPONENTS
+// ============================================
+
+/**
+ * Logo Scene - Minimal, atmospheric
+ */
+const LogoScene: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { durationInFrames } = useVideoConfig();
+
+  const opacity = interpolate(
+    frame,
+    [0, 40, durationInFrames - 30, durationInFrames],
+    [0, 1, 1, 0],
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+  );
+
+  // Subtle scale
+  const scale = interpolate(frame, [0, durationInFrames], [0.95, 1]);
+
+  return (
+    <AbsoluteFill style={{ backgroundColor: '#080808' }}>
+      {/* Atmospheric background glow */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'radial-gradient(ellipse at 50% 50%, rgba(30,25,20,1) 0%, rgba(8,8,8,1) 70%)',
+        }}
+      />
+
+      {/* Logo */}
+      <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center' }}>
+        <Img
+          src={staticFile(ASSETS.logo)}
+          style={{
+            width: 100,
+            opacity,
+            transform: `scale(${scale})`,
+          }}
+        />
+      </AbsoluteFill>
+
+      <FilmGrain opacity={0.03} />
+      <DynamicVignette intensity={0.5} breathe={false} />
+    </AbsoluteFill>
+  );
+};
+
+/**
+ * Title Scene - Typography as architecture
+ */
+const TitleScene: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { durationInFrames } = useVideoConfig();
+
+  // Title reveal - horizontal mask
+  const maskProgress = interpolate(frame, [10, 50], [0, 100], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+    easing: Easing.bezier(0.33, 1, 0.68, 1),
+  });
+
+  // Subtitle fade
+  const subtitleOpacity = interpolate(frame, [55, 75], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+
+  // Scene fade out
+  const fadeOut = interpolate(
+    frame,
+    [durationInFrames - 20, durationInFrames],
+    [1, 0],
+    { extrapolateLeft: 'clamp' }
+  );
+
+  // Decorative line
+  const lineWidth = interpolate(frame, [0, 40], [0, 200], {
+    extrapolateRight: 'clamp',
+    easing: Easing.bezier(0.33, 1, 0.68, 1),
+  });
+
+  return (
+    <AbsoluteFill style={{ backgroundColor: '#080808', opacity: fadeOut }}>
+      {/* Warm atmospheric glow */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'radial-gradient(ellipse at 50% 40%, rgba(40,30,20,0.5) 0%, transparent 60%)',
+        }}
+      />
+
+      <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center' }}>
+        {/* Decorative line above */}
+        <div
+          style={{
+            width: lineWidth,
+            height: 1,
+            backgroundColor: 'rgba(255,255,255,0.3)',
+            marginBottom: 40,
+          }}
+        />
+
+        {/* Main title with mask reveal */}
+        <div style={{ overflow: 'hidden' }}>
+          <h1
+            style={{
+              fontFamily: 'Georgia, "Times New Roman", serif',
+              fontSize: 100,
+              fontWeight: 400,
+              color: '#FFFFFF',
+              letterSpacing: '0.25em',
+              margin: 0,
+              clipPath: `inset(0 ${100 - maskProgress}% 0 0)`,
+            }}
+          >
+            STONECREST
+          </h1>
+        </div>
+
+        {/* Subtitle */}
+        <p
+          style={{
+            fontFamily: 'system-ui, -apple-system, sans-serif',
+            fontSize: 14,
+            fontWeight: 300,
+            color: 'rgba(255,255,255,0.5)',
+            letterSpacing: '0.4em',
+            textTransform: 'uppercase',
+            marginTop: 30,
+            opacity: subtitleOpacity,
+          }}
+        >
+          A Minima Residence
+        </p>
+
+        {/* Decorative line below */}
+        <div
+          style={{
+            width: lineWidth * 0.6,
+            height: 1,
+            backgroundColor: 'rgba(255,255,255,0.2)',
+            marginTop: 40,
+            opacity: subtitleOpacity,
+          }}
+        />
+      </AbsoluteFill>
+
+      <FilmGrain opacity={0.025} />
+      <DynamicVignette intensity={0.4} />
+    </AbsoluteFill>
+  );
+};
+
+/**
+ * Property Image Scene - Layered depth
+ */
+interface PropertyImageProps {
+  src: string;
+  panDirection?: 'left' | 'right';
+  lightLeakPosition?: 'left' | 'right';
+}
+
+const PropertyImageScene: React.FC<PropertyImageProps> = ({
+  src,
+  panDirection = 'right',
+  lightLeakPosition = 'right',
+}) => {
+  const frame = useCurrentFrame();
+  const { durationInFrames } = useVideoConfig();
+
+  // Base image motion - slow, confident
   const pan = interpolate(
     frame,
     [0, durationInFrames],
-    direction === 'right' ? [0, -panAmount] : [-panAmount, 0],
-    { easing: EASE }
+    panDirection === 'right' ? [2, -2] : [-2, 2]
   );
 
-  // Very subtle scale - 2% zoom over duration
-  const scale = interpolate(
-    frame,
-    [0, durationInFrames],
-    [1.05, 1.08],
-    { easing: EASE }
-  );
+  const scale = interpolate(frame, [0, durationInFrames], [1.08, 1.12]);
 
-  // Fade in at start
-  const fadeIn = interpolate(
-    frame,
-    [0, 20],
-    [0, 1],
-    { extrapolateRight: 'clamp' }
-  );
+  // Fade in/out
+  const fadeIn = interpolate(frame, [0, 25], [0, 1], {
+    extrapolateRight: 'clamp',
+  });
 
-  // Fade out at end
   const fadeOut = interpolate(
     frame,
-    [durationInFrames - 15, durationInFrames],
+    [durationInFrames - 20, durationInFrames],
     [1, 0],
     { extrapolateLeft: 'clamp' }
   );
 
   return (
-    <AbsoluteFill style={{ backgroundColor: '#0A0A0A' }}>
+    <AbsoluteFill style={{ backgroundColor: '#080808' }}>
+      {/* Base image layer */}
       <div
         style={{
-          width: '100%',
-          height: '100%',
+          position: 'absolute',
+          inset: '-10%',
           opacity: fadeIn * fadeOut,
-          overflow: 'hidden',
         }}
       >
         <Img
           src={staticFile(src)}
           style={{
-            width: '110%',
-            height: '110%',
+            width: '120%',
+            height: '120%',
             objectFit: 'cover',
-            objectPosition: 'center',
-            transform: `translate(${pan}%, -5%) scale(${scale})`,
+            transform: `translate(${pan}%, 0) scale(${scale})`,
           }}
         />
       </div>
+
+      {/* Atmospheric layers */}
+      <LightLeak
+        startX={lightLeakPosition === 'right' ? 75 : 25}
+        startY={15}
+        color="rgba(255, 220, 180, 0.08)"
+      />
+
+      <EdgeGradient direction="top" size={25} color="rgba(0,0,0,0.3)" />
+      <EdgeGradient direction="bottom" size={35} color="rgba(0,0,0,0.5)" />
+
+      <FilmGrain opacity={0.035} />
+      <DynamicVignette intensity={0.55} breathe />
     </AbsoluteFill>
   );
 };
 
-// ============================================
-// SCENE: END CARD (Clean, minimal)
-// ============================================
+/**
+ * End Card - Refined, layered
+ */
 const EndCard: React.FC = () => {
   const frame = useCurrentFrame();
+  const { durationInFrames } = useVideoConfig();
 
-  // Staggered fade in - property name, then tagline, then logo
-  const nameOpacity = interpolate(frame, [0, 30], [0, 1], {
+  // Staggered reveals
+  const line1 = interpolate(frame, [0, 30], [0, 120], {
+    extrapolateRight: 'clamp',
+    easing: Easing.bezier(0.33, 1, 0.68, 1),
+  });
+
+  const titleOpacity = interpolate(frame, [15, 45], [0, 1], {
+    extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
 
-  const taglineOpacity = interpolate(frame, [20, 50], [0, 1], {
+  const titleY = interpolate(frame, [15, 45], [20, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+    easing: Easing.bezier(0.33, 1, 0.68, 1),
+  });
+
+  const bylineOpacity = interpolate(frame, [40, 65], [0, 1], {
+    extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
 
-  const logoOpacity = interpolate(frame, [40, 70], [0, 1], {
+  const logoOpacity = interpolate(frame, [55, 80], [0, 1], {
+    extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
+  });
+
+  const line2 = interpolate(frame, [60, 90], [0, 80], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+    easing: Easing.bezier(0.33, 1, 0.68, 1),
   });
 
   return (
-    <AbsoluteFill
-      style={{
-        backgroundColor: '#0A0A0A',
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
-    >
-      {/* Property name */}
-      <h1
+    <AbsoluteFill style={{ backgroundColor: '#080808' }}>
+      {/* Warm center glow */}
+      <div
         style={{
-          fontFamily: 'Georgia, "Times New Roman", serif',
-          fontSize: 72,
-          fontWeight: 400,
-          color: '#FFFFFF',
-          letterSpacing: '0.2em',
-          margin: 0,
-          opacity: nameOpacity,
-        }}
-      >
-        STONECREST
-      </h1>
-
-      {/* Tagline */}
-      <p
-        style={{
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          fontSize: 14,
-          fontWeight: 300,
-          color: '#666',
-          letterSpacing: '0.4em',
-          textTransform: 'uppercase',
-          marginTop: 20,
-          marginBottom: 50,
-          opacity: taglineOpacity,
-        }}
-      >
-        by Minima
-      </p>
-
-      {/* Logo */}
-      <Img
-        src={staticFile(ASSETS.logo)}
-        style={{
-          width: 60,
-          opacity: logoOpacity,
+          position: 'absolute',
+          inset: 0,
+          background: 'radial-gradient(ellipse at 50% 50%, rgba(35,28,22,0.6) 0%, transparent 60%)',
         }}
       />
+
+      <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center' }}>
+        {/* Top decorative line */}
+        <div
+          style={{
+            width: line1,
+            height: 1,
+            backgroundColor: 'rgba(255,255,255,0.25)',
+            marginBottom: 50,
+          }}
+        />
+
+        {/* Property name */}
+        <h1
+          style={{
+            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontSize: 64,
+            fontWeight: 400,
+            color: '#FFFFFF',
+            letterSpacing: '0.2em',
+            margin: 0,
+            opacity: titleOpacity,
+            transform: `translateY(${titleY}px)`,
+          }}
+        >
+          STONECREST
+        </h1>
+
+        {/* By line */}
+        <p
+          style={{
+            fontFamily: 'system-ui, -apple-system, sans-serif',
+            fontSize: 12,
+            fontWeight: 300,
+            color: 'rgba(255,255,255,0.4)',
+            letterSpacing: '0.5em',
+            textTransform: 'uppercase',
+            marginTop: 25,
+            opacity: bylineOpacity,
+          }}
+        >
+          by Minima
+        </p>
+
+        {/* Logo */}
+        <div style={{ marginTop: 45, opacity: logoOpacity }}>
+          <Img
+            src={staticFile(ASSETS.logo)}
+            style={{ width: 50 }}
+          />
+        </div>
+
+        {/* Bottom decorative line */}
+        <div
+          style={{
+            width: line2,
+            height: 1,
+            backgroundColor: 'rgba(255,255,255,0.15)',
+            marginTop: 50,
+          }}
+        />
+      </AbsoluteFill>
+
+      <FilmGrain opacity={0.025} />
+      <DynamicVignette intensity={0.45} breathe={false} />
     </AbsoluteFill>
   );
 };
@@ -323,53 +521,81 @@ const EndCard: React.FC = () => {
 // ============================================
 export const StonecrestIntro: React.FC = () => {
   return (
-    <AbsoluteFill style={{ backgroundColor: '#0A0A0A' }}>
-      {/* Logo - 3 seconds */}
+    <AbsoluteFill style={{ backgroundColor: '#080808' }}>
+      {/* Logo - 3s */}
       <Sequence from={0} durationInFrames={90}>
         <LogoScene />
       </Sequence>
 
-      {/* Property Name - 2.5 seconds */}
-      <Sequence from={90} durationInFrames={75}>
-        <PropertyName />
+      {/* Title - 3s */}
+      <Sequence from={90} durationInFrames={90}>
+        <TitleScene />
       </Sequence>
 
-      {/* Hero Exterior - 4 seconds */}
-      <Sequence from={165} durationInFrames={120}>
-        <PropertyImage src={ASSETS.exteriors[0]} direction="right" />
+      {/* Hero Exterior - 3.5s */}
+      <Sequence from={180} durationInFrames={105}>
+        <PropertyImageScene
+          src={ASSETS.exteriors[0]}
+          panDirection="right"
+          lightLeakPosition="right"
+        />
       </Sequence>
 
-      {/* Interior 1 - 3 seconds */}
+      {/* Interior 1 - 3s */}
       <Sequence from={285} durationInFrames={90}>
-        <PropertyImage src={ASSETS.interiors[0]} direction="left" />
+        <PropertyImageScene
+          src={ASSETS.interiors[0]}
+          panDirection="left"
+          lightLeakPosition="left"
+        />
       </Sequence>
 
-      {/* Interior 2 - 3 seconds */}
+      {/* Interior 2 - 3s */}
       <Sequence from={375} durationInFrames={90}>
-        <PropertyImage src={ASSETS.interiors[1]} direction="right" />
+        <PropertyImageScene
+          src={ASSETS.interiors[1]}
+          panDirection="right"
+          lightLeakPosition="right"
+        />
       </Sequence>
 
-      {/* Interior 3 - 3 seconds */}
+      {/* Interior 3 - 3s */}
       <Sequence from={465} durationInFrames={90}>
-        <PropertyImage src={ASSETS.interiors[2]} direction="left" />
+        <PropertyImageScene
+          src={ASSETS.interiors[2]}
+          panDirection="left"
+          lightLeakPosition="left"
+        />
       </Sequence>
 
-      {/* Interior 4 - 3 seconds */}
+      {/* Interior 4 - 3s */}
       <Sequence from={555} durationInFrames={90}>
-        <PropertyImage src={ASSETS.interiors[3]} direction="right" />
+        <PropertyImageScene
+          src={ASSETS.interiors[3]}
+          panDirection="right"
+          lightLeakPosition="right"
+        />
       </Sequence>
 
-      {/* Interior 5 - 3 seconds */}
+      {/* Interior 5 - 3s */}
       <Sequence from={645} durationInFrames={90}>
-        <PropertyImage src={ASSETS.interiors[4]} direction="left" />
+        <PropertyImageScene
+          src={ASSETS.interiors[4]}
+          panDirection="left"
+          lightLeakPosition="left"
+        />
       </Sequence>
 
-      {/* Closing Exterior - 3 seconds */}
+      {/* Closing Exterior - 3s */}
       <Sequence from={735} durationInFrames={90}>
-        <PropertyImage src={ASSETS.exteriors[1]} direction="right" />
+        <PropertyImageScene
+          src={ASSETS.exteriors[1]}
+          panDirection="right"
+          lightLeakPosition="right"
+        />
       </Sequence>
 
-      {/* End Card - 2.5 seconds */}
+      {/* End Card - 2.5s */}
       <Sequence from={825} durationInFrames={75}>
         <EndCard />
       </Sequence>
