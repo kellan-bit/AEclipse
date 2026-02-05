@@ -59,7 +59,7 @@ const defaultTitleProps: MinimaTitleProps = {
 export const RemotionRoot: React.FC = () => {
   return (
     <>
-      <Folder name="Minima Title">
+      <Folder name="Minima-Title">
         {/* Full Title Sequence - 16:9 Landscape */}
         <Composition
           id="MinimaTitle"
