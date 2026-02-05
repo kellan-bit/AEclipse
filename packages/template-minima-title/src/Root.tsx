@@ -10,10 +10,27 @@
  */
 
 import { Composition, Folder } from 'remotion';
+import { z } from 'zod';
 import { MinimaTitle, MinimaTitleProps } from './MinimaTitle';
 import { LogoScene } from './scenes/LogoScene';
 import { TitleCardScene } from './scenes/TitleCardScene';
 import { themes } from '@minima/brand';
+
+// Schema for UI-editable props
+const minimaTitleSchema = z.object({
+  title: z.string(),
+  subtitle: z.string().optional(),
+  accentText: z.string().optional(),
+  videoSrc: z.string().optional(),
+  imageSrc: z.string().optional(),
+  theme: z.enum(['dark', 'light', 'contrast', 'warm']),
+  logoFontSize: z.number(),
+  logoDuration: z.number(),
+  titleCardDuration: z.number(),
+  transitionDuration: z.number(),
+  transitionType: z.enum(['fade', 'fadeToBlack', 'scaleReveal', 'slideUp', 'maskWipe', 'zoomThrough']),
+  showTagline: z.boolean(),
+});
 
 /**
  * VIDEO ASSET CONFIGURATION
@@ -68,6 +85,7 @@ export const RemotionRoot: React.FC = () => {
           fps={30}
           width={1920}
           height={1080}
+          schema={minimaTitleSchema}
           defaultProps={defaultTitleProps}
         />
 
