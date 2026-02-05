@@ -11,12 +11,15 @@
 
 import { Composition, Folder } from 'remotion';
 import { z } from 'zod';
-import { MinimaTitle, MinimaTitleProps } from './MinimaTitle';
+import { MinimaTitle } from './MinimaTitle';
 import { LogoScene } from './scenes/LogoScene';
 import { TitleCardScene } from './scenes/TitleCardScene';
-import { themes } from '@minima/brand';
 
-// Schema for UI-editable props
+// ============================================
+// SCHEMAS - Enable UI editing for all compositions
+// ============================================
+
+// Full title sequence schema
 const minimaTitleSchema = z.object({
   title: z.string(),
   subtitle: z.string().optional(),
@@ -32,46 +35,25 @@ const minimaTitleSchema = z.object({
   showTagline: z.boolean(),
 });
 
-/**
- * VIDEO ASSET CONFIGURATION
- *
- * To use your own video:
- * 1. Place your video file in the public/ folder
- * 2. Update the videoSrc path below
- *
- * Example:
- *   videoSrc: staticFile('my-property-tour.mp4')
- *
- * For a static image instead:
- *   imageSrc: staticFile('hero-image.jpg')
- */
-import { staticFile } from 'remotion';
+// Logo scene schema
+const logoSceneSchema = z.object({
+  showTagline: z.boolean(),
+  fontSize: z.number(),
+  themeName: z.enum(['dark', 'light', 'contrast', 'warm']),
+});
 
-// Default props for the full title sequence
-const defaultTitleProps: MinimaTitleProps = {
-  // Content
-  title: 'The Rosa Blanca',
-  subtitle: 'A Minima Residence',
-  accentText: 'Where design meets discipline',
+// Title card scene schema
+const titleCardSceneSchema = z.object({
+  title: z.string(),
+  subtitle: z.string().optional(),
+  accentText: z.string().optional(),
+  themeName: z.enum(['dark', 'light', 'contrast', 'warm']),
+  startFrame: z.number(),
+});
 
-  // Video/Image asset (uncomment one):
-  // videoSrc: staticFile('property-video.mp4'),  // ← Your video
-  // imageSrc: staticFile('hero-image.jpg'),      // ← Or static image
-
-  // Styling
-  theme: 'dark',
-  logoFontSize: 120,
-
-  // Timing (in frames at 30fps)
-  logoDuration: 90,        // 3 seconds - logo animation
-  titleCardDuration: 75,   // 2.5 seconds - title display
-  transitionDuration: 30,  // 1 second - transition to video
-
-  // Transition style: 'fade' | 'fadeToBlack' | 'scaleReveal' | 'slideUp' | 'maskWipe' | 'zoomThrough'
-  transitionType: 'fade',
-
-  showTagline: true,
-};
+// ============================================
+// COMPOSITIONS
+// ============================================
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -108,9 +90,18 @@ export const RemotionRoot: React.FC = () => {
           fps={30}
           width={1080}
           height={1920}
+          schema={minimaTitleSchema}
           defaultProps={{
-            ...defaultTitleProps,
+            title: 'The Rosa Blanca',
+            subtitle: 'A Minima Residence',
+            accentText: 'Where design meets discipline',
+            theme: 'dark',
             logoFontSize: 80,
+            logoDuration: 90,
+            titleCardDuration: 75,
+            transitionDuration: 30,
+            transitionType: 'fade',
+            showTagline: true,
           }}
         />
 
@@ -122,9 +113,18 @@ export const RemotionRoot: React.FC = () => {
           fps={30}
           width={1080}
           height={1080}
+          schema={minimaTitleSchema}
           defaultProps={{
-            ...defaultTitleProps,
+            title: 'The Rosa Blanca',
+            subtitle: 'A Minima Residence',
+            accentText: 'Where design meets discipline',
+            theme: 'dark',
             logoFontSize: 90,
+            logoDuration: 90,
+            titleCardDuration: 75,
+            transitionDuration: 30,
+            transitionType: 'fade',
+            showTagline: true,
           }}
         />
       </Folder>
@@ -138,8 +138,9 @@ export const RemotionRoot: React.FC = () => {
           fps={30}
           width={1920}
           height={1080}
+          schema={logoSceneSchema}
           defaultProps={{
-            theme: themes.dark,
+            themeName: 'dark',
             showTagline: true,
             fontSize: 120,
           }}
@@ -153,8 +154,9 @@ export const RemotionRoot: React.FC = () => {
           fps={30}
           width={1920}
           height={1080}
+          schema={logoSceneSchema}
           defaultProps={{
-            theme: themes.light,
+            themeName: 'light',
             showTagline: true,
             fontSize: 120,
           }}
@@ -168,11 +170,12 @@ export const RemotionRoot: React.FC = () => {
           fps={30}
           width={1920}
           height={1080}
+          schema={titleCardSceneSchema}
           defaultProps={{
             title: 'The Rosa Blanca',
             subtitle: 'A Minima Residence',
             accentText: 'Where design meets discipline',
-            theme: themes.dark,
+            themeName: 'dark',
             startFrame: 0,
           }}
         />

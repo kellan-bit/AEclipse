@@ -6,20 +6,22 @@
  */
 
 import { AbsoluteFill } from 'remotion';
-import { colors, themes, type Theme } from '@minima/brand';
+import { themes } from '@minima/brand';
 import { AnimatedWordmark } from '../components/AnimatedWordmark';
 
 type LogoSceneProps = {
-  theme?: Theme;
+  themeName?: 'dark' | 'light' | 'contrast' | 'warm';
   showTagline?: boolean;
   fontSize?: number;
 };
 
 export const LogoScene: React.FC<LogoSceneProps> = ({
-  theme = themes.dark,
+  themeName = 'dark',
   showTagline = true,
   fontSize = 120,
 }) => {
+  const theme = themes[themeName];
+
   return (
     <AbsoluteFill
       style={{
