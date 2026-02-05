@@ -1,0 +1,26 @@
+{
+  "version": "1.0",
+  "video": {
+    "source": "ClaudeTest.mp4",
+    "totalFrames": 946,
+    "fps": 30,
+    "duration": 31.5
+  },
+  "currentPhase": "awaiting_frames",
+  "progress": {
+    "phase1_segments": "pending",
+    "phase2_transitions": "pending",
+    "phase3_deep_analysis": "pending",
+    "phase4_synthesis": "pending"
+  },
+  "segments": [],
+  "priorityOrder": [
+    "quote_carousel",
+    "opus_intro",
+    "end_card",
+    "testimonials",
+    "news_headlines"
+  ],
+  "lastUpdated": null,
+  "resumeInstructions": "Waiting for user to push frames/all/ folder. Then start Phase 1: Segment Identification."
+}
