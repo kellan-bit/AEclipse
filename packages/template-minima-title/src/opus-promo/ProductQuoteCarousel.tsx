@@ -22,7 +22,7 @@ interface ProductQuoteCarouselProps {
 export const ProductQuoteCarousel: React.FC<ProductQuoteCarouselProps> = ({
   productName,
   quotes,
-  framesPerQuote = 30,
+  framesPerQuote = 35,
   fontFamily = 'Georgia, "Times New Roman", serif',
   productFontSize = 64,
   quoteFontSize = 24,
@@ -39,24 +39,18 @@ export const ProductQuoteCarousel: React.FC<ProductQuoteCarouselProps> = ({
   const quoteStartFrame = quoteIndex * framesPerQuote;
   const frameInQuote = frame - quoteStartFrame;
 
-  // Quote swap animation - fade out old, fade in new
+  // Smooth fade animation - quick fade in, hold, quick fade out
+  const fadeInDuration = 12;
+  const fadeOutDuration = 12;
+  const holdStart = fadeInDuration;
+  const holdEnd = framesPerQuote - fadeOutDuration;
+
   const quoteOpacity = interpolate(
     frameInQuote,
-    [0, 8, framesPerQuote - 5, framesPerQuote],
+    [0, fadeInDuration, holdEnd, framesPerQuote],
     [0, 1, 1, 0],
     {
-      extrapolateLeft: 'clamp',
-      extrapolateRight: 'clamp',
-    }
-  );
-
-  // Subtle slide up on enter
-  const quoteY = interpolate(
-    frameInQuote,
-    [0, 8],
-    [8, 0],
-    {
-      easing: Easing.out(Easing.ease),
+      easing: Easing.inOut(Easing.ease),
       extrapolateLeft: 'clamp',
       extrapolateRight: 'clamp',
     }
@@ -88,7 +82,7 @@ export const ProductQuoteCarousel: React.FC<ProductQuoteCarouselProps> = ({
         {productName}
       </div>
 
-      {/* Quote box - fixed left edge position */}
+      {/* Quote box - fixed left edge, only fades */}
       <div
         style={{
           position: 'absolute',
@@ -104,7 +98,6 @@ export const ProductQuoteCarousel: React.FC<ProductQuoteCarouselProps> = ({
             backgroundColor: '#F5F5F5',
             padding: '10px 16px',
             borderRadius: 2,
-            transform: `translateY(${quoteY}px)`,
           }}
         >
           <span
