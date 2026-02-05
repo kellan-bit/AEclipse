@@ -1,0 +1,29 @@
+{
+  "name": "template-minima-title",
+  "version": "1.0.0",
+  "description": "Minima animated logo and title card template",
+  "scripts": {
+    "dev": "remotion studio",
+    "build": "remotion bundle",
+    "render": "remotion render",
+    "lint": "eslint src && tsc"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@minima/brand": "workspace:*",
+    "@remotion/cli": "workspace:*",
+    "@remotion/transitions": "workspace:*",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "remotion": "workspace:*",
+    "zod": "3.22.3"
+  },
+  "devDependencies": {
+    "@remotion/eslint-config-flat": "workspace:*",
+    "@types/react": "19.2.7",
+    "eslint": "9.19.0",
+    "prettier": "3.6.0",
+    "typescript": "5.9.3"
+  },
+  "private": true
+}
