@@ -15,6 +15,9 @@ import { MinimaTitle } from './MinimaTitle';
 import { LogoScene } from './scenes/LogoScene';
 import { TitleCardScene } from './scenes/TitleCardScene';
 
+// Projects
+import { StonecrestIntro } from './projects/stonecrest/StonecrestIntro';
+
 // ============================================
 // SCHEMAS - Enable UI editing for all compositions
 // ============================================
@@ -178,6 +181,21 @@ export const RemotionRoot: React.FC = () => {
             themeName: 'dark',
             startFrame: 0,
           }}
+        />
+      </Folder>
+
+      {/* ============================================ */}
+      {/* PROJECTS - Real compositions with real assets */}
+      {/* ============================================ */}
+      <Folder name="Projects">
+        {/* Stonecrest Property Introduction */}
+        <Composition
+          id="StonecrestIntro"
+          component={StonecrestIntro}
+          durationInFrames={900}
+          fps={30}
+          width={1920}
+          height={1080}
         />
       </Folder>
     </>
