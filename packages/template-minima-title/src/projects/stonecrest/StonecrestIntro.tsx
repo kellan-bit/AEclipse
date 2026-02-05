@@ -25,21 +25,21 @@ import {
   staticFile,
 } from 'remotion';
 
-// Asset paths (relative to public/assets/minima symlink)
+// Asset paths (relative to public/ folder, symlink is at public/assets/minima)
 const ASSETS = {
-  logo: 'minima/Photos/Logo-White.svg',
-  wordmark: 'minima/Photos/Wordmark-White.svg',
+  logo: 'assets/minima/Photos/Logo-White.svg',
+  wordmark: 'assets/minima/Photos/Wordmark-White.svg',
   exteriors: [
-    'minima/Photos/Homes/Stonecrest/Basil_ex01_Final_2025-04-23.jpg',
-    'minima/Photos/Homes/Stonecrest/Basil_ex02_Final_2025-04-23.jpg',
+    'assets/minima/Photos/Homes/Stonecrest/Basil_ex01_Final_2025-04-23.jpg',
+    'assets/minima/Photos/Homes/Stonecrest/Basil_ex02_Final_2025-04-23.jpg',
   ],
   interiors: [
-    'minima/Photos/Homes/Stonecrest/Basil_int1.1_Final_2025-04-24.jpg',
-    'minima/Photos/Homes/Stonecrest/Basin_int1.2_Final_2025-04-24.jpg',
-    'minima/Photos/Homes/Stonecrest/Basin_int1.3_Final_2025-04-24.jpg',
-    'minima/Photos/Homes/Stonecrest/Basin_int2.1_Final_2025-04-23.jpg',
-    'minima/Photos/Homes/Stonecrest/Basin_int3.1_Final_2025-04-24.jpg',
-    'minima/Photos/Homes/Stonecrest/Basin_int4.2_Final_2025-04-23.jpg',
+    'assets/minima/Photos/Homes/Stonecrest/Basil_int1.1_Final_2025-04-24.jpg',
+    'assets/minima/Photos/Homes/Stonecrest/Basin_int1.2_Final_2025-04-24.jpg',
+    'assets/minima/Photos/Homes/Stonecrest/Basin_int1.3_Final_2025-04-24.jpg',
+    'assets/minima/Photos/Homes/Stonecrest/Basin_int2.1_Final_2025-04-23.jpg',
+    'assets/minima/Photos/Homes/Stonecrest/Basin_int3.1_Final_2025-04-24.jpg',
+    'assets/minima/Photos/Homes/Stonecrest/Basin_int4.2_Final_2025-04-23.jpg',
   ],
 };
 
