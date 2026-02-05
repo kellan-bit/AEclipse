@@ -350,6 +350,271 @@ The chunked approach keeps each operation well within context limits.
 
 ---
 
+## Phase 6: Validation & Comparison (The Real Test)
+
+The analysis is only as good as its reproduction. This phase renders the generated code and compares it frame-by-frame with the original.
+
+### Directory Structure
+
+```
+video-analysis/
+├── validation/
+│   ├── rendered/                     # Frames from our generated code
+│   │   ├── frame_0000.png
+│   │   ├── frame_0005.png
+│   │   └── ...
+│   ├── comparison/                   # Side-by-side comparisons
+│   │   ├── compare_0000.png          # Original | Generated
+│   │   └── ...
+│   ├── diff/                         # Visual difference maps
+│   │   ├── diff_0000.png
+│   │   └── ...
+│   └── failures.json                 # Documented failures
+```
+
+### Step 1: Render Generated Animation
+
+```bash
+# Render the generated composition to frames
+cd packages/template-minima-title
+npx remotion render output/ReconstructedAnimation.tsx \
+  --frames=0-60 \
+  --image-format=png \
+  --output=video-analysis/validation/rendered/frame_%04d.png
+```
+
+Or render to video for quick review:
+```bash
+npx remotion render output/ReconstructedAnimation.tsx \
+  --output=video-analysis/validation/rendered.mp4
+```
+
+### Step 2: Generate Side-by-Side Comparisons
+
+```bash
+# Create comparison images (original left, generated right)
+cd video-analysis
+for i in frames/keyframes/frame_*.png; do
+  num=$(basename "$i" | grep -o '[0-9]*')
+  ffmpeg -i "frames/keyframes/frame_${num}.png" \
+         -i "validation/rendered/frame_${num}.png" \
+         -filter_complex hstack \
+         "validation/comparison/compare_${num}.png" -y
+done
+```
+
+### Step 3: Generate Difference Maps
+
+```bash
+# Create visual diff (white = match, color = difference)
+for i in frames/keyframes/frame_*.png; do
+  num=$(basename "$i" | grep -o '[0-9]*')
+  ffmpeg -i "frames/keyframes/frame_${num}.png" \
+         -i "validation/rendered/frame_${num}.png" \
+         -filter_complex "blend=difference" \
+         "validation/diff/diff_${num}.png" -y
+done
+```
+
+### Step 4: Document Failures (`validation/failures.json`)
+
+```json
+{
+  "validationRun": "2025-02-05T14:00:00Z",
+  "overallScore": 0.72,
+  "failures": [
+    {
+      "frameRange": [10, 25],
+      "severity": "high",
+      "category": "timing",
+      "description": "Letter 'M' animation starts 3 frames too early",
+      "original": { "startFrame": 13 },
+      "generated": { "startFrame": 10 },
+      "fix": "Adjust letterStart from 10 to 13 in generated code"
+    },
+    {
+      "frameRange": [30, 45],
+      "severity": "medium",
+      "category": "easing",
+      "description": "Easing curve too aggressive - letters decelerate faster in original",
+      "original": { "easing": "unknown - appears custom" },
+      "generated": { "easing": "cubic-bezier(0.33, 1, 0.68, 1)" },
+      "fix": "Try cubic-bezier(0.22, 1, 0.36, 1) for gentler deceleration"
+    },
+    {
+      "frameRange": [50, 60],
+      "severity": "low",
+      "category": "color",
+      "description": "Background slightly warmer in original",
+      "original": { "background": "#0a0a0a" },
+      "generated": { "background": "#000000" },
+      "fix": "Update backgroundColor to #0a0a0a"
+    }
+  ],
+  "successes": [
+    {
+      "aspect": "letter-order",
+      "description": "Stagger sequence correctly identified (M-I-N-I-M-A)"
+    },
+    {
+      "aspect": "animation-type",
+      "description": "slideUp correctly identified as primary animation"
+    }
+  ]
+}
+```
+
+### Step 5: Iterate Based on Failures
+
+Claude reads `failures.json` and:
+1. Applies fixes to generated code
+2. Re-renders validation frames
+3. Re-compares
+4. Updates failures.json with new results
+5. Repeats until score > 0.9 or no more improvements possible
+
+### Validation Workflow Commands
+
+```bash
+# Full validation pipeline
+./validate.sh
+
+# Or step by step:
+./render-generated.sh        # Render our code to frames
+./compare-frames.sh          # Generate side-by-sides
+./generate-diff.sh           # Create difference maps
+```
+
+Then tell Claude:
+```
+"Review validation results and document failures"
+```
+
+### Scoring Criteria
+
+| Aspect | Weight | Measurement |
+|--------|--------|-------------|
+| Timing accuracy | 30% | Frame-accurate start/end |
+| Easing match | 25% | Motion curve similarity |
+| Position accuracy | 20% | Pixel position delta |
+| Color accuracy | 15% | Color value delta |
+| Element presence | 10% | All elements appear |
+
+### Iteration Log (`validation/iterations.json`)
+
+```json
+{
+  "iterations": [
+    {
+      "iteration": 1,
+      "date": "2025-02-05T14:00:00Z",
+      "score": 0.72,
+      "failureCount": 3,
+      "changes": "Initial generation from analysis"
+    },
+    {
+      "iteration": 2,
+      "date": "2025-02-05T14:30:00Z",
+      "score": 0.85,
+      "failureCount": 1,
+      "changes": "Fixed timing offset, adjusted easing curve"
+    },
+    {
+      "iteration": 3,
+      "date": "2025-02-05T15:00:00Z",
+      "score": 0.94,
+      "failureCount": 0,
+      "changes": "Adjusted background color"
+    }
+  ]
+}
+```
+
+---
+
+## Phase 7: Pattern Extraction
+
+Once validation passes (score > 0.9), extract the learned pattern into the pattern library:
+
+```json
+// Add to packages/minima-patterns/learned/letter-animations.json
+{
+  "reverse-engineered-nike-logo-v1": {
+    "source": "video-analysis/nike-logo-animation",
+    "generation": 1,
+    "confidence": 0.94,
+    "rationale": "Reverse-engineered from Nike brand video. Validated with 94% accuracy.",
+    "letters": {
+      "all": {
+        "animation": "slideUp",
+        "duration": 18,
+        "easing": "cubic-bezier(0.22, 1, 0.36, 1)"
+      }
+    },
+    "staggerDelay": 3,
+    "validationScore": 0.94
+  }
+}
+```
+
+---
+
+## Complete Workflow Summary
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  1. INPUT                                                        │
+│     Drop reference video into input/                             │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  2. EXTRACT                                                      │
+│     ./extract-frames.sh input/video.mp4                         │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  3. ANALYZE (batched, resumable)                                 │
+│     "Analyze the video" → batch_001.json, batch_002.json...     │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  4. SYNTHESIZE                                                   │
+│     Combine batches → timeline.json, techniques.md              │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  5. GENERATE                                                     │
+│     timeline.json → ReconstructedAnimation.tsx                  │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  6. VALIDATE                                                     │
+│     Render → Compare → Diff → Document failures                 │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                    ┌─────────┴─────────┐
+                    │                   │
+                    ▼                   ▼
+            Score < 0.9?          Score ≥ 0.9?
+                    │                   │
+                    ▼                   ▼
+┌───────────────────────┐   ┌───────────────────────────────────┐
+│  7. ITERATE            │   │  8. EXTRACT PATTERN                │
+│  Fix failures          │   │  Add to pattern library            │
+│  Re-render             │   │  Available for future generations  │
+│  Re-compare            │   └───────────────────────────────────┘
+└───────────────────────┘
+          │
+          └──────────► Back to VALIDATE
+```
+
+---
+
 ## Benefits
 
 1. **Learn from professionals**: Analyze Apple, Nike, luxury brand animations
@@ -357,3 +622,6 @@ The chunked approach keeps each operation well within context limits.
 3. **Reproducible**: Same video = same analysis = same code
 4. **Evolvable**: Improve analysis techniques over time
 5. **Library building**: Build a library of analyzed techniques
+6. **Validated learning**: Every pattern is tested before it's trusted
+7. **Failure documentation**: Know exactly where and why things fail
+8. **Iterative improvement**: Systematic approach to closing gaps
