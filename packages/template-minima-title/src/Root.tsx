@@ -16,6 +16,7 @@ import { LogoScene } from './scenes/LogoScene';
 import { TitleCardScene } from './scenes/TitleCardScene';
 import { OpusPromo } from './opus-promo/OpusPromo';
 import { OpusPromoV2 } from './opus-promo/OpusPromoV2';
+import { OpusPromoV3 } from './opus-promo/OpusPromoV3';
 import { TestimonialScene } from './opus-promo/scenes/TestimonialScene';
 import { AnimatedTestimonialScene } from './opus-promo/scenes/AnimatedTestimonialScene';
 import { OpusIntro } from './opus-promo/scenes/OpusIntro';
@@ -23,6 +24,9 @@ import { AnimatedOpusIntro } from './opus-promo/scenes/AnimatedOpusIntro';
 import { TestimonialCarousel } from './opus-promo/scenes/TestimonialCarousel';
 import { EndCard } from './opus-promo/scenes/EndCard';
 import { ProductQuoteCarousel } from './opus-promo/ProductQuoteCarousel';
+import { PhotoMosaicTransition } from './opus-promo/components/PhotoMosaicTransition';
+import { CapabilityShowcase } from './opus-promo/components/CapabilityShowcase';
+import { NewsArticleMontage } from './opus-promo/scenes/NewsArticleMontage';
 
 // ============================================
 // SCHEMAS - Enable UI editing for all compositions
@@ -250,6 +254,22 @@ export const RemotionRoot: React.FC = () => {
       </Folder>
 
       <Folder name="Opus-Promo">
+        {/* Full Opus Promo V3 - Complete reconstruction with all analyzed components */}
+        <Composition
+          id="OpusPromoV3"
+          component={OpusPromoV3}
+          durationInFrames={950}
+          fps={30}
+          width={1920}
+          height={1080}
+          schema={opusPromoSchema}
+          defaultProps={{
+            productName: 'Opus',
+            version: '4.5',
+            brandName: 'ANTHROPIC',
+          }}
+        />
+
         {/* Full Opus Promo Video V2 - Frame-accurate with new animations */}
         <Composition
           id="OpusPromoV2"
@@ -419,6 +439,67 @@ export const RemotionRoot: React.FC = () => {
             framesPerQuote: 35,
             productFontSize: 64,
             quoteFontSize: 24,
+          }}
+        />
+
+        {/* V3 Component: Photo Mosaic Transition */}
+        <Composition
+          id="PhotoMosaicTransition"
+          component={PhotoMosaicTransition}
+          durationInFrames={60}
+          fps={30}
+          width={1920}
+          height={1080}
+          defaultProps={{
+            images: [
+              { src: 'assets/mosaic-1.png', initialX: -30, initialY: -25, rotation: -8, scale: 1.1, delay: 0 },
+              { src: 'assets/mosaic-2.png', initialX: 25, initialY: -20, rotation: 5, scale: 1.0, delay: 3 },
+              { src: 'assets/mosaic-3.png', initialX: -25, initialY: 20, rotation: -3, scale: 0.9, delay: 6 },
+              { src: 'assets/mosaic-4.png', initialX: 30, initialY: 25, rotation: 7, scale: 1.05, delay: 9 },
+              { src: 'assets/mosaic-5.png', initialX: 0, initialY: -35, rotation: -2, scale: 0.95, delay: 4 },
+              { src: 'assets/mosaic-6.png', initialX: -35, initialY: 5, rotation: 4, scale: 1.0, delay: 7 },
+            ],
+            durationFrames: 40,
+          }}
+        />
+
+        {/* V3 Component: Capability Showcase */}
+        <Composition
+          id="CapabilityShowcase"
+          component={CapabilityShowcase}
+          durationInFrames={120}
+          fps={30}
+          width={1920}
+          height={1080}
+          defaultProps={{
+            centerText: 'Opus',
+            centerSubtext: 'Introducing',
+            capabilities: [
+              { prompt: 'Build me a drum machine', screenshotSrc: 'assets/capability-1.png', x: 45, y: -35, rotation: 2, scale: 1.0, delay: 5 },
+              { prompt: 'Help me analyze data', screenshotSrc: 'assets/capability-2.png', x: -50, y: -20, rotation: -3, scale: 0.95, delay: 10 },
+              { prompt: 'Build a typography tool', screenshotSrc: 'assets/capability-3.png', x: 50, y: 25, rotation: 4, scale: 1.0, delay: 15 },
+              { prompt: 'Create a style guide', screenshotSrc: 'assets/capability-4.png', x: -45, y: 35, rotation: -2, scale: 0.9, delay: 20 },
+            ],
+          }}
+        />
+
+        {/* V3 Component: News Article Montage */}
+        <Composition
+          id="NewsArticleMontage"
+          component={NewsArticleMontage}
+          durationInFrames={90}
+          fps={30}
+          width={1920}
+          height={1080}
+          defaultProps={{
+            articles: [
+              { imageSrc: 'assets/news-1.png', durationFrames: 15, zoomAmount: 0.03 },
+              { imageSrc: 'assets/news-2.png', durationFrames: 12, zoomAmount: 0.04 },
+              { imageSrc: 'assets/news-3.png', durationFrames: 15, zoomAmount: 0.03 },
+              { imageSrc: 'assets/news-4.png', durationFrames: 12, zoomAmount: 0.05 },
+              { imageSrc: 'assets/news-5.png', durationFrames: 15, zoomAmount: 0.04 },
+              { imageSrc: 'assets/news-6.png', durationFrames: 12, zoomAmount: 0.03 },
+            ],
           }}
         />
       </Folder>

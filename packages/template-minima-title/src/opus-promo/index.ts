@@ -4,6 +4,7 @@
 // Main compositions
 export { OpusPromo } from './OpusPromo';
 export { OpusPromoV2 } from './OpusPromoV2';
+export { OpusPromoV3 } from './OpusPromoV3';
 export { ProductQuoteCarousel } from './ProductQuoteCarousel';
 
 // Original components
