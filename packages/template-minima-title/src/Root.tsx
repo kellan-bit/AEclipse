@@ -19,6 +19,7 @@ import { TestimonialScene } from './opus-promo/scenes/TestimonialScene';
 import { OpusIntro } from './opus-promo/scenes/OpusIntro';
 import { TestimonialCarousel } from './opus-promo/scenes/TestimonialCarousel';
 import { EndCard } from './opus-promo/scenes/EndCard';
+import { ProductQuoteCarousel } from './opus-promo/ProductQuoteCarousel';
 
 // ============================================
 // SCHEMAS - Enable UI editing for all compositions
@@ -89,6 +90,14 @@ const endCardSchema = z.object({
   productName: z.string(),
   version: z.string(),
   brandName: z.string(),
+});
+
+// Product Quote Carousel schema - the clean rotating quotes format
+const productQuoteCarouselSchema = z.object({
+  productName: z.string(),
+  framesPerQuote: z.number(),
+  productFontSize: z.number(),
+  quoteFontSize: z.number(),
 });
 
 // ============================================
@@ -290,6 +299,49 @@ export const RemotionRoot: React.FC = () => {
             productName: 'Opus',
             version: '4.6',
             brandName: 'ANTHROPIC',
+          }}
+        />
+
+        {/* Product Quote Carousel - Clean rotating quotes */}
+        <Composition
+          id="ProductQuoteCarousel"
+          component={ProductQuoteCarousel}
+          durationInFrames={210}
+          fps={30}
+          width={1920}
+          height={1080}
+          schema={productQuoteCarouselSchema}
+          calculateMetadata={() => {
+            return {
+              props: {
+                productName: 'Opus 4.6',
+                quotes: [
+                  { text: 'just gets it.' },
+                  { text: 'is a huge leap.' },
+                  { text: 'flipped the script.' },
+                  { text: 'is incredible, no notes.' },
+                  { text: 'outperforms other models.' },
+                  { text: 'is redefining what we thought was possible.' },
+                ],
+                framesPerQuote: 35,
+                productFontSize: 64,
+                quoteFontSize: 24,
+              },
+            };
+          }}
+          defaultProps={{
+            productName: 'Opus 4.6',
+            quotes: [
+              { text: 'just gets it.' },
+              { text: 'is a huge leap.' },
+              { text: 'flipped the script.' },
+              { text: 'is incredible, no notes.' },
+              { text: 'outperforms other models.' },
+              { text: 'is redefining what we thought was possible.' },
+            ],
+            framesPerQuote: 35,
+            productFontSize: 64,
+            quoteFontSize: 24,
           }}
         />
       </Folder>
