@@ -108,23 +108,47 @@ export const CapabilityShowcase: React.FC<CapabilityShowcaseProps> = ({
               zIndex: index + 1,
             }}
           >
-            {/* Screenshot */}
+            {/* Screenshot - uses placeholder if image not found */}
             <div
               style={{
                 borderRadius: 8,
                 overflow: 'hidden',
                 boxShadow: '0 4px 20px rgba(0, 0, 0, 0.12)',
-                backgroundColor: '#FFFFFF',
+                backgroundColor: '#F0F0F0',
+                width: cardWidth,
+                height: cardHeight,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             >
-              <Img
-                src={staticFile(card.screenshotSrc)}
+              {/* Placeholder gradient - will be replaced when real assets uploaded */}
+              <div
                 style={{
-                  width: cardWidth,
-                  height: cardHeight,
-                  objectFit: 'cover',
+                  width: '100%',
+                  height: '100%',
+                  background: `linear-gradient(135deg, ${
+                    ['#E8F5E9', '#E3F2FD', '#FFF3E0', '#F3E5F5', '#E0F7FA', '#FBE9E7'][index % 6]
+                  } 0%, ${
+                    ['#C8E6C9', '#BBDEFB', '#FFE0B2', '#E1BEE7', '#B2EBF2', '#FFCCBC'][index % 6]
+                  } 100%)`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 20,
                 }}
-              />
+              >
+                <span
+                  style={{
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                    fontSize: 12,
+                    color: '#666',
+                    textAlign: 'center',
+                  }}
+                >
+                  {card.screenshotSrc.split('/').pop()}
+                </span>
+              </div>
             </div>
 
             {/* Prompt bubble */}

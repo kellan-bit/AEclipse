@@ -74,17 +74,65 @@ const NewsArticleFrame: React.FC<NewsArticleFrameProps> = ({
     extrapolateRight: 'clamp',
   });
 
+  // Generate a pseudo-random color based on image path
+  const hash = imageSrc.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const hue = hash % 360;
+
   return (
     <AbsoluteFill style={{ overflow: 'hidden' }}>
-      <Img
-        src={staticFile(imageSrc)}
+      {/* Placeholder - newspaper style gradient with text */}
+      <div
         style={{
           width: '100%',
           height: '100%',
-          objectFit: 'cover',
+          background: `linear-gradient(180deg, #F8F8F8 0%, #E8E8E8 100%)`,
           transform: `scale(${scale})`,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 40,
         }}
-      />
+      >
+        {/* Fake newspaper header */}
+        <div
+          style={{
+            fontFamily: 'Georgia, serif',
+            fontSize: 14,
+            color: '#888',
+            letterSpacing: '0.2em',
+            marginBottom: 20,
+          }}
+        >
+          TECHNOLOGY | ARTIFICIAL INTELLIGENCE
+        </div>
+
+        {/* Headline placeholder */}
+        <div
+          style={{
+            fontFamily: 'Georgia, serif',
+            fontSize: 64,
+            fontWeight: 700,
+            color: '#1A1A1A',
+            textAlign: 'center',
+            lineHeight: 1.1,
+          }}
+        >
+          Claude Headline
+        </div>
+
+        {/* Subtext */}
+        <div
+          style={{
+            fontFamily: 'system-ui, sans-serif',
+            fontSize: 12,
+            color: '#999',
+            marginTop: 30,
+          }}
+        >
+          {imageSrc.split('/').pop()}
+        </div>
+      </div>
     </AbsoluteFill>
   );
 };

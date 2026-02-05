@@ -118,16 +118,29 @@ export const PhotoMosaicTransition: React.FC<PhotoMosaicTransitionProps> = ({
               borderRadius: 4,
               overflow: 'hidden',
               zIndex: index,
+              width: 300,
+              height: 200,
             }}
           >
-            <Img
-              src={staticFile(image.src)}
+            {/* Placeholder gradient - replace with real images */}
+            <div
               style={{
-                width: 300,
-                height: 200,
-                objectFit: 'cover',
+                width: '100%',
+                height: '100%',
+                background: `linear-gradient(${45 + index * 30}deg, ${
+                  ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe', '#43e97b', '#38f9d7'][index % 8]
+                } 0%, ${
+                  ['#764ba2', '#667eea', '#f5576c', '#f093fb', '#00f2fe', '#4facfe', '#38f9d7', '#43e97b'][index % 8]
+                } 100%)`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
-            />
+            >
+              <span style={{ color: 'white', fontSize: 12, opacity: 0.7 }}>
+                {image.src.split('/').pop()}
+              </span>
+            </div>
           </div>
         );
       })}
