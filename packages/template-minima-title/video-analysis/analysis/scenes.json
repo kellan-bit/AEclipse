@@ -1,0 +1,497 @@
+{
+  "videoInfo": {
+    "source": "ClaudeTest.mp4",
+    "duration": 39,
+    "fps": 30,
+    "totalFrames": 1170,
+    "resolution": "1920x1080"
+  },
+  "scenes": [
+    {
+      "id": 1,
+      "name": "News Headlines",
+      "description": "Animated newspaper/article headlines about Claude Code with zoom and pan effects",
+      "timing": {
+        "startFrame": 0,
+        "endFrame": 120,
+        "startTime": "00:00:00",
+        "endTime": "00:00:04",
+        "durationFrames": 120,
+        "durationSeconds": 4
+      },
+      "transition": {
+        "in": { "type": "cut", "durationFrames": 0 },
+        "out": { "type": "cut", "durationFrames": 0 }
+      },
+      "visual": {
+        "colors": {
+          "background": "#F5F5F0",
+          "primaryText": "#1A1A1A",
+          "secondaryText": "#4A7BA7",
+          "accent": "#4A7BA7"
+        },
+        "typography": {
+          "category": {
+            "fontFamily": "system-ui, sans-serif",
+            "fontSize": 14,
+            "fontWeight": 500,
+            "letterSpacing": "0.1em",
+            "textTransform": "uppercase",
+            "color": "#4A7BA7"
+          },
+          "headline": {
+            "fontFamily": "Georgia, Times New Roman, serif",
+            "fontSize": 72,
+            "fontWeight": 400,
+            "letterSpacing": "-0.02em"
+          }
+        },
+        "layout": {
+          "type": "newspaper-article",
+          "contentAlignment": "left"
+        }
+      },
+      "animations": [
+        {
+          "type": "zoom-pan",
+          "description": "Camera zooms into and pans across newspaper article",
+          "easing": "easeInOut"
+        }
+      ],
+      "textContent": [
+        "TECHNOLOGY | ARTIFICIAL INTELLIGENCE",
+        "Claude Is Taking...",
+        "Finally, Claude Code...",
+        "This AI application can produce code from user prompts"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Testimonial - Math Student",
+      "description": "Tweet overlay from @ohnohanajo about math, with geometric line overlay on video background",
+      "timing": {
+        "startFrame": 120,
+        "endFrame": 210,
+        "durationFrames": 90,
+        "durationSeconds": 3
+      },
+      "visual": {
+        "colors": {
+          "background": "video",
+          "overlayLines": "#FFFFFF",
+          "cardBackground": "#FFFFFF",
+          "cardText": "#1A1A1A"
+        }
+      },
+      "elements": [
+        {
+          "type": "video-background",
+          "description": "Woman against stone wall, then chalkboard with math equations"
+        },
+        {
+          "type": "geometric-overlay",
+          "description": "White rectangular line patterns in corners"
+        },
+        {
+          "type": "tweet-card",
+          "username": "ohnohanajo",
+          "verified": true,
+          "text": "Math just made a little more sense. Thanks Claude."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Testimonial - Hardware Project",
+      "description": "Tweet from @abe's projects about retro mini PC",
+      "timing": {
+        "startFrame": 210,
+        "endFrame": 300,
+        "durationFrames": 90,
+        "durationSeconds": 3
+      },
+      "elements": [
+        {
+          "type": "video-background",
+          "description": "Hands working on circuit board/electronics"
+        },
+        {
+          "type": "tweet-card",
+          "username": "abe's projects",
+          "verified": true,
+          "text": "I built the ultimate retro mini PC (it uses game cartridges!)"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Testimonial - MRI Scan",
+      "description": "Tweet from @tobi about MRI with brain scan imagery",
+      "timing": {
+        "startFrame": 300,
+        "endFrame": 360,
+        "durationFrames": 60,
+        "durationSeconds": 2
+      },
+      "visual": {
+        "colors": {
+          "background": "#1A1A1A"
+        }
+      },
+      "elements": [
+        {
+          "type": "image-background",
+          "description": "MRI brain scan, dark/moody medical imagery"
+        },
+        {
+          "type": "tweet-card",
+          "username": "tobi lutke",
+          "handle": "@tobi",
+          "verified": true,
+          "text": "My annual MRI scan gives me a USB stick."
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Testimonial - Filmmaker",
+      "description": "Split screen with ocean waves and sky, tweet about filming with Claude",
+      "timing": {
+        "startFrame": 360,
+        "endFrame": 450,
+        "durationFrames": 90,
+        "durationSeconds": 3
+      },
+      "elements": [
+        {
+          "type": "split-video",
+          "left": "Ocean waves (black and white)",
+          "right": "Sky/clouds footage"
+        },
+        {
+          "type": "tweet-card",
+          "username": "filmwcolleen",
+          "verified": true,
+          "text": "Filmed this with the help of one of my favorite tools: Claude."
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Testimonial - Vibe Knitter",
+      "description": "Woman in green sweater laughing, tweet about knitting with Claude",
+      "timing": {
+        "startFrame": 450,
+        "endFrame": 510,
+        "durationFrames": 60,
+        "durationSeconds": 2
+      },
+      "elements": [
+        {
+          "type": "image-background",
+          "description": "Woman laughing, wearing green sweater with sheep pattern"
+        },
+        {
+          "type": "tweet-card",
+          "username": "(Abi)gail",
+          "handle": "@proofofgail",
+          "verified": true,
+          "text": "Most people: I use Claude to vibe code.\nMe: I use Claude to vibe knit."
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Testimonial - School Adoption",
+      "description": "Colorful file folders on graph paper, school adoption tweet",
+      "timing": {
+        "startFrame": 510,
+        "endFrame": 570,
+        "durationFrames": 60,
+        "durationSeconds": 2
+      },
+      "elements": [
+        {
+          "type": "image-background",
+          "description": "Colorful file folders (green, red, cream, tan, blue) on graph paper"
+        },
+        {
+          "type": "tweet-card",
+          "username": "inspo_by_jess",
+          "text": "My whole school adopted Claude."
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Testimonial - Industrial/Cowork",
+      "description": "Industrial plumbing setup with Cowork tweet",
+      "timing": {
+        "startFrame": 570,
+        "endFrame": 600,
+        "durationFrames": 30,
+        "durationSeconds": 1
+      },
+      "elements": [
+        {
+          "type": "image-background",
+          "description": "Industrial plumbing, thermostat, copper pipes"
+        },
+        {
+          "type": "tweet-card",
+          "username": "Ben Pouladian",
+          "handle": "@benitoz",
+          "verified": true,
+          "text": "Just used Claude Cowork to handle my"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "Mars Rover Feature",
+      "description": "Mars rover imagery with feature callout text",
+      "timing": {
+        "startFrame": 600,
+        "endFrame": 690,
+        "durationFrames": 90,
+        "durationSeconds": 3
+      },
+      "visual": {
+        "colors": {
+          "background": "#C4754A",
+          "textCard": "#FFFFFF",
+          "text": "#1A1A1A"
+        }
+      },
+      "elements": [
+        {
+          "type": "image-background",
+          "description": "Mars rover on Martian landscape, orange/rust colors"
+        },
+        {
+          "type": "text-card",
+          "text": "The first AI-planned drive on Mars was powered by Claude."
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "Testimonial Montage",
+      "description": "Multi-panel collage of various testimonials and clips",
+      "timing": {
+        "startFrame": 690,
+        "endFrame": 750,
+        "durationFrames": 60,
+        "durationSeconds": 2
+      },
+      "elements": [
+        {
+          "type": "grid-collage",
+          "panels": 6,
+          "description": "Mountain landscape, code terminal, person lying in grass, various tweet cards"
+        }
+      ],
+      "textContent": [
+        "It felt like having a senior engineer walk through my entire codebase with me.",
+        "It is absolutely my go-to tool.",
+        "They call it getting 'Claude-pilled.'",
+        "Thank you Claude for trusting the vision.",
+        "My go-to dev partner."
+      ]
+    },
+    {
+      "id": 11,
+      "name": "Opus 4.6 Introduction",
+      "description": "Clean white background with 'Introducing Opus 4.6' text animation",
+      "timing": {
+        "startFrame": 750,
+        "endFrame": 900,
+        "durationFrames": 150,
+        "durationSeconds": 5
+      },
+      "visual": {
+        "colors": {
+          "background": "#FFFFFF",
+          "text": "#1A1A1A",
+          "introducing": "#1A1A1A"
+        },
+        "typography": {
+          "introducing": {
+            "fontFamily": "Georgia, serif",
+            "fontSize": 18,
+            "fontStyle": "italic",
+            "fontWeight": 400
+          },
+          "productName": {
+            "fontFamily": "Georgia, serif",
+            "fontSize": 64,
+            "fontWeight": 400
+          }
+        }
+      },
+      "animations": [
+        {
+          "type": "fade-in",
+          "element": "introducing",
+          "startFrame": 0,
+          "endFrame": 15
+        },
+        {
+          "type": "fade-in",
+          "element": "productName",
+          "startFrame": 10,
+          "endFrame": 30
+        },
+        {
+          "type": "scale-up",
+          "element": "screenshotCollage",
+          "description": "Use case screenshots animate in around center text"
+        }
+      ],
+      "textContent": [
+        "Introducing",
+        "Opus 4.6"
+      ]
+    },
+    {
+      "id": 12,
+      "name": "Opus 4.6 Testimonial Carousel",
+      "description": "Product name stays left, rotating testimonial quotes on right",
+      "timing": {
+        "startFrame": 900,
+        "endFrame": 1110,
+        "durationFrames": 210,
+        "durationSeconds": 7
+      },
+      "visual": {
+        "colors": {
+          "background": "#FFFFFF",
+          "productName": "#1A1A1A",
+          "testimonial": "#1A1A1A"
+        },
+        "layout": {
+          "productName": { "x": "15%", "y": "50%" },
+          "testimonial": { "x": "55%", "y": "50%" }
+        }
+      },
+      "animations": [
+        {
+          "type": "text-swap",
+          "element": "testimonial",
+          "interval": 30,
+          "easing": "easeInOut"
+        }
+      ],
+      "textContent": [
+        { "text": "just gets it.", "frame": 900 },
+        { "text": "is a huge leap.", "frame": 930 },
+        { "text": "flipped the script.", "frame": 960 },
+        { "text": "is incredible, no notes.", "frame": 990 },
+        { "text": "outperforms other models.", "frame": 1020 },
+        { "text": "is redefining what we thought was possible.", "frame": 1050 }
+      ]
+    },
+    {
+      "id": 13,
+      "name": "End Card",
+      "description": "Final branding with Opus 4.6 by ANTHROPIC",
+      "timing": {
+        "startFrame": 1110,
+        "endFrame": 1170,
+        "durationFrames": 60,
+        "durationSeconds": 2
+      },
+      "visual": {
+        "colors": {
+          "background": "#FFFFFF",
+          "text": "#1A1A1A"
+        },
+        "typography": {
+          "productName": {
+            "fontFamily": "Georgia, serif",
+            "fontSize": 48,
+            "fontWeight": 400
+          },
+          "brand": {
+            "fontFamily": "system-ui, sans-serif",
+            "fontSize": 48,
+            "fontWeight": 600,
+            "letterSpacing": "0.05em"
+          }
+        }
+      },
+      "textContent": [
+        "Opus 4.6 by ANTHROPIC"
+      ]
+    }
+  ],
+  "globalDesign": {
+    "tweetCard": {
+      "background": "#FFFFFF",
+      "borderRadius": 12,
+      "shadow": "0 2px 8px rgba(0,0,0,0.1)",
+      "padding": 16,
+      "profilePicSize": 40,
+      "usernameFont": {
+        "fontFamily": "system-ui, sans-serif",
+        "fontSize": 15,
+        "fontWeight": 700
+      },
+      "handleFont": {
+        "fontFamily": "system-ui, sans-serif",
+        "fontSize": 14,
+        "fontWeight": 400,
+        "color": "#666666"
+      },
+      "tweetFont": {
+        "fontFamily": "system-ui, sans-serif",
+        "fontSize": 18,
+        "fontWeight": 400,
+        "lineHeight": 1.4
+      },
+      "verifiedBadge": {
+        "color": "#1DA1F2",
+        "size": 16
+      }
+    },
+    "geometricOverlay": {
+      "color": "#FFFFFF",
+      "strokeWidth": 2,
+      "opacity": 0.9,
+      "pattern": "corner-rectangles"
+    }
+  },
+  "assetsRequired": {
+    "videos": [
+      { "id": "v1", "description": "Woman against stone wall", "scene": 2 },
+      { "id": "v2", "description": "Chalkboard with math equations", "scene": 2 },
+      { "id": "v3", "description": "Hands on circuit board/electronics", "scene": 3 },
+      { "id": "v4", "description": "Ocean waves (B&W)", "scene": 5 },
+      { "id": "v5", "description": "Sky/clouds footage", "scene": 5 }
+    ],
+    "images": [
+      { "id": "i1", "description": "News article about Claude Code", "scene": 1 },
+      { "id": "i2", "description": "MRI brain scan", "scene": 4 },
+      { "id": "i3", "description": "Woman in green sweater laughing", "scene": 6 },
+      { "id": "i4", "description": "Colorful file folders on graph paper", "scene": 7 },
+      { "id": "i5", "description": "Industrial plumbing/thermostat", "scene": 8 },
+      { "id": "i6", "description": "Mars rover on Martian landscape", "scene": 9 },
+      { "id": "i7", "description": "Mountain/town landscape", "scene": 10 },
+      { "id": "i8", "description": "Various use case screenshots for Opus intro", "scene": 11 }
+    ],
+    "profilePics": [
+      { "username": "ohnohanajo", "scene": 2 },
+      { "username": "abe's projects", "scene": 3 },
+      { "username": "tobi lutke", "scene": 4 },
+      { "username": "filmwcolleen", "scene": 5 },
+      { "username": "(Abi)gail", "scene": 6 },
+      { "username": "inspo_by_jess", "scene": 7 },
+      { "username": "Ben Pouladian", "scene": 8 },
+      { "username": "Ryan Wigley", "scene": 10 }
+    ],
+    "fonts": [
+      { "name": "Georgia", "weights": [400], "styles": ["normal", "italic"] },
+      { "name": "System UI / SF Pro", "weights": [400, 500, 600, 700] }
+    ]
+  }
+}
