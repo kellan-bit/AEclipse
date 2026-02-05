@@ -56,3 +56,6 @@ const theme = themes.dark;
 3. **Animations should be elegant** - Deliberate, smooth, never rushed
 4. **Dark theme is primary** - Use for main marketing content
 5. **Maintain clear space** around the logo (minimum 24px)
+6. **Always add Zod schemas** to new compositions for Props Panel editing (see `/skills/remotion/rules/parameters.md`)
+7. **Inline defaultProps** - Never use variable references for defaultProps
+8. **Use themeName strings** - Pass `'dark' | 'light' | 'contrast' | 'warm'` and look up theme internally
