@@ -86,7 +86,18 @@ export const RemotionRoot: React.FC = () => {
           width={1920}
           height={1080}
           schema={minimaTitleSchema}
-          defaultProps={defaultTitleProps}
+          defaultProps={{
+            title: 'The Rosa Blanca',
+            subtitle: 'A Minima Residence',
+            accentText: 'Where design meets discipline',
+            theme: 'dark',
+            logoFontSize: 120,
+            logoDuration: 90,
+            titleCardDuration: 75,
+            transitionDuration: 30,
+            transitionType: 'fade',
+            showTagline: true,
+          }}
         />
 
         {/* Full Title Sequence - 9:16 Vertical (TikTok/Reels) */}
