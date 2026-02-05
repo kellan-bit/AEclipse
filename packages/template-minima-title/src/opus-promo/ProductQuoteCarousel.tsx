@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  AbsoluteFill,
-  interpolate,
-  useCurrentFrame,
-  Easing,
-} from 'remotion';
+import { AbsoluteFill, useCurrentFrame } from 'remotion';
 
 interface Quote {
   text: string;
@@ -39,22 +34,8 @@ export const ProductQuoteCarousel: React.FC<ProductQuoteCarouselProps> = ({
   const quoteStartFrame = quoteIndex * framesPerQuote;
   const frameInQuote = frame - quoteStartFrame;
 
-  // Smooth fade animation - quick fade in, hold, quick fade out
-  const fadeInDuration = 12;
-  const fadeOutDuration = 12;
-  const holdStart = fadeInDuration;
-  const holdEnd = framesPerQuote - fadeOutDuration;
-
-  const quoteOpacity = interpolate(
-    frameInQuote,
-    [0, fadeInDuration, holdEnd, framesPerQuote],
-    [0, 1, 1, 0],
-    {
-      easing: Easing.inOut(Easing.ease),
-      extrapolateLeft: 'clamp',
-      extrapolateRight: 'clamp',
-    }
-  );
+  // INSTANT CUT - no fade animation (matches original video)
+  // Quote changes happen as hard cuts between frames
 
   const currentQuote = quotes[quoteIndex];
 
@@ -82,7 +63,7 @@ export const ProductQuoteCarousel: React.FC<ProductQuoteCarouselProps> = ({
         {productName}
       </div>
 
-      {/* Quote box - fixed left edge, only fades */}
+      {/* Quote box - fixed left edge, instant cut (no fade) */}
       <div
         style={{
           position: 'absolute',
@@ -90,7 +71,6 @@ export const ProductQuoteCarousel: React.FC<ProductQuoteCarouselProps> = ({
           top: '50%',
           transform: 'translateY(-50%)',
           marginLeft: 16,
-          opacity: quoteOpacity,
         }}
       >
         <div

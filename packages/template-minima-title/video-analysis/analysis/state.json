@@ -6,21 +6,77 @@
     "fps": 30,
     "duration": 31.5
   },
-  "currentPhase": "awaiting_frames",
+  "currentPhase": "phase1_complete",
+  "lastAnalyzedFrame": 946,
   "progress": {
-    "phase1_segments": "pending",
-    "phase2_transitions": "pending",
-    "phase3_deep_analysis": "pending",
-    "phase4_synthesis": "pending"
+    "phase1_segments": "complete",
+    "phase2_transitions": "complete",
+    "phase3_deep_analysis": "complete",
+    "phase4_synthesis": "in_progress"
   },
-  "segments": [],
-  "priorityOrder": [
-    "quote_carousel",
-    "opus_intro",
-    "end_card",
-    "testimonials",
-    "news_headlines"
+  "segments": [
+    {
+      "id": 1,
+      "name": "news_montage",
+      "startFrame": 1,
+      "endFrame": 99,
+      "transitionType": "hard_cuts",
+      "holdDuration": "5-15 frames per article"
+    },
+    {
+      "id": 2,
+      "name": "testimonials",
+      "startFrame": 100,
+      "endFrame": 599,
+      "animations": {
+        "tweet_appear": "fade_in over ~3 frames",
+        "text_typing": "word_by_word reveal",
+        "scene_transition": "rectangular_expand from center ~10 frames",
+        "geometric_overlay": "continuous motion during scene"
+      }
+    },
+    {
+      "id": 3,
+      "name": "opus_intro",
+      "startFrame": 600,
+      "endFrame": 719,
+      "animations": {
+        "600": "Opus 4.5 text appears",
+        "620": "Introducing text fades in above",
+        "640": "Version changes to 4.6",
+        "680-700": "Screenshots animate in from edges"
+      }
+    },
+    {
+      "id": 4,
+      "name": "quote_carousel",
+      "startFrame": 720,
+      "endFrame": 900,
+      "transitionType": "INSTANT_CUT",
+      "quotes": [
+        { "text": "just gets it.", "startFrame": 720, "endFrame": 747, "duration": 27 },
+        { "text": "is a huge leap.", "startFrame": 748, "endFrame": 765, "duration": 18 },
+        { "text": "flipped the script.", "startFrame": 766, "endFrame": 783, "duration": 18 },
+        { "text": "is incredible, no notes.", "startFrame": 784, "duration": "~18" },
+        { "text": "outperforms other models.", "duration": "~18" },
+        { "text": "is redefining what we thought was possible.", "duration": "~18" }
+      ],
+      "CRITICAL_FINDING": "Quote transitions are HARD CUTS with NO ANIMATION - instant text swap"
+    },
+    {
+      "id": 5,
+      "name": "end_card",
+      "startFrame": 901,
+      "endFrame": 946,
+      "content": "Opus 4.6 by ANTHROPIC"
+    }
   ],
-  "lastUpdated": null,
-  "resumeInstructions": "Waiting for user to push frames/all/ folder. Then start Phase 1: Segment Identification."
+  "keyFindings": [
+    "News section uses rapid hard cuts (5-15 frames per article)",
+    "Testimonial tweets have word-by-word text reveal animation",
+    "Scene transitions use rectangular expand from center (~10 frames)",
+    "Quote carousel uses INSTANT CUTS - no fade animation",
+    "Geometric line overlays animate continuously during testimonial scenes"
+  ],
+  "lastUpdated": "2024-02-05T22:00:00Z"
 }
