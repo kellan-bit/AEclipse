@@ -13,12 +13,17 @@ This document contains structured prompts for Claude to analyze video frames and
    ├── Text content extraction
    └── Layout mapping
 
-3. MOTION ANALYSIS (frame pairs)
+3. ASSET IDENTIFICATION (frames with photos/videos)
+   ├── Identify embedded images
+   ├── Describe what originals are needed
+   └── Note animations applied to assets
+
+4. MOTION ANALYSIS (frame pairs)
    ├── Animation detection
    ├── Timing estimation
    └── Easing curve identification
 
-4. SYNTHESIS
+5. SYNTHESIS
    └── Generate Remotion components
 ```
 
@@ -251,7 +256,91 @@ import { TransitionSeries, linearTiming, fade } from '@remotion/transitions';
 
 ---
 
-## Prompt 5: Color Extraction
+## Prompt 5: Asset Identification
+
+Use with: Any frame containing photos, videos, logos, or graphics
+
+```
+This frame contains embedded images/media. Identify all assets that would need to be provided separately to recreate this video.
+
+For EACH asset visible in this frame:
+
+## ASSET [N]
+
+### 1. IDENTIFICATION
+- Type: [ ] Photo [ ] Logo [ ] Video clip [ ] Graphic/illustration [ ] Texture
+- Description: [Detailed description of what this asset shows]
+- Subject matter: [Person, building, product, landscape, etc.]
+
+### 2. VISUAL PROPERTIES
+- Estimated aspect ratio: [16:9, 4:3, 1:1, etc.]
+- Estimated resolution: [HD, 4K, or WxH]
+- Has transparency: [yes/no]
+- Color treatment: [natural, warm, cool, B&W, filtered]
+- Style: [professional photo, stock image, candid, illustration]
+
+### 3. POSITION IN FRAME
+- Location: [center, top-left, full-bleed, etc.]
+- Size: [% of frame width/height]
+- Layering: [foreground, background, overlay]
+
+### 4. ANIMATION APPLIED
+If comparing to adjacent frames, note what animations are applied TO this asset:
+
+```json
+{
+  "scale": {
+    "active": true/false,
+    "type": "zoom-in|zoom-out|ken-burns",
+    "startScale": 1.0,
+    "endScale": 1.1
+  },
+  "position": {
+    "active": true/false,
+    "type": "pan-left|pan-right|pan-up|pan-down",
+    "startPos": { "x": "50%", "y": "50%" },
+    "endPos": { "x": "48%", "y": "50%" }
+  },
+  "opacity": {
+    "fadeIn": true/false,
+    "fadeOut": true/false,
+    "duration": 15
+  },
+  "mask": {
+    "active": true/false,
+    "type": "reveal-left|reveal-right|circle-expand|etc",
+    "description": ""
+  }
+}
+```
+
+### 5. SOURCE REQUIREMENTS
+- Suggested filename: [descriptive-name.ext]
+- Required format: [jpg for photos, png for transparency, mp4 for video]
+- Minimum resolution: [WxH needed for quality at this size]
+- Notes: [Any special requirements]
+
+### 6. FALLBACK EXTRACTION
+If original unavailable, extraction command:
+```bash
+ffmpeg -ss [timestamp] -i input/source-video.mp4 -vframes 1 public/assets/[filename].png
+```
+
+---
+
+## ASSET SUMMARY
+
+| # | Type | Description | Status |
+|---|------|-------------|--------|
+| 1 | photo | [brief] | needed |
+| 2 | logo | [brief] | needed |
+
+Total assets needed: [N]
+```
+
+---
+
+## Prompt 6: Color Extraction
 
 Use with: Any representative frame
 
@@ -299,7 +388,7 @@ export const extractedTheme = {
 
 ---
 
-## Prompt 6: Typography Extraction
+## Prompt 7: Typography Extraction
 
 Use with: Frame with clear text
 
@@ -355,7 +444,7 @@ const fontFamily = loadFont({
 
 ---
 
-## Prompt 7: Full Template Synthesis
+## Prompt 8: Full Template Synthesis
 
 Use with: Complete analysis data from previous prompts
 

@@ -168,7 +168,139 @@ Use OCR to extract all text:
 
 **Output:** `analysis/text.json`
 
-### Stage 6: Audio Analysis (if applicable)
+### Stage 6: Asset Identification & Extraction
+
+**Critical**: Videos often contain photos, graphics, logos, and video clips that animate. I can identify these but cannot extract them - you must provide source files.
+
+#### 6.1 Asset Detection (Claude identifies)
+
+When analyzing frames, I will flag:
+- **Photos**: Property images, headshots, product shots
+- **Graphics**: Icons, illustrations, shapes
+- **Logos**: Brand marks, watermarks
+- **Video clips**: Footage playing within the composition
+- **Textures**: Backgrounds, overlays, grain
+
+#### 6.2 Asset Manifest
+
+**Output:** `analysis/assets_required.json`
+```json
+{
+  "assets": [
+    {
+      "id": "asset_001",
+      "type": "photo",
+      "description": "Exterior shot of modern white house, wide angle",
+      "appearsInScenes": [2, 3],
+      "firstAppearance": {
+        "frame": 120,
+        "timestamp": "00:04:00"
+      },
+      "animationApplied": ["scale", "position"],
+      "aspectRatio": "16:9",
+      "suggestedFilename": "house-exterior.jpg",
+      "status": "needed",
+      "providedPath": null
+    },
+    {
+      "id": "asset_002",
+      "type": "logo",
+      "description": "Company logo, white on transparent",
+      "appearsInScenes": [1, 5],
+      "suggestedFilename": "logo-white.png",
+      "status": "needed"
+    }
+  ],
+  "assetSummary": {
+    "photos": 5,
+    "logos": 1,
+    "videoClips": 2,
+    "graphics": 3,
+    "total": 11
+  }
+}
+```
+
+#### 6.3 Asset Resolution Workflow
+
+```
+┌─────────────────────────────────────────────────┐
+│  Claude identifies asset in frame               │
+│  "Photo of modern house, appears at 4s"         │
+└──────────────────┬──────────────────────────────┘
+                   ↓
+┌─────────────────────────────────────────────────┐
+│  Add to assets_required.json                    │
+│  status: "needed"                               │
+└──────────────────┬──────────────────────────────┘
+                   ↓
+┌─────────────────────────────────────────────────┐
+│  USER provides original asset                   │
+│  Drag into Remotion Studio or public/assets/   │
+└──────────────────┬──────────────────────────────┘
+                   ↓
+┌─────────────────────────────────────────────────┐
+│  Update manifest: providedPath, status: "ready" │
+└──────────────────┬──────────────────────────────┘
+                   ↓
+┌─────────────────────────────────────────────────┐
+│  Claude references asset in template            │
+│  staticFile('assets/house-exterior.jpg')        │
+└─────────────────────────────────────────────────┘
+```
+
+#### 6.4 Frame Extraction for Similar Assets
+
+If you don't have the original asset, ffmpeg can extract the cleanest frame:
+
+```bash
+# Extract specific frame as asset (not ideal but works)
+ffmpeg -i input/source-video.mp4 -vf "select=eq(n\,120)" -vframes 1 assets/extracted_frame_120.png
+
+# Extract at specific timestamp
+ffmpeg -ss 00:00:04 -i input/source-video.mp4 -vframes 1 assets/house_at_4s.png
+```
+
+**Note**: Extracted frames may have animation applied (scale, position, blur). Original assets are always better.
+
+#### 6.5 Asset Analysis Prompt
+
+When analyzing frames with embedded images:
+```
+I see this frame contains a photo/image. Please describe:
+
+1. ASSET TYPE
+   - [ ] Photo (real photograph)
+   - [ ] Illustration/graphic
+   - [ ] Logo/brand mark
+   - [ ] Video clip (multiple frames of motion)
+   - [ ] Texture/pattern
+
+2. DESCRIPTION
+   - Subject: [what is it showing]
+   - Style: [photography style, color treatment]
+   - Aspect ratio: [estimated]
+   - Quality: [resolution appears high/low]
+
+3. ANIMATION APPLIED TO ASSET
+   - Scale: [zooming in/out, Ken Burns effect]
+   - Position: [panning, sliding]
+   - Opacity: [fading]
+   - Mask/crop: [reveal animation, shape mask]
+   - Filter: [blur, color grade applied]
+
+4. TIMING
+   - First appears: frame [X]
+   - Animation duration: [X] frames
+   - Fully visible: frames [X] to [Y]
+
+5. SUGGESTED SOURCE
+   - Filename: [descriptive-name.jpg]
+   - Resolution needed: [minimum WxH]
+   - Format: [jpg/png/mp4]
+```
+
+### Stage 7: Audio Analysis (if applicable)
 
 - Beat detection
 - Music timing markers
@@ -218,6 +350,50 @@ Render the Remotion template and compare:
 4. **Timing accuracy** - Animation sync check
 
 **Output:** `validation/report.json`
+
+## Stage 2.5: Claude Image Analysis (CRITICAL)
+
+**Claude is multimodal** - I can directly view and analyze PNG frames using the Read tool.
+
+### How It Works
+
+1. You provide frame paths (from `frames/keyframes/` or `frames/all/`)
+2. I read the image files directly (Read tool supports PNG/JPG)
+3. I visually analyze colors, typography, layout, animations
+4. I output structured JSON analysis
+
+### Analysis Workflow
+
+```bash
+# Helper script to prepare batches
+./scripts/prepare-analysis-batch.sh
+
+# Or manually provide paths:
+# "Claude, read and analyze these frames:"
+# /path/to/frames/keyframes/keyframe_0001.png
+# /path/to/frames/keyframes/keyframe_0002.png
+# ...
+```
+
+### What I Extract From Each Frame
+
+| Visual Element | What I Identify |
+|----------------|-----------------|
+| **Colors** | Exact hex values for background, text, accents |
+| **Typography** | Font family (or closest match), size, weight, spacing |
+| **Layout** | Element positions as percentages, alignment, margins |
+| **Text** | All visible text content, verbatim |
+| **Effects** | Shadows, gradients, overlays, blur |
+| **Animation State** | If comparing frames: what's moving, direction, progress |
+
+### Recommended Batch Sizes
+
+| Analysis Type | Frames to Send | Purpose |
+|---------------|----------------|---------|
+| Overview | All keyframes (40 for 40s video) | Scene structure |
+| Scene Deep Dive | 3-5 frames from one scene | Detailed design |
+| Motion Analysis | 10-15 consecutive frames | Animation timing |
+| Transition | 20 frames around cut point | Transition type/duration |
 
 ## Claude Analysis Protocol
 
@@ -322,18 +498,48 @@ cp ~/my-video.mp4 video-analysis/input/source-video.mp4
 # 2. Extract all frames
 ./scripts/extract-frames.sh
 
-# 3. Run Claude analysis (interactive)
-# Claude reads frames and generates analysis JSONs
+# 3. Prepare frame batches for Claude
+./scripts/prepare-analysis-batch.sh
 
-# 4. Synthesize template
-# Claude generates Remotion components from analysis
+# 4. Claude image analysis (INTERACTIVE)
+#    Tell Claude: "Read and analyze these frames: [paste paths]"
+#    Claude views the PNGs and extracts:
+#      - Scene structure
+#      - Colors (hex values)
+#      - Typography (fonts, sizes)
+#      - Layouts (positions, alignment)
+#      - Animations (by comparing consecutive frames)
+#    Save output to analysis/scenes.json
 
-# 5. Render and validate
+# 5. Synthesize template
+#    Claude generates Remotion components from analysis JSON
+#    Output: src/Root.tsx, src/scenes/*.tsx, src/styles/theme.ts
+
+# 6. Render
 bun run build
 npx remotion render ReplicatedVideo output/rendered/output.mp4
 
-# 6. Compare
+# 7. Compare and validate
 ./scripts/compare-videos.sh
+```
+
+### Example Claude Analysis Request
+
+```
+Read and analyze these keyframes to identify the video structure:
+
+/home/user/AEclipse/packages/template-minima-title/video-analysis/frames/keyframes/keyframe_0001.png
+/home/user/AEclipse/packages/template-minima-title/video-analysis/frames/keyframes/keyframe_0002.png
+/home/user/AEclipse/packages/template-minima-title/video-analysis/frames/keyframes/keyframe_0003.png
+...
+
+Extract:
+1. How many distinct scenes are there?
+2. What are the dominant colors (hex)?
+3. What typography is used?
+4. Where do transitions occur?
+
+Output as JSON matching analysis/scenes_template.json format.
 ```
 
 ## Success Metrics
