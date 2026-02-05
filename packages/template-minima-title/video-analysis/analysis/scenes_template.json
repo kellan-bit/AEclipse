@@ -1,0 +1,132 @@
+{
+  "$schema": "Scene analysis template - fill in during Claude analysis",
+  "videoInfo": {
+    "source": "source-video.mp4",
+    "duration": 40,
+    "fps": 30,
+    "totalFrames": 1200,
+    "resolution": "1920x1080"
+  },
+  "scenes": [
+    {
+      "id": 1,
+      "name": "Scene Name",
+      "description": "What happens in this scene",
+      "timing": {
+        "startFrame": 0,
+        "endFrame": 89,
+        "startTime": "00:00:00.000",
+        "endTime": "00:00:02.967",
+        "durationFrames": 90,
+        "durationSeconds": 3.0
+      },
+      "transition": {
+        "in": {
+          "type": "cut",
+          "durationFrames": 0
+        },
+        "out": {
+          "type": "fade",
+          "durationFrames": 15
+        }
+      },
+      "visual": {
+        "colors": {
+          "background": "#000000",
+          "primaryText": "#ffffff",
+          "secondaryText": "#888888",
+          "accent": "#ff0000"
+        },
+        "typography": {
+          "heading": {
+            "fontFamily": "Helvetica Neue",
+            "fontSize": 72,
+            "fontWeight": 700,
+            "letterSpacing": "0.02em",
+            "textTransform": "uppercase"
+          },
+          "subheading": {
+            "fontFamily": "Helvetica Neue",
+            "fontSize": 24,
+            "fontWeight": 400,
+            "letterSpacing": "0.1em"
+          }
+        },
+        "layout": {
+          "contentArea": {
+            "x": "50%",
+            "y": "50%",
+            "width": "80%",
+            "alignment": "center"
+          },
+          "elements": [
+            {
+              "id": "title",
+              "type": "text",
+              "content": "Title Text",
+              "position": { "x": "50%", "y": "45%" },
+              "style": "heading"
+            },
+            {
+              "id": "subtitle",
+              "type": "text",
+              "content": "Subtitle Text",
+              "position": { "x": "50%", "y": "55%" },
+              "style": "subheading"
+            }
+          ]
+        }
+      },
+      "animations": [
+        {
+          "elementId": "title",
+          "property": "opacity",
+          "keyframes": [
+            { "frame": 0, "value": 0 },
+            { "frame": 20, "value": 1 }
+          ],
+          "easing": "easeOut"
+        },
+        {
+          "elementId": "title",
+          "property": "translateY",
+          "keyframes": [
+            { "frame": 0, "value": 30 },
+            { "frame": 20, "value": 0 }
+          ],
+          "easing": "easeOut"
+        }
+      ],
+      "assets": {
+        "required": [
+          {
+            "type": "image",
+            "name": "logo",
+            "description": "Company logo",
+            "path": "public/assets/logo.png"
+          }
+        ]
+      }
+    }
+  ],
+  "globalAssets": [
+    {
+      "type": "font",
+      "name": "Primary Font",
+      "family": "Helvetica Neue",
+      "weights": [400, 700],
+      "source": "system"
+    }
+  ],
+  "remotionConfig": {
+    "compositions": [
+      {
+        "id": "MainVideo",
+        "width": 1920,
+        "height": 1080,
+        "fps": 30,
+        "durationInFrames": 1200
+      }
+    ]
+  }
+}

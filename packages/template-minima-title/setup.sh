@@ -13,7 +13,7 @@ touch public/.gitkeep
 touch public/assets/.gitkeep
 
 # Create video-analysis structure (for reverse engineering workflow)
-mkdir -p video-analysis/{input,frames/keyframes,frames/transitions,analysis,synthesis,output,validation/{rendered,comparison,diff}}
+mkdir -p video-analysis/{input,frames/{all,keyframes,transitions,scenes,timestamped,analysis},analysis/scenes,synthesis,output,validation/{rendered,comparison,diff,frames_original,frames_rendered},scripts}
 
 # Initialize manifest if it doesn't exist
 if [ ! -f video-analysis/analysis/manifest.json ]; then
@@ -52,4 +52,13 @@ echo ""
 echo "Project ready! You can now:"
 echo "  1. Drag assets into Remotion Studio's Assets panel"
 echo "  2. Drop reference videos in video-analysis/input/ for analysis"
+echo ""
+echo "Video Reverse-Engineering Workflow:"
+echo "  1. Place video in video-analysis/input/"
+echo "  2. Run: ./video-analysis/scripts/extract-frames.sh"
+echo "  3. Analyze with Claude using CLAUDE_ANALYSIS_PROMPTS.md"
+echo "  4. Generate template and render"
+echo "  5. Compare: ./video-analysis/scripts/compare-videos.sh"
+echo ""
+echo "See video-analysis/ANALYSIS_PIPELINE.md for full documentation"
 echo ""
