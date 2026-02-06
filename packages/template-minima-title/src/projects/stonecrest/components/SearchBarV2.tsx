@@ -78,10 +78,9 @@ export const SearchBarV2: React.FC<SearchBarProps> = ({
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  if (!visible) return null;
-
   // ============================================
   // PHASE DETECTION (Clean boolean flags)
+  // NOTE: All hooks MUST be called before any early return (Rules of Hooks)
   // ============================================
 
   const solidifyDuration = photosFullyMergedFrame - emergenceStartFrame;
@@ -137,6 +136,16 @@ export const SearchBarV2: React.FC<SearchBarProps> = ({
   );
 
   // ============================================
+  // UI CONTENT OPACITY
+  // Fades out during expansion (content dissolves into website)
+  // ============================================
+
+  const expandProgress = usePhaseProgress(expandStartFrame, 40, 'easeIn');
+
+  // Early return AFTER all hooks (Rules of Hooks: hooks must always be called)
+  if (!visible) return null;
+
+  // ============================================
   // COMPUTE FINAL VALUES
   // Select from appropriate stage
   // ============================================
@@ -172,12 +181,7 @@ export const SearchBarV2: React.FC<SearchBarProps> = ({
     barOpacity = OPACITY.full;
   }
 
-  // ============================================
-  // UI CONTENT OPACITY
-  // Fades out during expansion (content dissolves into website)
-  // ============================================
-
-  const expandProgress = usePhaseProgress(expandStartFrame, 40, 'easeIn');
+  // Search UI opacity (expandProgress computed above, before early return)
   const searchUIOpacity = isExpanding
     ? interpolate(expandProgress, [0, 0.7], [1, 0], {
         extrapolateLeft: 'clamp',
