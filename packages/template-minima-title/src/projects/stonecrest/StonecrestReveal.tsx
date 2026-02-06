@@ -1,7 +1,15 @@
 /**
- * Stonecrest v0.18.1 - Photo Emergence Fix
+ * Stonecrest v0.18.4 - Split Folder Layers
  *
  * CHANGELOG:
+ * - v0.18.4: Split folder into body + lid for proper z-ordering
+ *   - MacFolderBack renders BEHIND photos
+ *   - MacFolderLid renders ABOVE photos
+ *   - Photos now genuinely emerge FROM the folder, not on top
+ *   - Removed clipping hack - proper layering instead
+ *
+ * - v0.18.3: Made photos larger during peek (0.5-0.85 scale)
+ *
  * - v0.18.1: Fixed photo emergence timing (CRITICAL)
  *   - Photos now appear AFTER folder lid is visually open (frame 75, not 65)
  *   - Folder opens immediately after double-click (frame 48, not 52)
@@ -46,7 +54,7 @@ import {
 } from 'remotion';
 
 import { EASE } from './motion';
-import { MacFolder } from './components/MacFolder';
+import { MacFolderBack, MacFolderLid } from './components/MacFolderLayers';
 import {
   MouseCursor,
   getMousePositionWithHesitation,
@@ -281,22 +289,21 @@ export const StonecrestReveal: React.FC = () => {
     <AbsoluteFill style={{ backgroundColor, overflow: 'hidden' }}>
       {/* v0.15: Removed dark desktop gradient - clean white background */}
 
-      {/* Mac Folder */}
+      {/* v0.18.4: Folder BACK (body) - renders BEHIND photos */}
       {folderVisible && (
-        <div style={{ opacity: folderOpacity }}>
-          <MacFolder
-            label="Stonecrest (secret)"
-            isHovered={isHovered}
-            isClicking={isClicking}
-            isSelected={isSelected}
-            openStartFrame={TIMELINE.FOLDER_OPEN_START}
-            x={folderX}
-            y={folderY}
-          />
-        </div>
+        <MacFolderBack
+          label="Stonecrest (secret)"
+          isHovered={isHovered}
+          isClicking={isClicking}
+          isSelected={isSelected}
+          openStartFrame={TIMELINE.FOLDER_OPEN_START}
+          x={folderX}
+          y={folderY}
+          opacity={folderOpacity}
+        />
       )}
 
-      {/* Photo Grid */}
+      {/* Photo Grid - renders BETWEEN folder body and lid */}
       {photosVisible && (
         <PhotoGrid
           photos={PHOTOS}
@@ -308,6 +315,20 @@ export const StonecrestReveal: React.FC = () => {
           mergeStartFrame={TIMELINE.MERGE_START}
           centerX={centerX}
           centerY={centerY}
+        />
+      )}
+
+      {/* v0.18.4: Folder LID - renders ABOVE photos for emergence effect */}
+      {folderVisible && (
+        <MacFolderLid
+          label="Stonecrest (secret)"
+          isHovered={isHovered}
+          isClicking={isClicking}
+          isSelected={isSelected}
+          openStartFrame={TIMELINE.FOLDER_OPEN_START}
+          x={folderX}
+          y={folderY}
+          opacity={folderOpacity}
         />
       )}
 
