@@ -207,10 +207,11 @@ export const StonecrestReveal: React.FC = () => {
   // v0.17: Folder opening now uses spring physics in MacFolder component
   // We pass openStartFrame and the component handles the spring animation internally
 
-  // Folder fades out after photos burst
+  // v0.18.5: Folder fades out QUICKLY once photos burst (was too slow)
+  // Fade in 20 frames instead of 60 - folder should be gone before photos settle
   const folderOpacity = interpolate(
     frame,
-    [TIMELINE.PHOTOS_BURST, TIMELINE.PHOTOS_SETTLE],
+    [TIMELINE.PHOTOS_BURST, TIMELINE.PHOTOS_BURST + 20],
     [1, 0],
     { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
   );
