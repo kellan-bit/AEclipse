@@ -4,6 +4,53 @@ All notable changes to the Stonecrest property introduction animation.
 
 ---
 
+## [v0.28] - 2026-02-06
+
+### Changed - "Apply the Achoo"
+Momentum system (v0.27 hooks) applied to all major animation components.
+The "achoo" pattern (anticipation → action → settle) now drives motion throughout.
+
+- **PhotoGrid.tsx**: v0.25 → v0.28
+  - BURST: Replaced `createStaggeredSpring('bouncy')` with `getMomentumCurve('sneeze')`
+    - Photos dip slightly INTO folder (anticipation), explode outward, overshoot, settle
+    - Stagger preserved: center photo first, corners last (3 frames per distance)
+  - FORMATION: Replaced `createSpring('responsive')` with momentum `'flick'`
+    - Snappier strip formation with slight anticipation
+  - MERGE: Replaced `createSpring('gentle')` with momentum `'whip'`
+    - Photos snap together with quick anticipation before dissolving
+  - Removed dependency on legacy `createSpring`/`springTo` — fully on momentum system
+
+- **MacFolderLayers.tsx**: v0.19.1 → v0.28
+  - LID OPENING: Replaced `createSpring('folder')` with `getMomentumCurve('throw')`
+    - Single momentum curve handles anticipation + action + settle
+    - Lid dips slightly before swinging open, overshoots past -55deg, settles
+  - ANTICIPATION: Removed manual v0.19.1 interpolate-based pulse
+    - Momentum 'tap' curve now handles this naturally (built-in anticipation)
+  - Removed dependency on `createSpring`/`springTo`
+
+- **SearchBarV2.tsx**: Swapped into StonecrestReveal as active SearchBar
+  - SOLIDIFICATION: Changed easing from `'easeOut'` to `getMomentumCurve('bounce')`
+    - Bar "catches" energy from dissolving photos — slight overshoot in opacity
+    - Creates connected feeling: photos' energy → bar's materialization
+
+- **StonecrestReveal.tsx**: Import changed from SearchBar → SearchBarV2
+
+- **Import paths**: All components now import from `../motion/index` (barrel)
+  instead of `../motion` (legacy file) to access new momentum system
+
+### Why
+Infrastructure Phase 1 (v0.26) and Momentum System (v0.27) built the tools
+but never applied them to components. This version bridges that gap:
+infrastructure → implementation. The "achoo" pattern is now the default motion
+language across the animation.
+
+### Lessons Applied
+- Lesson 19: Momentum — The "Achoo" Pattern
+- Lesson 15: Declarative Motion Over Imperative Interpolation
+- Lesson 16: Named Curves Over Magic Numbers
+
+---
+
 ## [v0.16] - 2026-02-06
 
 ### Changed

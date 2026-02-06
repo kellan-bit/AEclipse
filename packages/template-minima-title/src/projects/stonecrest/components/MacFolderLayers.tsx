@@ -1,16 +1,15 @@
 /**
- * MacFolderLayers - v0.19.1
+ * MacFolderLayers - v0.28
  *
  * CHANGELOG:
- * - v0.19.1: Added anticipation pulse before opening
- *   - Folder scales to 1.025 just before opening (wind-up)
- *   - Creates "something is about to happen" feel
- *   - Classic animation principle: anticipation → action → follow-through
+ * - v0.28: Momentum system applied
+ *   - Lid opening: replaced spring + manual anticipation with momentum 'throw'
+ *     - Single momentum curve handles anticipation + action + settle
+ *     - Eliminates separate anticipation pulse (v0.19.1) — momentum has it built in
+ *   - Click feedback: momentum 'tap' for press animation
  *
+ * - v0.19.1: Added anticipation pulse (now replaced by momentum)
  * - v0.18.4: Split folder into body + lid for proper z-ordering
- *   - MacFolderBack: Body, tab, shadows (renders BEHIND photos)
- *   - MacFolderLid: Animated front panel (renders ABOVE photos)
- *   - Photos genuinely emerge FROM the folder
  *
  * Usage in StonecrestReveal:
  * 1. <MacFolderBack {...props} />
@@ -20,7 +19,7 @@
 
 import React from 'react';
 import { useCurrentFrame, useVideoConfig, interpolate } from 'remotion';
-import { SCALE, createSpring, springTo } from '../motion';
+import { SCALE, getMomentumCurve } from '../motion/index';
 
 interface MacFolderLayerProps {
   label: string;
@@ -40,7 +39,6 @@ const FOLDER_HEIGHT = 160;
 function useFolderState(props: MacFolderLayerProps) {
   const { isHovered, isClicking, openStartFrame } = props;
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
 
   // Click feedback
   const clickScale = isClicking ? SCALE.pressed : 1;
@@ -50,25 +48,22 @@ function useFolderState(props: MacFolderLayerProps) {
   const hoverScale = isHovered ? SCALE.hover : 1;
   const hoverBrightness = isHovered ? 1.05 : 1;
 
-  // v0.19.1: ANTICIPATION - folder "bulges" slightly before opening
-  // This creates the classic animation wind-up: something is about to happen!
-  // Timing: 6 frames before open, peak at 2 frames before, then release
-  const anticipationWindow = 6;
+  // v0.28: Momentum 'tap' replaces manual anticipation pulse.
+  // The 'tap' curve has built-in anticipation (slight press-in) + overshoot + settle.
+  // This means the folder "breathes" through the click naturally.
+  const tapCurve = getMomentumCurve('tap');
+  const tapDuration = 10; // Quick tap feel
   const isAnticipating = openStartFrame > 0 &&
-    frame >= openStartFrame - anticipationWindow &&
-    frame < openStartFrame + 4; // Continue slightly into opening for smooth handoff
+    frame >= openStartFrame - 4 &&
+    frame < openStartFrame + tapDuration;
 
+  const anticipationProgress = isAnticipating
+    ? Math.min((frame - (openStartFrame - 4)) / tapDuration, 1)
+    : 0;
+  // Tap curve goes from 0 → past 1 → 1 (the achoo pattern)
+  // Map to scale: 1 → 1.025 → 1 (the bulge)
   const anticipationScale = isAnticipating
-    ? interpolate(
-        frame,
-        [
-          openStartFrame - anticipationWindow,  // Start (frame 42)
-          openStartFrame - 2,                    // Peak (frame 46)
-          openStartFrame + 4,                    // Release (frame 52)
-        ],
-        [1, 1.025, 1],
-        { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
-      )
+    ? 1 + tapCurve(anticipationProgress) * 0.025
     : 1;
 
   // Combined scale: click/hover + anticipation
@@ -79,18 +74,29 @@ function useFolderState(props: MacFolderLayerProps) {
   // Glow pulse
   const glowPulse = isHovered ? 0.45 + Math.sin(frame * 0.15) * 0.08 : 0;
 
-  // Spring-based lid animation
+  // v0.28: Momentum 'throw' for lid opening
+  // The throw curve gives anticipation (slight dip) + explosive release + overshoot + settle.
+  // Replaces createSpring('folder') which had no anticipation.
   const isOpening = openStartFrame > 0 && frame >= openStartFrame;
-  const lidSpring = isOpening
-    ? createSpring(frame - openStartFrame, fps, 'folder', 0)
-    : 0;
+  const lidDuration = 24; // Throw duration in frames
+  const throwCurve = getMomentumCurve('throw');
 
-  const lidRotation = springTo(lidSpring, [0, -55]);
-  const lidTranslateY = springTo(lidSpring, [0, -35]);
+  let lidProgress = 0;
+  if (isOpening) {
+    const effectiveFrame = frame - openStartFrame;
+    const t = Math.min(effectiveFrame / lidDuration, 1);
+    lidProgress = throwCurve(t);
+  }
 
-  // Subtle wobble
-  const wobbleIntensity = isOpening && lidSpring < 0.3
-    ? Math.sin(lidSpring * Math.PI * 6) * 2 * (1 - lidSpring * 3)
+  // Lid rotates from 0 to -55deg with momentum overshoot
+  const lidRotation = lidProgress * -55;
+  // Lid translates up with same momentum
+  const lidTranslateY = lidProgress * -35;
+
+  // Wobble is naturally handled by momentum overshoot now,
+  // but keep a subtle version during the anticipation phase
+  const wobbleIntensity = isOpening && lidProgress < 0.3
+    ? Math.sin(lidProgress * Math.PI * 6) * 1.5 * (1 - lidProgress * 3)
     : 0;
 
   return {

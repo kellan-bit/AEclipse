@@ -26,8 +26,11 @@ import {
   usePhaseProgress,
   useInPhase,
   SPRING_PRESETS,
-} from '../motion';
-import { getElevationShadow, ELEVATION } from '../motion';
+  getElevationShadow,
+  ELEVATION,
+  // v0.28: Momentum for solidification — "catching" energy from dissolving photos
+  getMomentumCurve,
+} from '../motion/index';
 
 interface SearchBarProps {
   text: string;
@@ -90,13 +93,15 @@ export const SearchBarV2: React.FC<SearchBarProps> = ({
 
   // ============================================
   // STAGE 1: SOLIDIFICATION
-  // Bar materializes at photo cluster dimensions
+  // v0.28: Bar materializes with momentum — "catches" energy from dissolving photos.
+  // Uses 'bounce' momentum curve: slight overshoot in opacity then settles.
+  // This creates the feeling that the photos' energy PUSHED the bar into existence.
   // ============================================
 
   const solidifyProgress = usePhaseProgress(
     emergenceStartFrame,
     solidifyDuration,
-    'easeOut'
+    getMomentumCurve('bounce')
   );
 
   // ============================================

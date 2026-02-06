@@ -91,7 +91,7 @@ import {
   interpolateMousePosition,
 } from './components/MouseCursor';
 import { PhotoGrid, getVisibleIndicesForDisappear } from './components/PhotoGrid';
-import { SearchBar, getTypingProgress } from './components/SearchBar';
+import { SearchBarV2 as SearchBar, getTypingProgress } from './components/SearchBarV2';
 import { WebsiteUI } from './components/WebsiteUI';
 
 // ============================================

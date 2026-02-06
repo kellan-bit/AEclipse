@@ -9,11 +9,12 @@ This file contains persistent instructions, preferences, and context that should
 ## Project Overview
 
 Building an Apple-style property introduction animation for Stonecrest using Remotion.
-- **Current version:** v0.26 (Infrastructure Phase 1 - Unified Motion Primitives)
-- **Next:** v0.27 - Infrastructure Phase 2 (Timeline Architecture)
+- **Current version:** v0.28 (Apply the Achoo — Momentum in all components)
+- **Next:** v0.29 - Timeline Architecture (Phase 2) — replace magic frame numbers
 - **Philosophy:** Fluidity = seamlessness, not effects
 - **v0.20 Philosophy:** Invisible enhancement - feel depth, don't see technique
 - **v0.26 Philosophy:** Declarative motion > imperative interpolation
+- **v0.28 Philosophy:** Momentum is the default motion language
 
 ---
 
@@ -22,8 +23,10 @@ Building an Apple-style property introduction animation for Stonecrest using Rem
 **IMPORTANT:** This project is undergoing a multi-session infrastructure improvement.
 
 ### Current Status
-- Phase 1: Unified Motion Primitives - **COMPLETE**
-- Phase 2: Timeline Architecture - PLANNED
+- Phase 1: Unified Motion Primitives (v0.26) - **COMPLETE**
+- Phase 1.5: Momentum System (v0.27) - **COMPLETE** (hooks defined)
+- Phase 1.5b: Apply Momentum (v0.28) - **COMPLETE** (hooks applied to components)
+- Phase 2: Timeline Architecture (v0.29) - **NEXT**
 - Phase 3: Animation State Machine - PLANNED
 - Phase 4: Motion Presets Library - PLANNED
 - Phase 5: Component Refactor - PLANNED
@@ -109,16 +112,21 @@ Import from: `@minima-brand/colors` and `@minima-brand/themes`
 
 ## Current Roadmap
 
-### v0.26 - INFRASTRUCTURE PHASE 1 ✅ COMPLETE
-- **Unified Motion Primitives** - New motion system foundation
-- `motion/curves.ts` - 40+ named easing curves (Apple, Material, custom)
-- `motion/core.ts` - MotionValue class, Transition types, Spring presets
-- `motion/hooks.ts` - React hooks: useSpring, useTween, usePhaseProgress
-- SearchBarV2.tsx - Proof of concept using new system
-- INFRASTRUCTURE_PLAN.md - Multi-session roadmap
+### v0.28 - APPLY THE ACHOO ✅ COMPLETE
+- **Momentum system applied to all components**
+- PhotoGrid: burst ('sneeze'), formation ('flick'), merge ('whip')
+- MacFolderLayers: lid ('throw'), click ('tap')
+- SearchBarV2: solidification ('bounce'), swapped into StonecrestReveal
+- All components import from `motion/index` barrel
+- Lesson 20: Hooks vs Curves — use the right abstraction level
 
-### v0.27 - INFRASTRUCTURE PHASE 2 (NEXT)
-- **Timeline Architecture** - Declarative, composable timeline system
+### v0.26/v0.27 - MOTION INFRASTRUCTURE ✅ COMPLETE
+- v0.26: Unified Motion Primitives (curves, core, hooks)
+- v0.27: Momentum System hooks (useMomentum, useChainedMomentum, etc.)
+- SearchBarV2.tsx - Proof of concept using new system
+
+### v0.29 - TIMELINE ARCHITECTURE (NEXT)
+- **Declarative, composable timeline system**
 - Named phases with automatic overlapping
 - Event system instead of magic frame numbers
 - Keyframe syntax for declarative animation
@@ -152,12 +160,14 @@ Import from: `@minima-brand/colors` and `@minima-brand/themes`
 
 ## Key Technical Files
 
-- `StonecrestReveal.tsx` - Main composition, timeline
-- `MacFolder.tsx` - Folder component (needs v0.16 rebuild)
-- `PhotoGrid.tsx` - Photo burst/settle
-- `SearchBar.tsx` - Search bar expansion
+- `StonecrestReveal.tsx` - Main composition, timeline (uses SearchBarV2)
+- `MacFolderLayers.tsx` - Folder body + lid (momentum 'throw'/'tap')
+- `PhotoGrid.tsx` - Photo burst/settle/merge (momentum 'sneeze'/'flick'/'whip')
+- `SearchBarV2.tsx` - Search bar with momentum solidification (ACTIVE)
+- `SearchBar.tsx` - Legacy search bar (kept for reference)
 - `WebsiteUI.tsx` - Final website reveal
-- `motion.ts` - Unified easing/timing constants
+- `motion.ts` - Legacy easing/timing constants
+- `motion/index.ts` - New barrel: curves + core + hooks (USE THIS)
 - `MouseCursor.tsx` - Cursor component
 
 ---
@@ -217,8 +227,10 @@ This project is a TRAINING GROUND for animation principles. Each fix should buil
 | v0.21 | **LEAP 2** - Photo-to-SearchBar Metamorphosis (formation, blur-merge, emergence) |
 | v0.22-v0.25 | **Phase A** - The Invisible Seam (gap elimination, opacity, dimensions) |
 | v0.26 | **INFRASTRUCTURE** - Unified Motion Primitives (curves, core, hooks) |
+| v0.27 | Momentum System - "Achoo" hooks defined |
+| v0.28 | **APPLY THE ACHOO** - Momentum applied to all components |
 
 ---
 
-**Last updated:** 2026-02-06
+**Last updated:** 2026-02-06 (v0.28)
 **Update this file INCREMENTALLY - don't wait until end of session.**

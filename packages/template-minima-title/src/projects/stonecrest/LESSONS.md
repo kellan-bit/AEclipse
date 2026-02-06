@@ -946,3 +946,42 @@ const customCurve = createMomentumCurve(
   0.5     // actionPhase: main action ends at 50%
 );
 ```
+
+---
+
+## Lesson 20: Hooks vs Curves — Use the Right Level (v0.28)
+
+**Problem:** Momentum hooks (`useMomentum`) call `useCurrentFrame()` internally, but many animation calculations happen inside helper functions (like `getPhotoState`), not at the React component level. You can't call hooks inside non-component functions.
+
+**What Happened:** PhotoGrid calculates per-photo state in a `getPhotoState(index)` function called inside `.map()`. Trying to use `useMomentum` here violates Rules of Hooks.
+
+**Right Approach: USE CURVE FUNCTIONS DIRECTLY**
+```tsx
+// DON'T do this (Rules of Hooks violation inside .map):
+photos.map((photo, index) => {
+  const scale = useMomentum(0, 1, startFrame, 24, 'sneeze'); // ❌
+});
+
+// DO this (curve function, not hook):
+const sneezeCurve = getMomentumCurve('sneeze');
+photos.map((photo, index) => {
+  const t = Math.min((frame - startFrame - delay) / duration, 1);
+  const scale = sneezeCurve(t); // ✅
+});
+```
+
+**When to Use What:**
+| Situation | Use |
+|-----------|-----|
+| Top-level component animation | Hooks (`useMomentum`, `useSpring`) |
+| Per-item calculation in `.map()` | Curve functions (`getMomentumCurve`) |
+| Helper function that takes `frame` | Curve functions |
+| One-off animation value | Hooks (convenient) |
+
+**Global Application:**
+This pattern appears everywhere in React:
+- `useState` vs passing state manually
+- `useEffect` vs lifecycle methods
+- Hooks are convenience wrappers — the underlying functions work anywhere
+
+**The Rule:** Hooks are convenience wrappers for React component scope. When you need the same math in non-component code, use the underlying functions directly.

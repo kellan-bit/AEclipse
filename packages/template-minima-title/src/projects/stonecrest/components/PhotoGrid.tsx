@@ -1,67 +1,35 @@
 /**
- * PhotoGrid Component - v0.25
+ * PhotoGrid Component - v0.28
  *
  * CHANGELOG:
+ * - v0.28: The "Achoo" - Momentum System applied
+ *   - BURST: Replaced createStaggeredSpring with getMomentumCurve('sneeze')
+ *     - Photos now dip slightly INTO folder (anticipation), then explode outward
+ *     - Overshoot grid positions briefly, settle back naturally
+ *     - The "ah-ah-ah-CHOO!" pattern makes the burst feel explosive yet controlled
+ *   - FORMATION: Replaced createSpring('responsive') with momentum('flick')
+ *     - Snappier strip formation with slight anticipation
+ *   - SETTLE: Uses useBreathe-style math (cleaned up)
+ *   - Imports from new motion/ barrel (backward compat preserved for merge)
+ *
  * - v0.23: Phase A - Opacity Orchestration
  *   - Fade range [0.5, 0.95] → [0.15, 0.65] for ~100% combined opacity with bar
- *   - Photos fade WHILE bar solidifies (no opacity competition)
  *
  * - v0.21: LEAP 2 - Photo-to-SearchBar Metamorphosis
- *   - Formation phase: middle row slides into horizontal strip (FORMATION_START)
- *   - Enhanced merge: blur peaks mid-animation, desaturation progressive
- *   - Photos start from strip position, not grid position
- *   - Blur curve: 0 → 3px (peak) → 0 as opacity fades
- *   - Desaturation: photos become grayscale as they dissolve
+ *   - Formation → blur-merge → search bar emergence
  *
  * - v0.20: DEPTH SYSTEM - Cinematic depth & weight
- *   - Elevation-aware shadows: lifted photos have softer, longer shadows
- *   - Focus blur: disappearing photos blur before fading (guides attention)
- *   - Depth layers: center photos = foreground, edges = midground
- *   - Philosophy: "Invisible enhancement" - feel depth, don't see technique
- *
- * - v0.19.2: Added subtle breathing during settle phase
- *   - Photos have micro-scale oscillation (0.995-1.005) after landing
- *   - Keeps grid feeling alive before disappear phase
- *   - Prevents "dead" feeling of static photos
- *
- * - v0.18.3: Photos DRAMATICALLY larger during peek (VISIBILITY FIX)
- *   - Scale: [0.15, 0.4] → [0.5, 0.85] - photos now 50-85% size, not tiny
- *   - Rise higher: folderLidY - 40 (well above folder)
- *   - Lower clip line so more of photo is visible
- *   - Burst starts from 0.85 scale (matching peek end)
- *   - Root cause: clipping worked, but tiny photos were invisible
- *
- * - v0.18.2: Photos CLIPPED to folder opening (CRITICAL FIX)
- *   - Added clipPath to hide portion of photos below folder lid
- *   - Photos now visually emerge THROUGH the folder opening
- *   - Only the portion above the lid line is visible during peek
- *   - Clipping removed once burst starts
- *
- * - v0.18.1: Photos emerge FROM INSIDE folder
- *   - Photos start at folderInsideY (inside folder body)
- *   - Rise upward to folderLidY during peek phase
- *   - Creates illusion of photos coming OUT of folder, not appearing on top
- *   - Critical fix for visual storytelling
- *
+ * - v0.19.2: Breathing during settle
+ * - v0.18.x: Folder emergence, clipping, layering
  * - v0.17: Spring physics for burst and merge
- *   - Burst uses SPRING.bouncy with staggered delay (center first)
- *   - Merge uses SPRING.gentle for smooth convergence
- *   - Position/scale now spring-based, opacity stays interpolate
- *   - Natural overshoot and settle on photo landing
- *
- * - v0.14: Added peek phase, coordinated motion
- *   - New peekProgress prop for frames 90-110
- *   - Photos appear at folder position during peek
- *   - Wave-based disappear (top→bottom) instead of sporadic
- *   - Removed chaotic scatter, more coordinated expansion
- *   - Using unified EASE constants
- *
- * - v0.12: Initial implementation with sporadic disappear
+ * - v0.14: Peek phase, wave-based disappear
+ * - v0.12: Initial implementation
  *
  * LESSONS APPLIED:
  * - Lesson 3: Spring Physics is Non-Negotiable
  * - Lesson 7: Coordinated movement, not chaotic
  * - Lesson 8: Smooth transitions between phases
+ * - Lesson 19: Momentum — The "Achoo" Pattern
  */
 
 import React from 'react';
@@ -73,16 +41,15 @@ import {
   interpolate,
 } from 'remotion';
 import {
-  createStaggeredSpring,
-  createSpring,
-  springTo,
+  // v0.28: Momentum curves for burst, formation, and merge
+  getMomentumCurve,
   // v0.20: Depth system imports
   ELEVATION,
   getElevationShadow,
   getFocusBlur,
   FOCUS,
   DEPTH_LAYER,
-} from '../motion';
+} from '../motion/index';
 
 interface PhotoState {
   x: number;
@@ -199,56 +166,68 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
 
     // ============================================
     // PHASE 2: BURST (expand to grid positions)
-    // v0.17: Spring physics with staggered delay
+    // v0.28: Momentum "sneeze" pattern — the "Achoo!"
+    //   ah-ah-ah = slight dip/anticipation before burst
+    //   CHOO! = explosive release, overshoot grid positions
+    //   settle = ease back to target naturally
     // ============================================
     const isBursting = burstStartFrame > 0 && frame >= burstStartFrame;
     if (isBursting) {
       // Coordinated stagger: center photo moves first, corners last
       const distFromCenter = Math.abs(index - 4);
+      const staggerDelay = distFromCenter * 3; // 3 frames per distance unit
+      const burstDuration = 30; // Full achoo cycle in frames
 
-      // Use SPRING.bouncy for energetic pop
-      const burstSpring = createStaggeredSpring(
-        frame - burstStartFrame,
-        fps,
-        'bouncy',
-        distFromCenter,  // index for stagger
-        3,               // 3 frames stagger delay
-        0                // no base delay
-      );
+      const effectiveFrame = frame - burstStartFrame - staggerDelay;
+      const sneezeCurve = getMomentumCurve('sneeze');
 
-      // Position springs from above folder lid to grid positions
-      // v0.18.3: Start from new higher position (folderLidY - 40)
-      x = springTo(burstSpring, [folderX, gridX]);
-      y = springTo(burstSpring, [folderLidY - 40, gridY]);
+      if (effectiveFrame < 0) {
+        // Not yet started (stagger delay) — hold at peek position
+        x = folderX;
+        y = folderLidY - 40;
+        scale = 0.85;
+      } else {
+        // Progress through the sneeze curve (anticipation → action → settle)
+        const t = Math.min(effectiveFrame / burstDuration, 1);
+        const progress = sneezeCurve(t);
 
-      // Scale: spring from peek size (0.85) to full size with natural overshoot
-      // v0.18.3: Updated from 0.4 to match new larger peek end scale
-      scale = springTo(burstSpring, [0.85, 1]);
+        // Position: folder → grid with momentum overshoot
+        x = folderX + (gridX - folderX) * progress;
+        y = (folderLidY - 40) + (gridY - (folderLidY - 40)) * progress;
+
+        // Scale: 0.85 → 1 with the achoo curve (overshoots past 1 briefly)
+        scale = 0.85 + (1 - 0.85) * progress;
+      }
 
       // Minimal rotation during burst (subtle, not chaotic)
       const targetRotation = (gridPos.col - 1) * 1.5; // -1.5, 0, 1.5 degrees
-      // Rotation peaks at spring ~0.7 then returns to 0
-      const rotationProgress = burstSpring < 0.7
-        ? burstSpring / 0.7
-        : 1 - (burstSpring - 0.7) / 0.5;
-      rotation = targetRotation * 1.5 * Math.max(0, Math.min(1, rotationProgress));
+      const normalizedProgress = effectiveFrame < 0
+        ? 0
+        : Math.min(effectiveFrame / burstDuration, 1);
+      // Rotation peaks mid-burst then returns to 0
+      const rotationProgress = normalizedProgress < 0.5
+        ? normalizedProgress / 0.5
+        : 1 - (normalizedProgress - 0.5) / 0.5;
+      rotation = targetRotation * 1.5 * Math.max(0, rotationProgress);
 
       opacity = 1;
-      // v0.18.2: Remove clipping once burst starts - photos are free
+      // Remove clipping once burst starts - photos are free
       clipTop = null;
 
-      // v0.20: Elevation increases during burst, settles back down
-      elevation = springTo(burstSpring, [ELEVATION.lifted, ELEVATION.hover]);
+      // Elevation: lifted during burst, settles to hover
+      elevation = effectiveFrame < 0
+        ? ELEVATION.lifted
+        : ELEVATION.lifted + (ELEVATION.hover - ELEVATION.lifted) * Math.min(effectiveFrame / burstDuration, 1);
 
       // ============================================
       // PHASE 3: SETTLE (subtle breathing to keep photos alive)
       // v0.19.2: Micro-oscillation prevents "dead" static feel
       // ============================================
-      if (burstSpring > 0.8) {
+      if (normalizedProgress >= 0.85) {
         // Breathing effect: subtle scale oscillation based on photo index
         // Each photo breathes at slightly different phase for organic feel
         const breathePhase = (frame + index * 5) * 0.08;
-        const breatheAmount = Math.sin(breathePhase) * 0.005; // Very subtle: 0.995-1.005
+        const breatheAmount = Math.sin(breathePhase) * 0.005; // 0.995-1.005
         scale = scale * (1 + breatheAmount);
 
         // Micro-float: tiny Y movement
@@ -287,7 +266,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
 
     // ============================================
     // PHASE 5A: FORMATION (middle row → horizontal strip)
-    // v0.21: Photos slide into tight strip before merge
+    // v0.28: Momentum 'flick' — snappy strip formation with slight anticipation
     // ============================================
     // Strip target positions (tighter than grid)
     const stripOffsets: Record<number, number> = { 3: -150, 4: 0, 5: 150 };
@@ -299,44 +278,51 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
       frame < mergeStartFrame;
 
     if (isForming) {
-      const formationSpring = createSpring(frame - formationStartFrame, fps, 'responsive', 0);
+      const formationDuration = 20; // Quick flick to strip position
+      const flickCurve = getMomentumCurve('flick');
+      const formationProgress = Math.min((frame - formationStartFrame) / formationDuration, 1);
+      const flickProgress = flickCurve(formationProgress);
 
-      // Slide from grid to strip position
-      x = springTo(formationSpring, [gridX, stripX]);
+      // Slide from grid to strip position with flick momentum
+      x = gridX + (stripX - gridX) * flickProgress;
       // Y stays at grid Y (horizontal movement only)
-      scale = springTo(formationSpring, [1, 0.85]);
+      scale = 1 + (0.85 - 1) * flickProgress;
       // Align rotation to 0 as photos form strip
-      rotation = springTo(formationSpring, [rotation, 0]);
+      const currentRotation = rotation;
+      rotation = currentRotation + (0 - currentRotation) * flickProgress;
     }
 
     // ============================================
     // PHASE 5B: BLUR-MERGE (photos blur + desaturate → dissolve)
-    // v0.21: Enhanced with blur curve and desaturation
+    // v0.28: Momentum 'whip' — photos snap together with slight anticipation
+    //   then dissolve. Energy transfers TO the search bar emergence.
     // ============================================
     const isMerging = MIDDLE_ROW_INDICES.includes(index) && mergeStartFrame > 0 && frame >= mergeStartFrame;
     if (isMerging) {
-      // Use SPRING.gentle for smooth convergence
-      const mergeSpring = createSpring(frame - mergeStartFrame, fps, 'gentle', 0);
+      // v0.28: Momentum 'whip' for the merge — quick snap with anticipation
+      const mergeDuration = 25; // Duration of the merge animation
+      const whipCurve = getMomentumCurve('whip');
+      const mergeProgress = Math.min((frame - mergeStartFrame) / mergeDuration, 1);
+      const whipProgress = whipCurve(mergeProgress);
 
-      // Position: compress from strip to tight center
-      // Photos start from strip position, not grid position
-      x = springTo(mergeSpring, [stripX, mergedX + (index - 4) * 30]); // Slight offset to avoid perfect overlap
-      y = springTo(mergeSpring, [gridY, mergedY]);
+      // Position: compress from strip to tight center with whip momentum
+      x = stripX + (mergedX + (index - 4) * 30 - stripX) * whipProgress;
+      y = gridY + (mergedY - gridY) * whipProgress;
       // Continue shrinking from formation scale
-      scale = springTo(mergeSpring, [0.85, 0.5]);
+      scale = 0.85 + (0.5 - 0.85) * whipProgress;
 
-      // BLUR: peaks at 0.4-0.6 of spring, then reduces as opacity fades
+      // BLUR: peaks at 0.4-0.6 of progress, then reduces as opacity fades
       // This guides attention away from dissolving photos
-      const blurCurve = mergeSpring < 0.5
-        ? mergeSpring * 6  // 0 → 3px
-        : 3 - (mergeSpring - 0.5) * 6; // 3px → 0
+      const blurCurve = mergeProgress < 0.5
+        ? mergeProgress * 6  // 0 → 3px
+        : 3 - (mergeProgress - 0.5) * 6; // 3px → 0
       blur = Math.max(0, Math.min(3, blurCurve));
 
       // DESATURATION: progressive grayscale as photos become search bar
-      desaturation = Math.min(0.8, mergeSpring * 1.2);
+      desaturation = Math.min(0.8, mergeProgress * 1.2);
 
-      // OPACITY: v0.23 - fades early so photos+bar sum ~100% (was [0.5, 0.95])
-      opacity = interpolate(mergeSpring, [0.15, 0.65], [1, 0], {
+      // OPACITY: v0.23 - fades early so photos+bar sum ~100%
+      opacity = interpolate(mergeProgress, [0.15, 0.65], [1, 0], {
         extrapolateLeft: 'clamp',
         extrapolateRight: 'clamp',
       });
