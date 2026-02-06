@@ -1,7 +1,14 @@
 /**
- * Stonecrest v0.19 - Polish & Flow
+ * Stonecrest v0.20 - Cinematic Depth System
  *
  * CHANGELOG:
+ * - v0.20: DEPTH SYSTEM - Cinematic depth & weight
+ *   - Elevation shadows: photos lift during burst, shadows respond to height
+ *   - Focus blur: disappearing photos blur before fading (guides attention)
+ *   - New utilities in motion.ts: ELEVATION, FOCUS, PARALLAX systems
+ *   - Philosophy: "Invisible enhancement" - feel depth, don't see technique
+ *   - Thresholds: Shadow Y-offset max 12px, blur max 3px, parallax max 15%
+ *
  * - v0.19: Polish & Flow improvements
  *   - v0.19.1: Folder anticipation pulse (scale 1.025) before opening
  *   - v0.19.2: Photos "breathe" during settle (micro-oscillation)

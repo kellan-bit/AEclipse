@@ -1,8 +1,14 @@
 /**
- * Motion Constants - v0.17
+ * Motion Constants - v0.20
  *
  * Single source of truth for all animation timing.
  * Professional UI animation requires CONSISTENCY.
+ *
+ * v0.20: DEPTH SYSTEM - Cinematic depth & weight
+ *   - ELEVATION: Shadows respond to element "height"
+ *   - FOCUS: Selective blur guides attention
+ *   - PARALLAX: Depth through differential motion
+ *   - Philosophy: "Invisible enhancement" - feel depth, don't see technique
  *
  * v0.17: Added spring physics system
  *   - New `folder` profile for lid animation
@@ -170,4 +176,126 @@ export function springTo(
 ): number {
   const [start, end] = outputRange;
   return start + (end - start) * springValue;
+}
+
+// ============================================
+// DEPTH SYSTEM - v0.20
+// Cinematic depth through elevation, focus, and parallax
+// Philosophy: Invisible enhancement - viewers feel depth without noticing
+// ============================================
+
+/**
+ * ELEVATION SYSTEM
+ * Shadows respond to element "height" off the surface.
+ * As elements "lift", shadows become longer, softer, and more diffused.
+ */
+export const ELEVATION = {
+  resting: 0,      // On surface
+  hover: 0.15,     // Slight lift on hover
+  lifted: 0.4,     // During burst/motion
+  floating: 0.7,   // Suspended animation
+  highest: 1,      // Maximum elevation
+};
+
+/**
+ * Get elevation-aware shadow
+ * @param elevation - 0 (resting) to 1 (highest)
+ * @returns CSS box-shadow string
+ *
+ * Mathematical model:
+ * - Y-offset: increases (shadow moves down as element lifts)
+ * - Blur: increases (shadow softens with distance)
+ * - Opacity: DECREASES (counterintuitive but correct - shadow diffuses)
+ */
+export function getElevationShadow(elevation: number): string {
+  // Y-offset: 2px (resting) to 12px (lifted)
+  const yOffset = 2 + elevation * 10;
+
+  // Blur: 8px (resting) to 40px (lifted)
+  const blurRadius = 8 + elevation * 32;
+
+  // Opacity: 0.18 (resting) to 0.12 (lifted)
+  // Higher elements have more spread but less concentrated shadow
+  const opacity = 0.18 - elevation * 0.06;
+
+  return `0 ${yOffset}px ${blurRadius}px rgba(0,0,0,${opacity.toFixed(3)})`;
+}
+
+/**
+ * FOCUS/DEPTH-OF-FIELD SYSTEM
+ * Blur non-focal elements to guide viewer attention.
+ * Max blur = 3px (anything over 4px looks artificial)
+ */
+export const DEPTH_LAYER = {
+  background: 1.0,   // Furthest from camera
+  midground: 0.5,    // Middle distance
+  foreground: 0.0,   // Closest to camera
+};
+
+export const FOCUS = {
+  narrow: 0.15,      // Only focal element sharp
+  normal: 0.3,       // Moderate blur falloff
+  wide: 0.5,         // Most things in focus
+};
+
+/**
+ * Calculate focus blur based on element depth and focal plane
+ * @param elementDepth - 0 (foreground) to 1 (background)
+ * @param focalDepth - Depth of the focal plane (what's in focus)
+ * @param aperture - How quickly blur falls off (smaller = shallower DOF)
+ * @returns Blur amount in pixels (max 3px)
+ */
+export function getFocusBlur(
+  elementDepth: number,
+  focalDepth: number,
+  aperture: number = FOCUS.normal
+): number {
+  const rawDistance = Math.abs(elementDepth - focalDepth);
+  const focusDistance = Math.min(1, rawDistance / aperture);
+  return focusDistance * 3; // Max 3px blur
+}
+
+/**
+ * PARALLAX SYSTEM
+ * Elements at different depths move at different rates.
+ * Creates perceived depth through differential motion.
+ */
+export const PARALLAX = {
+  subtle: 0.5,       // Barely perceptible (RECOMMENDED)
+  normal: 1.0,       // Standard depth feel
+  dramatic: 1.5,     // Noticeable (use sparingly)
+};
+
+/**
+ * Get parallax multiplier for an element's motion
+ * @param depth - 0 (closest, moves most) to 1 (furthest, moves least)
+ * @param intensity - Parallax intensity (use PARALLAX.subtle for most cases)
+ * @returns Multiplier for motion (e.g., 1.15 for foreground, 0.85 for background)
+ *
+ * At PARALLAX.subtle:
+ * - depth 0 (foreground): factor = 1.075 (moves 7.5% more)
+ * - depth 0.5 (mid): factor = 1.0 (baseline)
+ * - depth 1 (background): factor = 0.925 (moves 7.5% less)
+ */
+export function getParallaxFactor(
+  depth: number,
+  intensity: number = PARALLAX.subtle
+): number {
+  const baseRange = 0.15 * intensity;
+  return 1 + baseRange - (depth * baseRange * 2);
+}
+
+/**
+ * Apply parallax to a motion delta
+ * @param baseDelta - The base motion amount (e.g., x distance)
+ * @param depth - Element depth (0 = closest, 1 = furthest)
+ * @param intensity - Parallax intensity
+ * @returns Adjusted delta with parallax applied
+ */
+export function applyParallax(
+  baseDelta: number,
+  depth: number,
+  intensity: number = PARALLAX.subtle
+): number {
+  return baseDelta * getParallaxFactor(depth, intensity);
 }

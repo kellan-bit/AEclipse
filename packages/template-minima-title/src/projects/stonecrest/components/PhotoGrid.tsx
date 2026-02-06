@@ -1,7 +1,13 @@
 /**
- * PhotoGrid Component - v0.19.2
+ * PhotoGrid Component - v0.20
  *
  * CHANGELOG:
+ * - v0.20: DEPTH SYSTEM - Cinematic depth & weight
+ *   - Elevation-aware shadows: lifted photos have softer, longer shadows
+ *   - Focus blur: disappearing photos blur before fading (guides attention)
+ *   - Depth layers: center photos = foreground, edges = midground
+ *   - Philosophy: "Invisible enhancement" - feel depth, don't see technique
+ *
  * - v0.19.2: Added subtle breathing during settle phase
  *   - Photos have micro-scale oscillation (0.995-1.005) after landing
  *   - Keeps grid feeling alive before disappear phase
@@ -55,7 +61,17 @@ import {
   useVideoConfig,
   interpolate,
 } from 'remotion';
-import { createStaggeredSpring, createSpring, springTo } from '../motion';
+import {
+  createStaggeredSpring,
+  createSpring,
+  springTo,
+  // v0.20: Depth system imports
+  ELEVATION,
+  getElevationShadow,
+  getFocusBlur,
+  FOCUS,
+  DEPTH_LAYER,
+} from '../motion';
 
 interface PhotoState {
   x: number;
@@ -64,6 +80,9 @@ interface PhotoState {
   rotation: number;
   opacity: number;
   clipTop: number | null; // v0.18.2: Clip photos to simulate emerging from folder
+  // v0.20: Depth system
+  elevation: number;      // 0 (resting) to 1 (highest) - affects shadow
+  blur: number;           // Focus blur in pixels (max 3)
 }
 
 interface PhotoGridProps {
@@ -154,6 +173,13 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
     // Clip line at centerY - 10 (was centerY - 30 = too aggressive)
     let clipTop: number | null = centerY - 10;
 
+    // v0.20: Depth system - elevation and blur
+    // Center photos (index 4) are foreground, edges are midground
+    const distFromCenter = Math.abs(index - 4);
+    const photoDepth = interpolate(distFromCenter, [0, 4], [DEPTH_LAYER.foreground, DEPTH_LAYER.midground]);
+    let elevation = ELEVATION.resting;
+    let blur = 0;
+
     // ============================================
     // PHASE 2: BURST (expand to grid positions)
     // v0.17: Spring physics with staggered delay
@@ -194,6 +220,9 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
       // v0.18.2: Remove clipping once burst starts - photos are free
       clipTop = null;
 
+      // v0.20: Elevation increases during burst, settles back down
+      elevation = springTo(burstSpring, [ELEVATION.lifted, ELEVATION.hover]);
+
       // ============================================
       // PHASE 3: SETTLE (subtle breathing to keep photos alive)
       // v0.19.2: Micro-oscillation prevents "dead" static feel
@@ -214,6 +243,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
     // ============================================
     // PHASE 4: FILTER (non-middle-row fades out in wave)
     // v0.19.3: Enhanced with rotation for "floating away" feel
+    // v0.20: Added focus blur - photos blur BEFORE fading (guides attention)
     // ============================================
     if (!MIDDLE_ROW_INDICES.includes(index) && filterProgress > 0) {
       // Wave: top row first (row 0), then bottom row (row 2)
@@ -229,6 +259,13 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
       // v0.19.3: Subtle tilt as photos float away (left photos tilt left, right photos tilt right)
       const tiltDirection = gridPos.col - 1; // -1, 0, 1
       rotation = tiltDirection * adjustedFilter * 5; // Max 5 degrees
+
+      // v0.20: Blur BEFORE fade - cinematic focus transition
+      // Blur starts early (0-0.4), fade happens later (0.2-1.0)
+      blur = interpolate(adjustedFilter, [0, 0.4], [0, 2], {
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      });
     }
 
     // ============================================
@@ -251,7 +288,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
       });
     }
 
-    return { x, y, scale, rotation, opacity, clipTop };
+    return { x, y, scale, rotation, opacity, clipTop, elevation, blur };
   };
 
   return (
@@ -295,7 +332,10 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
               opacity: state.opacity,
               borderRadius: 8,
               overflow: 'hidden',
-              boxShadow: `0 ${4 + state.scale * 4}px ${8 + state.scale * 8}px rgba(0,0,0,${0.15 + state.scale * 0.1})`,
+              // v0.20: Elevation-aware shadow (replaces static shadow)
+              boxShadow: getElevationShadow(state.elevation),
+              // v0.20: Focus blur for cinematic depth-of-field
+              filter: state.blur > 0 ? `blur(${state.blur}px)` : undefined,
               clipPath, // v0.18.2: Clip to folder opening
             }}
           >

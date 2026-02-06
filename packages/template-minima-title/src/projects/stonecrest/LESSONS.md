@@ -294,3 +294,72 @@ import { lightTheme, darkTheme } from '@minima-brand/themes';
 **The Test:** Watch at 0.25x speed. If you see "cuts" between phases, it's not fluid.
 
 **Rule:** Complexity means seamless flow, not more effects.
+
+---
+
+## Lesson 11: Depth Through Invisible Enhancement (v0.20)
+
+**Problem:** Animation felt "flat" - everything on same plane, no sense of weight.
+
+**Wrong Approach (Rejected):**
+- Over-the-top 3D rotations
+- Flash effects on burst
+- Camera shake
+- These call attention to technique, breaking minimalist aesthetic
+
+**Right Approach: INVISIBLE ENHANCEMENT**
+- Viewers should FEEL depth without noticing technique
+- If someone points to a specific effect, it's TOO MUCH
+- Like HDR vs SDR - same image, more presence
+
+**Three Systems for Cinematic Depth:**
+
+### 1. Elevation Shadows
+Shadows respond to element "height" off surface:
+```tsx
+import { ELEVATION, getElevationShadow } from '../motion';
+
+// As elements "lift", shadows become longer, softer, more diffused
+const elevation = isBursting ? ELEVATION.lifted : ELEVATION.resting;
+boxShadow: getElevationShadow(elevation)
+```
+- Y-offset increases (shadow moves down)
+- Blur radius increases (shadow softens)
+- Opacity DECREASES (counterintuitive but correct - shadow diffuses)
+
+### 2. Selective Focus Blur
+Blur non-focal elements to guide attention:
+```tsx
+import { getFocusBlur, FOCUS, DEPTH_LAYER } from '../motion';
+
+// Max blur = 3px (anything over 4px looks artificial)
+const blur = getFocusBlur(elementDepth, focalDepth, FOCUS.normal);
+filter: blur > 0 ? `blur(${blur}px)` : 'none'
+```
+- ✅ During reveals, hero moments, transitions
+- ❌ When everything is equally important
+- ❌ On text or UI chrome (always sharp)
+
+### 3. Micro-Parallax
+Elements at different depths move at different rates:
+```tsx
+import { getParallaxFactor, PARALLAX } from '../motion';
+
+// Foreground moves 7.5% more, background moves 7.5% less
+const factor = getParallaxFactor(depth, PARALLAX.subtle);
+const adjustedDelta = baseDelta * factor;
+```
+
+**Thresholds (NEVER EXCEED):**
+| Effect | Max Value | Rationale |
+|--------|-----------|-----------|
+| Shadow Y-offset | 12px | Beyond = artificial |
+| Focus blur | 3px | Beyond = distracting |
+| Parallax difference | 15% | Beyond = looks like bug |
+
+**Verification Tests:**
+1. **"Did Something Change?" Test** - Ask unfamiliar viewer if it feels like depth. "Yes" without knowing why = SUCCESS
+2. **"Turn It Off" Test** - Disable depth, animation should feel "flatter"
+3. **0.25x Speed Test** - Shadows smooth, blur transitions smooth, parallax barely visible
+
+**Rule:** Depth should be felt, not seen. If it's noticeable, it's too much.
