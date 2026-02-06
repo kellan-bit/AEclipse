@@ -1,10 +1,15 @@
 /**
- * SearchBar Component - v0.29
+ * SearchBar Component - v0.31
  *
  * CHANGELOG:
+ * - v0.31: SEAL THE MERGE SEAM — opacity crossfade + dimension match
+ *   - Merged dimensions match actual photo cluster (189×54, not 280×54)
+ *   - Opacity ramps 0→1 during solidify (crossfade with whitening photos)
+ *   - Eliminates one-frame element swap at merge→bar boundary
+ *   - Search UI content hidden during solidify (only visible after growth)
+ *
  * - v0.29: THE MORPH — Bar IS the website container
- *   - Removed ghost/solidification opacity ramp (no more fading in)
- *   - Bar starts at merged-photo geometry (280×54), fully opaque
+ *   - Bar starts at merged-photo geometry, fully opaque
  *   - Springs to search bar size (500×50)
  *   - renderExpandedContent prop: website renders INSIDE expanding bar
  *   - Same container throughout — no separate WebsiteUI layer
@@ -14,6 +19,7 @@
  *   - Cleaner phase detection with useInPhase
  *
  * LESSONS APPLIED:
+ * - The Relay Principle: one entity morphing, not two elements swapping
  * - Morph, don't transition — same container changes content
  * - Physical geometry handoff > opacity crossover
  */
@@ -49,9 +55,10 @@ interface SearchBarProps {
 // ============================================
 
 const DIMENSIONS = {
-  // v0.29: Stage 1 starts at merged photo geometry (pixel-perfect handoff)
-  // 3 photos (180px each) compressed at scale 0.45 ≈ ~240px combined width
-  merged: { width: 280, height: 54, borderRadius: 25 },
+  // v0.31: Exact match to photo cluster bounding box at merge end
+  // 3 photos × 180px at scale 0.45 = 81px each, spaced 54px center-to-center
+  // Total: 2×54 + 81 = 189px wide, 120×0.45 = 54px tall
+  merged: { width: 189, height: 54, borderRadius: 25 },
   // Stage 2: Growth (full search bar)
   ready: { width: 500, height: 50, borderRadius: 25 },
   // Stage 3: Expansion (browser viewport)
@@ -87,10 +94,9 @@ export const SearchBarV2: React.FC<SearchBarProps> = ({
 
   // ============================================
   // STAGE 1: MORPH FROM PHOTOS
-  // v0.29: Bar appears at merged photo geometry, fully opaque.
-  // The white overlay on photos already handles the visual transition.
-  // Bar then springs to its normal search bar dimensions.
-  // No ghost stage. No opacity ramp. Pixel-perfect handoff.
+  // v0.31: Bar fades in during solidify (opacity crossfade with photos).
+  // Photos have white overlay growing → bar appears underneath.
+  // Combined visual weight stays ~100% throughout the transition.
   // ============================================
 
   const solidifyProgress = usePhaseProgress(
@@ -150,12 +156,13 @@ export const SearchBarV2: React.FC<SearchBarProps> = ({
   let barOpacity: number;
 
   if (isSolidifying) {
-    // v0.29: Stage 1 — bar appears at merged photo size, fully opaque
-    // The white overlay on photos handles the visual bridge
+    // v0.31: Bar fades in during solidify — crossfade with whitening photos
+    // solidifyProgress goes 0→1 over the merge duration (bounce curve)
+    // Bar opacity ramps in sync so combined visual weight stays ~100%
     barWidth = DIMENSIONS.merged.width;
     barHeight = DIMENSIONS.merged.height;
     borderRadius = DIMENSIONS.merged.borderRadius;
-    barOpacity = 1.0;
+    barOpacity = solidifyProgress;
   } else if (isGrowing) {
     // Stage 2: Spring from merged size to search bar size
     barWidth = growthValues.width;
@@ -176,13 +183,23 @@ export const SearchBarV2: React.FC<SearchBarProps> = ({
     barOpacity = 1.0;
   }
 
-  // Search UI opacity (expandProgress computed above, before early return)
-  const searchUIOpacity = isExpanding
-    ? interpolate(expandProgress, [0, 0.7], [1, 0], {
-        extrapolateLeft: 'clamp',
-        extrapolateRight: 'clamp',
-      })
-    : 1;
+  // Search UI opacity:
+  // - During solidify: 0 (bar is plain white, matching whitened photos)
+  // - During growth: fades in 0→1 (search icon/text appear as bar grows)
+  // - During expand: fades out 1→0 (dissolves into website content)
+  const searchUIOpacity = isSolidifying
+    ? 0
+    : isExpanding
+      ? interpolate(expandProgress, [0, 0.7], [1, 0], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        })
+      : isGrowing
+        ? interpolate(growthValues.width,
+            [DIMENSIONS.merged.width, DIMENSIONS.merged.width + 60],
+            [0, 1],
+            { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
+        : 1;
 
   // ============================================
   // TYPING DISPLAY

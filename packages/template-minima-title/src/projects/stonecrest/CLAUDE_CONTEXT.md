@@ -9,8 +9,8 @@ This file contains persistent instructions, preferences, and context that should
 ## Project Overview
 
 Building an Apple-style property introduction animation for Stonecrest using Remotion.
-- **Current version:** v0.30 (Timeline Architecture — declarative phase system)
-- **Next:** Phase 3 - Animation State Machine — replace if/else chains
+- **Current version:** v0.31 (Seal the Merge Seam — Phase 3, Step 1)
+- **Next:** Phase 3, Step 2 - The Morph Envelope — one DOM element from merge to website
 - **Philosophy:** Fluidity = seamlessness, not effects
 - **v0.20 Philosophy:** Invisible enhancement - feel depth, don't see technique
 - **v0.26 Philosophy:** Declarative motion > imperative interpolation

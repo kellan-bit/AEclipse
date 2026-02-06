@@ -1,7 +1,12 @@
 /**
- * Stonecrest v0.30 - TIMELINE ARCHITECTURE
+ * Stonecrest v0.31 - SEAL THE MERGE SEAM (Phase 3, Step 1)
  *
  * CHANGELOG:
+ * - v0.31: Seal the Merge Seam — eliminate one-frame element swap
+ *   - searchBarVisible renders during merge (frame 197), not after (frame 225)
+ *   - Bar opacity crossfades with photo white overlay (no hard cut)
+ *   - Merged dimensions match photo cluster geometry (189px)
+ *
  * - v0.30: Declarative timeline system replaces flat TIMELINE object
  *   - All 25 frame constants → 18 typed phases via createTimeline()
  *   - useTimeline() hook provides t.progress(), t.isIn(), t.startOf()
@@ -192,9 +197,10 @@ export const StonecrestReveal: React.FC = () => {
   // SEARCH BAR ANIMATION
   // ============================================
 
-  // v0.29: Search bar starts when photos finish merging, stays visible forever
-  // (bar IS the website container — no separate website layer to hand off to)
-  const searchBarVisible = t.isAfter('merge');
+  // v0.31: Bar renders DURING merge (underneath whitening photos), not after.
+  // Eliminates the one-frame element swap at frame 225.
+  // Bar opacity ramps 0→1 in SearchBarV2 during solidify phase (crossfade).
+  const searchBarVisible = !t.isBefore('searchEmerge');
 
   const typingProgress = getTypingProgress(
     t.frame,

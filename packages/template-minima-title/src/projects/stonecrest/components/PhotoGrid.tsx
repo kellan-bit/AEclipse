@@ -1,7 +1,12 @@
 /**
- * PhotoGrid Component - v0.29.1
+ * PhotoGrid Component - v0.31
  *
  * CHANGELOG:
+ * - v0.31: SEAL THE MERGE SEAM — sync fade with bar crossfade
+ *   - Photo opacity fades 1→0 over merge progress 0.3→1.0 (was 0.9→1.0)
+ *   - Synced with SearchBarV2 solidify opacity (bar fades 0→1 over same range)
+ *   - settleProgress wired up: breathing amplitude decays during settle
+ *
  * - v0.29.1: Curve Selection Fix
  *   - FILTER: materialAccelerate replaces sneeze (no anticipation for exit)
  *     - Reduced distance 800→600, scale 0.15→0.05, rotation 8→3
@@ -241,18 +246,27 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
         : ELEVATION.lifted + (ELEVATION.hover - ELEVATION.lifted) * Math.min(effectiveFrame / burstDuration, 1);
 
       // ============================================
-      // PHASE 3: SETTLE (subtle breathing to keep photos alive)
+      // PHASE 3: SETTLE (deceleration + breathing)
+      // v0.31: settleProgress wired up — breathing amplitude decays as
+      //   photos "land" into grid position. Creates a gradual arrival
+      //   rather than instant lock-into-place.
       // v0.19.2: Micro-oscillation prevents "dead" static feel
       // ============================================
       if (normalizedProgress >= 0.85) {
-        // Breathing effect: subtle scale oscillation based on photo index
-        // Each photo breathes at slightly different phase for organic feel
+        // v0.31: Breathing amplitude decays with settle progress
+        // Early settle (0): larger oscillation (0.01) — still "landing"
+        // Late settle (1): smaller oscillation (0.005) — resting state
+        const maxAmplitude = 0.01;
+        const minAmplitude = 0.005;
+        const breatheAmplitude = maxAmplitude + (minAmplitude - maxAmplitude) * settleProgress;
+
         const breathePhase = (frame + index * 5) * 0.08;
-        const breatheAmount = Math.sin(breathePhase) * 0.005; // 0.995-1.005
+        const breatheAmount = Math.sin(breathePhase) * breatheAmplitude;
         scale = scale * (1 + breatheAmount);
 
-        // Micro-float: tiny Y movement
-        const floatAmount = Math.sin(breathePhase * 0.7) * 1; // 1px max
+        // Micro-float: amplitude also decays (2px landing → 1px resting)
+        const floatAmplitude = 2 - settleProgress;
+        const floatAmount = Math.sin(breathePhase * 0.7) * floatAmplitude;
         y = y + floatAmount;
       }
     }
@@ -365,14 +379,13 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
       // DESATURATION: progressive grayscale as photos whiten
       desaturation = Math.min(0.8, mergeProgress * 1.2);
 
-      // OPACITY: stays 1 throughout! The white overlay handles the visual transition.
-      // Only fade at the very end for cleanup (99% → 0% in last 10% of progress)
-      opacity = mergeProgress > 0.9
-        ? interpolate(mergeProgress, [0.9, 1], [1, 0], {
-            extrapolateLeft: 'clamp',
-            extrapolateRight: 'clamp',
-          })
-        : 1;
+      // v0.31: Opacity fades 1→0 from 30%→100% merge, synchronized with
+      // SearchBarV2 solidify opacity (bar fades 0→1 over same range).
+      // Combined visual weight stays ~100% throughout the crossfade.
+      opacity = interpolate(mergeProgress, [0.3, 1], [1, 0], {
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      });
 
       // No blur — the white overlay is the transition, not blur
       blur = 0;

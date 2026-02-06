@@ -4,6 +4,29 @@ All notable changes to the Stonecrest property introduction animation.
 
 ---
 
+## [v0.31] - 2026-02-06
+
+### Changed - "Seal the Merge Seam" (Phase 3, Step 1)
+The photo→search bar transition had a one-frame element swap: PhotoGrid vanished at frame 224 and SearchBar appeared at frame 225 with a 48% width jump (189px→280px). This version eliminates the swap with an opacity crossfade and geometric matching.
+
+- **StonecrestReveal.tsx**: `searchBarVisible` now renders bar during merge (frame 197), not after (frame 225)
+- **SearchBarV2.tsx**: Merged dimensions 280×54 → 189×54 (exact match to photo cluster bounding box)
+  - Bar opacity ramps 0→1 during solidify phase (crossfade with whitening photos)
+  - Search UI content hidden during solidify (plain white rectangle matches photos)
+  - Search UI fades in during growth phase as bar expands
+- **PhotoGrid.tsx**: Photo opacity fade synced with bar crossfade
+  - Was: fade 1→0 only in last 10% of merge (progress 0.9→1.0)
+  - Now: fade 1→0 from 30%→100% merge (synced with bar solidify)
+  - settleProgress wired up: breathing amplitude decays during settle phase
+  - Creates gradual "landing" feel instead of instant lock-into-place
+
+**Principles applied:**
+- The Relay Principle: one entity morphing, not two swapping
+- Opacity crossfade > hard element swap
+- Geometric matching: photo cluster bounding box = bar merged dimensions
+
+---
+
 ## [v0.30] - 2026-02-06
 
 ### Changed - "Timeline Architecture"

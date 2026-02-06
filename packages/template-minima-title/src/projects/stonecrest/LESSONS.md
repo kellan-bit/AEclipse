@@ -1134,3 +1134,47 @@ Don't refactor everything at once. The timeline system was introduced in the orc
 - **SQL** — named columns over positional indices
 
 **The Rule:** When temporal boundaries have names, the code explains itself. `t.progress('filter')` is documentation that `interpolate(frame, [115, 175], [0, 1])` can never be.
+
+---
+
+## Lesson 25: The Relay Principle — Flow Requires One Entity (v0.31)
+
+**Problem:** The photo→search bar transition was a one-frame element swap. At frame 224, PhotoGrid rendered 3 whitened photos spanning ~189px. At frame 225, PhotoGrid returned `null` and SearchBar appeared at 280px — a 48% width jump in a single frame. White overlay masked it somewhat, but the animation felt like "separate animations layered on top of each other."
+
+**What Happened:** Three discontinuities fixed:
+1. **Timing**: Bar now renders during merge (frame 197), not after (frame 225)
+2. **Geometry**: Bar merged dimensions match photo cluster bounding box (189px, not 280px)
+3. **Opacity**: Bar fades 0→1 as photos fade 1→0 (crossfade, not swap)
+
+**Right Approach: THE RELAY PRINCIPLE**
+
+Flow requires **one entity** transforming through states, not multiple entities taking turns. When Component A fades out and Component B fades in at the same position, the brain perceives two separate objects — even if the timing is perfect. True flow requires:
+
+1. **Geometric continuity** — the bounding box of A's final state must exactly match B's initial state
+2. **Opacity crossfade** — combined visual weight stays ~100% throughout (A at 60% + B at 40% = 100%)
+3. **Temporal overlap** — B must be rendering BEFORE A disappears (not the frame after)
+
+**The Element Swap Antipattern:**
+```
+// BAD: Hard swap (one-frame cut)
+const showA = frame < 225;
+const showB = frame >= 225;
+
+// GOOD: Crossfade with temporal overlap
+const showA = frame < 230;  // A lingers
+const showB = frame >= 197;  // B starts early
+const opacityA = interpolate(frame, [200, 225], [1, 0]);
+const opacityB = interpolate(frame, [200, 225], [0, 1]);
+```
+
+**Dead Code = Missing Transition:**
+`settleProgress` was calculated but never used — photos locked into grid positions instantly. Wiring it up (breathing amplitude decays during settle) created a "landing" feel. Dead code in animation often means a transition was intended but never implemented.
+
+**Global Application:**
+- **Web UX** — page transitions need shared element animation, not unmount/mount
+- **Video editing** — cross-dissolve > hard cut for related scenes
+- **Music** — tied notes create legato; separate attacks create staccato
+- **Presentation slides** — morph transition > slide transition for related content
+- **Game design** — avatar transformation > character swap for power-ups
+
+**The Rule:** If the audience can identify the moment one element disappears and another appears, you have a cut, not flow. Flow means you can't point to the swap frame.
