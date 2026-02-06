@@ -114,9 +114,9 @@ Import from: `@minima-brand/colors` and `@minima-brand/themes`
 
 ## Testing Workflow — Frame Grab & Push
 
-**EVERY TIME you make visual changes, provide the user with this command to capture and push key frames.**
+**EVERY TIME you make visual changes, give the user TWO commands to run (copy one at a time).**
 
-The user runs this on their machine, frames get pushed to git, then you pull and view them.
+The user runs these on their machine, frames get pushed to git, then you pull and view them.
 
 ### Remotion Setup
 - Composition ID: `StonecrestReveal`
@@ -125,22 +125,46 @@ The user runs this on their machine, frames get pushed to git, then you pull and
 - Working dir: `packages/template-minima-title/`
 - CLI tool: `bunx remotion still`
 
-### Frame-Grab-and-Push Command
+### IMPORTANT: Multi-line commands get garbled when copy-pasted from markdown.
+Always use the **two-step script approach** below. NEVER give a multi-line `&&` chain.
 
-Adjust frame numbers based on what phases you changed. Default key frames:
+### Step 1: Pull latest code (user runs this FIRST)
 
 ```bash
-cd ~/Documents/AEclipse/packages/template-minima-title && mkdir -p out/frames && \
-for f in 44 60 80 100 115 140 175 178 200 210 225 252 295 320 345 400; do \
-  bunx remotion still src/index.ts StonecrestReveal "out/frames/frame-$(printf '%03d' $f).png" --frame=$f 2>/dev/null && \
-  echo "✓ frame $f" || echo "✗ frame $f"; \
-done && echo "Done capturing!" && \
-cd ~/Documents/AEclipse && \
-git add packages/template-minima-title/out/frames/ && \
-git commit -m "debug: add frame captures for visual review" && \
-git push origin claude/stonecrest-template-improvements-O5TmO && \
-echo "Frames pushed! Claude can now pull and view them."
+cd ~/Documents/AEclipse && git stash && git pull origin HEAD && git stash pop
 ```
+
+### Step 2: Create and run the frame-grab script
+
+**Command 1 — Create the script** (user copies this):
+```bash
+cat > /tmp/grab-frames.sh << 'SCRIPT'
+#!/bin/bash
+cd ~/Documents/AEclipse/packages/template-minima-title
+mkdir -p out/frames
+for f in 44 60 80 100 115 140 175 178 200 210 225 252 295 320 345 400; do
+  bunx remotion still src/index.ts StonecrestReveal "out/frames/frame-$(printf '%03d' $f).png" --frame=$f 2>/dev/null
+  if [ $? -eq 0 ]; then echo "frame $f done"; else echo "frame $f FAILED"; fi
+done
+echo "Done capturing!"
+cd ~/Documents/AEclipse
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+git add packages/template-minima-title/out/frames/
+git commit -m "debug: add frame captures for visual review"
+git push origin "$BRANCH"
+echo "Frames pushed on branch: $BRANCH"
+SCRIPT
+chmod +x /tmp/grab-frames.sh
+```
+
+**Command 2 — Run it** (user copies this):
+```bash
+bash /tmp/grab-frames.sh
+```
+
+### Customizing Frame Numbers
+To capture different frames, modify the `for f in ...` line in the script.
+Only change the numbers — the rest of the script stays the same.
 
 ### Key Frames Reference
 
@@ -163,17 +187,19 @@ echo "Frames pushed! Claude can now pull and view them."
 | 345 | Website | Website fully revealed |
 | 400 | Hold | Final hold |
 
-### How to Use
+### How Claude Receives Frames
 
-**After pushing code changes**, always tell the user:
-> "Run this to capture and push key frames for review:"
-> (paste the command above, adjusting frame numbers for changed phases)
-
-**After user pushes frames**, pull and view:
+After the user pushes, fetch from whatever branch they report:
 ```bash
-git pull origin claude/stonecrest-template-improvements-O5TmO
+git fetch origin && git pull origin <branch-name>
 ```
 Then use the Read tool to view PNGs in `packages/template-minima-title/out/frames/`.
+
+### Lessons Learned (v0.29.1)
+- Multi-line `&&` chains break when pasted from markdown (terminal sees `cmdand`)
+- Always use a script file (`/tmp/grab-frames.sh`) instead
+- Never hardcode the branch name — use `git rev-parse --abbrev-ref HEAD`
+- User may be on a different branch than expected — always check
 
 ---
 
