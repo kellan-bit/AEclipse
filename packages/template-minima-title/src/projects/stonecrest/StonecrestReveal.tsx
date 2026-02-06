@@ -1,13 +1,18 @@
 /**
- * Stonecrest v0.12 - Apple-Style Folder Reveal Animation
+ * Stonecrest v0.14 - Apple-Style Folder Reveal Animation
  *
- * A mouse hovers over a Mac folder labeled "Stonecrest (secret)".
- * The mouse hesitates, double-clicks, photos burst out, some disappear,
- * the remaining merge into a search bar typing "minimahomes.com",
- * which expands into a website with Stonecrest as the banner.
+ * CHANGELOG:
+ * - v0.14: Unified motion system, fixed photo timeline
+ *   - Added peekProgress (frames 90-110)
+ *   - Fixed burstProgress to start at frame 110
+ *   - Use EASE constants from motion.ts
+ *   - Wave-based photo disappear instead of sporadic
  *
- * This is ANIMATION - not clips with effects.
- * Every moment has narrative purpose.
+ * - v0.12: Initial implementation
+ *
+ * LESSONS APPLIED:
+ * - Lesson 7: Professional Animation = Consistency Over Effects
+ * - Lesson 8: Transitions Are Everything
  */
 
 import React from 'react';
@@ -20,6 +25,7 @@ import {
   spring,
 } from 'remotion';
 
+import { EASE } from './motion';
 import { MacFolder } from './components/MacFolder';
 import {
   MouseCursor,
@@ -176,39 +182,52 @@ export const StonecrestReveal: React.FC = () => {
 
   // ============================================
   // PHOTO GRID ANIMATION
+  // v0.14: Fixed timeline - peek THEN burst
   // ============================================
 
   const photosVisible = frame >= TIMELINE.PHOTOS_PEEK && frame < TIMELINE.EXPAND_START;
 
+  // NEW: Peek phase (90-110) - photos appear small at folder position
+  const peekProgress = interpolate(
+    frame,
+    [TIMELINE.PHOTOS_PEEK, TIMELINE.PHOTOS_BURST],
+    [0, 1],
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: EASE.enter }
+  );
+
+  // FIXED: Burst starts at PHOTOS_BURST (110), not PHOTOS_PEEK (90)
   const burstProgress = interpolate(
     frame,
-    [TIMELINE.PHOTOS_PEEK, TIMELINE.PHOTOS_BURST + 30],
+    [TIMELINE.PHOTOS_BURST, TIMELINE.PHOTOS_SETTLE],
     [0, 1],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.bezier(0.34, 1.56, 0.64, 1) }
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: EASE.default }
   );
 
+  // Settle into grid
   const settleProgress = interpolate(
     frame,
-    [TIMELINE.PHOTOS_BURST + 30, TIMELINE.PHOTOS_SETTLE],
+    [TIMELINE.PHOTOS_SETTLE, TIMELINE.PHOTOS_HOLD],
     [0, 1],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.bezier(0, 0, 0.2, 1) }
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: EASE.default }
   );
 
+  // Filter - wave-based fade (not sporadic)
   const filterProgress = interpolate(
     frame,
     [TIMELINE.DISAPPEAR_START, TIMELINE.DISAPPEAR_END],
     [0, 1],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: EASE.default }
   );
 
+  // Merge remaining photos to center
   const mergeProgress = interpolate(
     frame,
     [TIMELINE.MERGE_START, TIMELINE.MERGE_END],
     [0, 1],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.bezier(0.4, 0, 0.2, 1) }
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: EASE.default }
   );
 
-  // Get visible photo indices (sporadic disappear)
+  // Get visible photo indices - now wave-based (top row, then bottom row)
   const visibleIndices = frame < TIMELINE.DISAPPEAR_START
     ? [0, 1, 2, 3, 4, 5, 6, 7, 8]
     : getVisibleIndicesForDisappear(frame, TIMELINE.DISAPPEAR_START, TIMELINE.DISAPPEAR_END - TIMELINE.DISAPPEAR_START);
@@ -280,6 +299,7 @@ export const StonecrestReveal: React.FC = () => {
           <MacFolder
             label="Stonecrest (secret)"
             isHovered={isHovered}
+            isClicking={isClicking}
             openProgress={folderOpenProgress}
             x={folderX}
             y={folderY}
@@ -292,6 +312,7 @@ export const StonecrestReveal: React.FC = () => {
         <PhotoGrid
           photos={PHOTOS}
           visibleIndices={visibleIndices}
+          peekProgress={peekProgress}
           burstProgress={burstProgress}
           settleProgress={settleProgress}
           filterProgress={filterProgress}

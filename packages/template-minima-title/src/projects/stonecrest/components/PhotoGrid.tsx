@@ -1,6 +1,19 @@
 /**
- * PhotoGrid Component
- * Photos with spring physics, multiple layouts, and morph animation
+ * PhotoGrid Component - v0.14
+ *
+ * CHANGELOG:
+ * - v0.14: Added peek phase, coordinated motion
+ *   - New peekProgress prop for frames 90-110
+ *   - Photos appear at folder position during peek
+ *   - Wave-based disappear (top→bottom) instead of sporadic
+ *   - Removed chaotic scatter, more coordinated expansion
+ *   - Using unified EASE constants
+ *
+ * - v0.12: Initial implementation with sporadic disappear
+ *
+ * LESSONS APPLIED:
+ * - Lesson 7: Coordinated movement, not chaotic
+ * - Lesson 8: Smooth transitions between phases
  */
 
 import React from 'react';
@@ -8,11 +21,9 @@ import {
   Img,
   staticFile,
   useCurrentFrame,
-  useVideoConfig,
   interpolate,
-  spring,
-  Easing,
 } from 'remotion';
+import { EASE } from '../motion';
 
 interface PhotoState {
   x: number;
@@ -25,10 +36,11 @@ interface PhotoState {
 interface PhotoGridProps {
   photos: string[];
   visibleIndices: number[];
-  burstProgress: number; // 0 = in folder, 1 = fully burst out
-  settleProgress: number; // 0 = scattered, 1 = settled grid
-  filterProgress: number; // 0 = all visible, 1 = only middle row
-  mergeProgress: number; // 0 = photos, 1 = merged into bar
+  peekProgress: number;    // NEW: 0 = hidden, 1 = peeking at folder
+  burstProgress: number;   // 0 = at folder, 1 = at grid positions
+  settleProgress: number;  // 0 = arriving, 1 = settled
+  filterProgress: number;  // 0 = all visible, 1 = only middle row
+  mergeProgress: number;   // 0 = grid, 1 = merged to center
   centerX: number;
   centerY: number;
 }
@@ -49,12 +61,13 @@ const GRID_POSITIONS = [
 // Middle row indices (these survive the filter)
 const MIDDLE_ROW_INDICES = [3, 4, 5];
 
-// Sporadic disappear order (NOT sequential)
-const DISAPPEAR_ORDER = [0, 8, 2, 6, 1, 7]; // corners first, then top/bottom center
+// Wave-based disappear: top row, then bottom row (coordinated, not sporadic)
+const DISAPPEAR_ORDER = [0, 1, 2, 6, 7, 8];
 
 export const PhotoGrid: React.FC<PhotoGridProps> = ({
   photos,
   visibleIndices,
+  peekProgress,
   burstProgress,
   settleProgress,
   filterProgress,
@@ -63,17 +76,20 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
   centerY,
 }) => {
   const frame = useCurrentFrame();
-  const { fps, width, height } = useVideoConfig();
 
-  const photoWidth = 200;
-  const photoHeight = 140;
-  const gridGap = 20;
+  const photoWidth = 180;
+  const photoHeight = 120;
+  const gridGap = 16;
 
   // Calculate grid dimensions
   const gridWidth = 3 * photoWidth + 2 * gridGap;
   const gridHeight = 3 * photoHeight + 2 * gridGap;
   const gridStartX = centerX - gridWidth / 2;
   const gridStartY = centerY - gridHeight / 2;
+
+  // Folder position (where photos emerge from)
+  const folderX = centerX;
+  const folderY = centerY;
 
   const getPhotoState = (index: number): PhotoState => {
     const gridPos = GRID_POSITIONS[index] || { row: 1, col: 1 };
@@ -82,53 +98,73 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
     const gridX = gridStartX + gridPos.col * (photoWidth + gridGap) + photoWidth / 2;
     const gridY = gridStartY + gridPos.row * (photoHeight + gridGap) + photoHeight / 2;
 
-    // Folder position (all photos start here)
-    const folderX = centerX;
-    const folderY = centerY + 100;
-
-    // Burst scatter positions (random-ish but deterministic)
-    const scatterX = gridX + Math.sin(index * 2.5) * 100;
-    const scatterY = gridY + Math.cos(index * 1.8) * 80;
-    const scatterRotation = (index - 4) * 8 + Math.sin(index * 3) * 5;
-    const scatterScale = 0.9 + Math.sin(index * 2) * 0.15;
-
-    // Merged position (all photos compress to center for search bar)
+    // Merged position (center for search bar transition)
     const mergedX = centerX;
     const mergedY = centerY;
 
-    // Calculate current position based on animation phases
+    // ============================================
+    // PHASE 1: PEEK (photos appear at folder, small)
+    // ============================================
+    let x = folderX;
+    let y = folderY;
+    let scale = interpolate(peekProgress, [0, 1], [0, 0.35]);
+    let rotation = 0;
+    let opacity = peekProgress;
 
-    // Phase 1: Burst from folder
-    let x = interpolate(burstProgress, [0, 1], [folderX, scatterX]);
-    let y = interpolate(burstProgress, [0, 1], [folderY, scatterY]);
-    let rotation = interpolate(burstProgress, [0, 1], [0, scatterRotation]);
-    let scale = interpolate(burstProgress, [0, 0.3, 1], [0.1, 1.2, scatterScale]);
+    // ============================================
+    // PHASE 2: BURST (expand to grid positions)
+    // ============================================
+    if (burstProgress > 0) {
+      // Coordinated stagger: center photo moves first, corners last
+      const distFromCenter = Math.abs(index - 4);
+      const staggerDelay = distFromCenter * 0.08;
+      const adjustedBurst = Math.max(0, Math.min(1,
+        (burstProgress - staggerDelay) / (1 - staggerDelay * 4)
+      ));
 
-    // Phase 2: Settle into grid
-    x = interpolate(settleProgress, [0, 1], [x, gridX]);
-    y = interpolate(settleProgress, [0, 1], [y, gridY]);
-    rotation = interpolate(settleProgress, [0, 1], [rotation, 0]);
-    scale = interpolate(settleProgress, [0, 1], [scale, 1]);
+      x = interpolate(adjustedBurst, [0, 1], [folderX, gridX]);
+      y = interpolate(adjustedBurst, [0, 1], [folderY, gridY]);
 
-    // Phase 3: Filter (non-middle-row photos disappear)
-    let opacity = 1;
-    if (!MIDDLE_ROW_INDICES.includes(index)) {
-      opacity = interpolate(filterProgress, [0, 1], [1, 0]);
-      scale = scale * interpolate(filterProgress, [0, 1], [1, 0.5]);
+      // Scale: slight overshoot then settle
+      scale = interpolate(adjustedBurst, [0, 0.6, 1], [0.35, 1.03, 1]);
+
+      // Minimal rotation during burst (subtle, not chaotic)
+      const targetRotation = (gridPos.col - 1) * 1.5; // -1.5, 0, 1.5 degrees
+      rotation = interpolate(adjustedBurst, [0, 0.7, 1], [0, targetRotation * 1.5, 0]);
+
+      opacity = 1;
     }
 
-    // Phase 4: Merge into search bar
-    if (MIDDLE_ROW_INDICES.includes(index)) {
-      x = interpolate(mergeProgress, [0, 1], [x, mergedX]);
-      y = interpolate(mergeProgress, [0, 1], [y, mergedY]);
-      scale = interpolate(mergeProgress, [0, 1], [scale, 0.3]);
-      opacity = interpolate(mergeProgress, [0.5, 1], [1, 0]);
+    // ============================================
+    // PHASE 3: SETTLE (already at grid, minor adjustments)
+    // ============================================
+    // No additional changes needed - burst brings to final position
+
+    // ============================================
+    // PHASE 4: FILTER (non-middle-row fades out in wave)
+    // ============================================
+    if (!MIDDLE_ROW_INDICES.includes(index) && filterProgress > 0) {
+      // Wave: top row first (row 0), then bottom row (row 2)
+      const rowDelay = gridPos.row === 0 ? 0 : 0.4;
+      const adjustedFilter = Math.max(0, Math.min(1,
+        (filterProgress - rowDelay) / (1 - rowDelay)
+      ));
+
+      opacity = interpolate(adjustedFilter, [0, 1], [1, 0]);
+      scale = interpolate(adjustedFilter, [0, 1], [1, 0.9]);
+      // Gentle drift up as fading
+      y = y - adjustedFilter * 15;
     }
 
-    // Add slight floating motion when settled
-    if (settleProgress > 0.9 && filterProgress < 0.1 && mergeProgress < 0.1) {
-      const floatOffset = Math.sin(frame * 0.05 + index) * 3;
-      y += floatOffset;
+    // ============================================
+    // PHASE 5: MERGE (middle row → center, then fade)
+    // ============================================
+    if (MIDDLE_ROW_INDICES.includes(index) && mergeProgress > 0) {
+      x = interpolate(mergeProgress, [0, 1], [gridX, mergedX]);
+      y = interpolate(mergeProgress, [0, 1], [gridY, mergedY]);
+      scale = interpolate(mergeProgress, [0, 1], [1, 0.6]);
+      // Fade out in second half
+      opacity = interpolate(mergeProgress, [0.4, 0.9], [1, 0]);
     }
 
     return { x, y, scale, rotation, opacity };
@@ -140,7 +176,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
         if (!visibleIndices.includes(index)) return null;
 
         const state = getPhotoState(index);
-        if (state.opacity <= 0) return null;
+        if (state.opacity <= 0.01) return null;
 
         return (
           <div
@@ -155,7 +191,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
               opacity: state.opacity,
               borderRadius: 8,
               overflow: 'hidden',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+              boxShadow: `0 ${4 + state.scale * 4}px ${8 + state.scale * 8}px rgba(0,0,0,${0.15 + state.scale * 0.1})`,
             }}
           >
             <Img
@@ -174,7 +210,8 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
 };
 
 /**
- * Get which photos should be visible during the sporadic disappear phase
+ * Get which photos should be visible during the disappear phase
+ * v0.14: Wave-based (top row, then bottom row)
  */
 export function getVisibleIndicesForDisappear(
   frame: number,
@@ -192,7 +229,7 @@ export function getVisibleIndicesForDisappear(
   // How many non-middle-row photos should have disappeared
   const disappearCount = Math.floor(progress * DISAPPEAR_ORDER.length);
 
-  // Remove photos in sporadic order
+  // Remove photos in wave order
   const toRemove = DISAPPEAR_ORDER.slice(0, disappearCount);
   return allIndices.filter(i => !toRemove.includes(i));
 }

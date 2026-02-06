@@ -4,6 +4,48 @@ All notable changes to the Stonecrest property introduction animation.
 
 ---
 
+## [v0.14] - 2026-02-06
+
+### Added
+- **motion.ts**: New unified motion system
+  - Single source of truth for all animation timing
+  - EASE constants: default (Apple standard), enter, exit, emphasis
+  - DURATION, SPRING, OPACITY, SCALE constants
+  - All components now import from this file
+
+### Changed
+- **MouseCursor.tsx**: Simplified hesitation
+  - Reduced from 8-15px layered movements to 1-2px subtle drift
+  - Removed chaotic sine/cosine layering
+  - Now feels natural, not theatrical
+
+- **PhotoGrid.tsx**: Fixed timeline and improved coordination
+  - Added peek phase (frames 90-110) - photos appear small at folder
+  - Fixed burst phase to start at frame 110, not 90
+  - Changed from sporadic disappear to wave-based (top row → bottom row)
+  - Added coordinated stagger: center photo moves first, corners last
+  - Using unified EASE constants
+
+- **MacFolder.tsx**: Improved feedback
+  - Increased hover glow opacity from 0.25 to 0.45
+  - Added subtle pulsing glow animation on hover
+  - Added click feedback (scale 0.98 + brightness flash)
+  - Fast 50ms response for clicks
+
+- **StonecrestReveal.tsx**: Added peek progress
+  - New peekProgress prop for frames 90-110
+  - Using EASE constants throughout
+  - Pass isClicking to MacFolder
+
+### Why
+User feedback: "mouse actions too over-the-top, scatter disappear not smooth,
+transitions don't feel good. Professional UI animation flows."
+
+Key insight: We were ADDING animation instead of DESIGNING motion.
+Professional animation requires consistency over effects.
+
+---
+
 ## [v0.13] - 2026-02-06
 
 ### Changed

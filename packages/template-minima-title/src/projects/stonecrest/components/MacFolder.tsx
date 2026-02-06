@@ -1,7 +1,13 @@
 /**
- * MacFolder Component - v0.13
+ * MacFolder Component - v0.14
  *
  * CHANGELOG:
+ * - v0.14: Improved hover glow and added click feedback
+ *   - Increased hover glow opacity from 0.25 to 0.45
+ *   - Added pulsing glow animation on hover
+ *   - Added click feedback (scale + brightness flash)
+ *   - Using unified EASE/SCALE constants from motion.ts
+ *
  * - v0.13: Complete visual rebuild to match actual macOS folder appearance
  *   - Changed from rectangles to proper SVG folder shape
  *   - Increased size from 80px to 200px for better visual presence
@@ -14,15 +20,18 @@
  *
  * LESSONS APPLIED:
  * - Lesson 2: "Apple-Style" requires actual Apple details
+ * - Lesson 7: Subtle, purposeful effects over theatrical
  * - Reference: macOS Sonoma folder icon
  */
 
 import React from 'react';
-import { interpolate, Easing } from 'remotion';
+import { interpolate, Easing, useCurrentFrame } from 'remotion';
+import { SCALE } from '../motion';
 
 interface MacFolderProps {
   label: string;
   isHovered: boolean;
+  isClicking: boolean; // NEW: click feedback
   openProgress: number; // 0 = closed, 1 = fully open
   x: number;
   y: number;
@@ -31,17 +40,33 @@ interface MacFolderProps {
 export const MacFolder: React.FC<MacFolderProps> = ({
   label,
   isHovered,
+  isClicking,
   openProgress,
   x,
   y,
 }) => {
+  const frame = useCurrentFrame();
+
   // Size - much larger for visual presence (was 80px, now 200px)
   const folderWidth = 200;
   const folderHeight = 160;
 
+  // Click feedback - quick scale down
+  const clickScale = isClicking ? SCALE.pressed : 1;
+  const clickBrightness = isClicking ? 1.15 : 1; // Flash on click
+
   // Hover effects with easing
-  const hoverScale = isHovered ? 1.02 : 1;
+  const hoverScale = isHovered ? SCALE.hover : 1;
   const hoverBrightness = isHovered ? 1.05 : 1;
+
+  // Combined scale (click overrides hover)
+  const finalScale = isClicking ? clickScale : hoverScale;
+  const finalBrightness = isClicking ? clickBrightness : hoverBrightness;
+
+  // Pulsing glow on hover (subtle animation)
+  const glowPulse = isHovered
+    ? 0.45 + Math.sin(frame * 0.15) * 0.08
+    : 0;
 
   // Open animation with proper easing
   const easedOpenProgress = interpolate(
@@ -72,23 +97,42 @@ export const MacFolder: React.FC<MacFolderProps> = ({
         position: 'absolute',
         left: x,
         top: y,
-        transform: `translate(-50%, -50%) scale(${hoverScale}) translateX(${wobbleIntensity}px)`,
+        transform: `translate(-50%, -50%) scale(${finalScale}) translateX(${wobbleIntensity}px)`,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        filter: `brightness(${hoverBrightness})`,
-        transition: 'transform 0.15s ease-out, filter 0.15s ease-out',
+        filter: `brightness(${finalBrightness})`,
+        transition: isClicking
+          ? 'transform 0.05s ease-out, filter 0.05s ease-out' // Fast click response
+          : 'transform 0.15s ease-out, filter 0.15s ease-out',
       }}
     >
-      {/* Hover glow effect */}
+      {/* Hover glow effect - more visible with pulse */}
       {isHovered && (
         <div
           style={{
             position: 'absolute',
-            width: folderWidth * 1.5,
-            height: folderHeight * 1.3,
-            background: 'radial-gradient(ellipse, rgba(90, 200, 250, 0.25), transparent 60%)',
-            filter: 'blur(30px)',
+            width: folderWidth * 1.6,
+            height: folderHeight * 1.4,
+            background: `radial-gradient(ellipse, rgba(90, 200, 250, ${glowPulse}), transparent 65%)`,
+            filter: 'blur(25px)',
+            zIndex: -1,
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+          }}
+        />
+      )}
+
+      {/* Click flash effect */}
+      {isClicking && (
+        <div
+          style={{
+            position: 'absolute',
+            width: folderWidth * 1.2,
+            height: folderHeight * 1.1,
+            background: 'radial-gradient(ellipse, rgba(255, 255, 255, 0.3), transparent 50%)',
+            filter: 'blur(15px)',
             zIndex: -1,
             top: '50%',
             left: '50%',

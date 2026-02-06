@@ -1,10 +1,22 @@
 /**
- * MouseCursor Component
- * Apple-style pointer cursor with click and hesitation states
+ * MouseCursor Component - v0.14
+ *
+ * CHANGELOG:
+ * - v0.14: Simplified hesitation to subtle 1-2px drift (was exaggerated sine waves)
+ *   - Removed layered sine/cosine jitter
+ *   - Click animation now uses proper easing
+ *   - Overall more subtle and professional
+ *
+ * - v0.12: Initial implementation with theatrical hesitation
+ *
+ * LESSONS APPLIED:
+ * - Lesson 7: Professional Animation = Consistency Over Effects
+ * - Subtlety over theatricality
  */
 
 import React from 'react';
-import { useCurrentFrame, interpolate, Easing } from 'remotion';
+import { interpolate } from 'remotion';
+import { EASE, SCALE } from '../motion';
 
 interface MouseCursorProps {
   x: number;
@@ -19,11 +31,8 @@ export const MouseCursor: React.FC<MouseCursorProps> = ({
   isClicking,
   visible = true,
 }) => {
-  const frame = useCurrentFrame();
-
-  // Click animation - cursor presses down slightly
-  const clickScale = isClicking ? 0.85 : 1;
-  const clickY = isClicking ? 2 : 0;
+  // Click animation - subtle press (was 0.85, now 0.95)
+  const clickScale = isClicking ? SCALE.pressed : SCALE.normal;
 
   if (!visible) return null;
 
@@ -33,10 +42,12 @@ export const MouseCursor: React.FC<MouseCursorProps> = ({
         position: 'absolute',
         left: x,
         top: y,
-        transform: `scale(${clickScale}) translateY(${clickY}px)`,
+        transform: `scale(${clickScale})`,
+        transformOrigin: 'top left',
         pointerEvents: 'none',
         zIndex: 1000,
         filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+        transition: isClicking ? 'none' : 'transform 0.05s ease-out',
       }}
     >
       {/* Apple-style pointer cursor */}
@@ -66,7 +77,8 @@ export const MouseCursor: React.FC<MouseCursorProps> = ({
 };
 
 /**
- * Generate mouse position with hesitation micro-movements
+ * Generate mouse position with SUBTLE micro-drift
+ * v0.14: Reduced from 8-15px movements to 1-2px max
  */
 export function getMousePositionWithHesitation(
   frame: number,
@@ -74,19 +86,13 @@ export function getMousePositionWithHesitation(
   targetY: number,
   hesitationIntensity: number = 1
 ): { x: number; y: number } {
-  // Micro-movements that feel human
-  const jitterX = Math.sin(frame * 0.5) * 3 * hesitationIntensity +
-                  Math.sin(frame * 1.3) * 2 * hesitationIntensity;
-  const jitterY = Math.cos(frame * 0.7) * 2 * hesitationIntensity +
-                  Math.cos(frame * 1.1) * 1.5 * hesitationIntensity;
-
-  // Occasional larger "uncertain" movements
-  const uncertaintyX = Math.sin(frame * 0.1) * 8 * hesitationIntensity;
-  const uncertaintyY = Math.cos(frame * 0.15) * 5 * hesitationIntensity;
+  // Subtle drift - barely noticeable (1-2px max)
+  const driftX = Math.sin(frame * 0.15) * 1.5 * hesitationIntensity;
+  const driftY = Math.cos(frame * 0.12) * 1 * hesitationIntensity;
 
   return {
-    x: targetX + jitterX + uncertaintyX,
-    y: targetY + jitterY + uncertaintyY,
+    x: targetX + driftX,
+    y: targetY + driftY,
   };
 }
 
@@ -109,7 +115,7 @@ export function interpolateMousePosition(
     {
       extrapolateLeft: 'clamp',
       extrapolateRight: 'clamp',
-      easing: Easing.bezier(0.25, 0.1, 0.25, 1), // Apple's default easing
+      easing: EASE.default,
     }
   );
 
