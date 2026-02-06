@@ -1,0 +1,132 @@
+/**
+ * SearchBar Component
+ * Search bar with typing animation and expand to browser
+ */
+
+import React from 'react';
+import { useCurrentFrame, interpolate, Easing } from 'remotion';
+
+interface SearchBarProps {
+  text: string;
+  typingProgress: number; // 0 = empty, 1 = fully typed
+  expandProgress: number; // 0 = search bar, 1 = full browser window
+  visible: boolean;
+  centerX: number;
+  centerY: number;
+}
+
+export const SearchBar: React.FC<SearchBarProps> = ({
+  text,
+  typingProgress,
+  expandProgress,
+  visible,
+  centerX,
+  centerY,
+}) => {
+  const frame = useCurrentFrame();
+
+  if (!visible) return null;
+
+  // Characters to show based on typing progress
+  const charsToShow = Math.floor(text.length * typingProgress);
+  const displayText = text.slice(0, charsToShow);
+
+  // Cursor blink
+  const cursorVisible = Math.floor(frame / 15) % 2 === 0 || typingProgress < 1;
+
+  // Bar dimensions - expand from search bar to browser
+  const barWidth = interpolate(expandProgress, [0, 1], [500, 1600]);
+  const barHeight = interpolate(expandProgress, [0, 1], [50, 900]);
+  const borderRadius = interpolate(expandProgress, [0, 1], [25, 12]);
+  const y = interpolate(expandProgress, [0, 1], [centerY, centerY]);
+
+  // Opacity for search bar UI elements
+  const searchUIOpacity = interpolate(expandProgress, [0, 0.3], [1, 0]);
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left: centerX,
+        top: y,
+        transform: 'translate(-50%, -50%)',
+        width: barWidth,
+        height: barHeight,
+        background: expandProgress < 0.5
+          ? 'rgba(255, 255, 255, 0.95)'
+          : 'rgba(255, 255, 255, 1)',
+        borderRadius,
+        boxShadow: '0 8px 40px rgba(0,0,0,0.2)',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Search bar content (fades out during expand) */}
+      <div
+        style={{
+          opacity: searchUIOpacity,
+          display: 'flex',
+          alignItems: 'center',
+          height: 50,
+          padding: '0 20px',
+        }}
+      >
+        {/* Search icon */}
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          style={{ marginRight: 12, opacity: 0.4 }}
+        >
+          <circle cx="11" cy="11" r="7" stroke="#666" strokeWidth="2" />
+          <path d="M16 16L20 20" stroke="#666" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+
+        {/* Text input */}
+        <span
+          style={{
+            fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+            fontSize: 16,
+            color: '#333',
+            flex: 1,
+          }}
+        >
+          {displayText}
+          {/* Typing cursor */}
+          <span
+            style={{
+              display: 'inline-block',
+              width: 2,
+              height: 20,
+              background: '#007AFF',
+              marginLeft: 1,
+              verticalAlign: 'middle',
+              opacity: cursorVisible ? 1 : 0,
+            }}
+          />
+        </span>
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Calculate typing progress for a given frame
+ * Returns 0-1 based on character timing
+ */
+export function getTypingProgress(
+  frame: number,
+  startFrame: number,
+  text: string,
+  framesPerChar: number = 3
+): number {
+  const totalFrames = text.length * framesPerChar;
+  return interpolate(
+    frame - startFrame,
+    [0, totalFrames],
+    [0, 1],
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+  );
+}

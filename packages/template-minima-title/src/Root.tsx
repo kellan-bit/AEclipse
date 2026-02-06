@@ -17,6 +17,7 @@ import { TitleCardScene } from './scenes/TitleCardScene';
 
 // Projects
 import { StonecrestIntro } from './projects/stonecrest/StonecrestIntro';
+import { StonecrestReveal } from './projects/stonecrest/StonecrestReveal';
 
 // ============================================
 // SCHEMAS - Enable UI editing for all compositions
@@ -193,6 +194,16 @@ export const RemotionRoot: React.FC = () => {
           id="StonecrestIntro"
           component={StonecrestIntro}
           durationInFrames={900}
+          fps={30}
+          width={1920}
+          height={1080}
+        />
+
+        {/* Stonecrest v0.12 - Apple-Style Folder Reveal Animation */}
+        <Composition
+          id="StonecrestReveal"
+          component={StonecrestReveal}
+          durationInFrames={600}
           fps={30}
           width={1920}
           height={1080}
