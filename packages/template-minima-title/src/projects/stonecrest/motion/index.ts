@@ -29,6 +29,12 @@ export {
   chainCurves,
   type CurveFunction,
   type CurveName,
+
+  // Momentum curves (The "Achoo" Pattern)
+  createMomentumCurve,
+  MOMENTUM_CURVES,
+  getMomentumCurve,
+  type MomentumCurveName,
 } from './curves';
 
 // Core - motion primitives
@@ -37,17 +43,24 @@ export {
   type SpringTransition,
   type TweenTransition,
   type PhysicsTransition,
+  type MomentumTransition,
   type Transition,
 
-  // Presets
+  // Spring presets
   SPRING_PRESETS,
   DURATION,
   type SpringPreset,
+
+  // Momentum presets
+  MOMENTUM_PRESETS,
+  type MomentumPreset,
 
   // Transition factories
   springTransition,
   tweenTransition,
   physicsTransition,
+  momentumTransition,
+  customMomentumTransition,
 
   // MotionValue class
   MotionValue,
@@ -71,6 +84,13 @@ export {
   useMotion,
   useSpring,
   useTween,
+
+  // Momentum hooks (The "Achoo" Pattern)
+  useMomentum,
+  useMomentumPreset,
+  useMomentumMulti,
+  useChainedMomentum,
+  useMomentumWithVelocity,
 
   // Multi-value hooks
   useSpringMulti,

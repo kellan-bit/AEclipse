@@ -601,6 +601,24 @@ git push origin claude/analyze-program-functionality-gb52b
 
 ---
 
+### Principle: Momentum Transfer (The "Achoo")
+**Local Fix:** Added three-phase momentum curves (anticipation → action → settle)
+**Global Application:** Natural motion has energy that builds, releases, and dissipates. The sneeze metaphor ("ah-ah-ah-CHOO!") captures this universal pattern. Without anticipation, motion appears from nowhere. Without overshoot, motion hits an invisible wall. Without settle, motion stops unnaturally.
+
+**Applies to:**
+- **Animation** — UI transitions, reveals, gesture responses
+- **Music production** — tension/release, builds before drops
+- **Storytelling** — setup before payoff, tension before resolution
+- **Sports mechanics** — backswing, windup, follow-through
+- **Public speaking** — pause before key point, emphasis then settle
+- **UX design** — confirmation before destructive action
+- **Comedy** — setup, delivery, callback
+- **Magic/illusion** — misdirection, reveal, aftermath
+
+**The Rule:** Momentum is universal. Any interaction without anticipation feels abrupt, without overshoot feels constrained, without settle feels incomplete. The "achoo" pattern creates narrative even in 200ms.
+
+---
+
 ### How to Add New Global Learnings
 
 When you discover a new principle through local fixes:
@@ -796,4 +814,135 @@ CURVES.folderOpen        // Mechanical hinge feel
 CURVES.photoBurst        // Energetic expansion
 CURVES.searchGrow        // Responsive UI growth
 CURVES.metamorphosis     // Smooth transformation
+```
+
+---
+
+## Lesson 19: Momentum — The "Achoo" Pattern (v0.27)
+
+**Problem:** Animations feel mechanical. Elements move from A to B without life.
+
+**Insight:** Real motion has momentum. Like a sneeze, energy builds up and carries through:
+- **"Ah-ah-ah..."** = Anticipation (slight windup/pullback)
+- **"CHOO!"** = Action (explosive release, peak velocity)
+- **Settle** = Follow-through (overshoot target, ease back)
+
+**Why Linear/Basic Easing Looks Wrong:**
+- No anticipation = motion appears "out of nowhere"
+- No overshoot = motion "hits a wall" at target
+- No settle = unnatural abrupt stop
+- Energy doesn't transfer between movements
+
+**Right Approach: THREE-PHASE MOMENTUM CURVES**
+
+```tsx
+import { useMomentum, MOMENTUM_CURVES } from '../motion';
+
+// The sneeze pattern for a dramatic reveal
+const scale = useMomentum(0, 1, startFrame, 24, 'sneeze');
+
+// Quick tap for button press
+const buttonScale = useMomentum(1, 0.95, clickFrame, 8, 'tap');
+
+// Flick feel for card swipe
+const cardX = useMomentum(0, 300, swipeFrame, 12, 'flick');
+```
+
+**Momentum Presets:**
+| Preset | Anticipation | Overshoot | Use Case |
+|--------|--------------|-----------|----------|
+| `tap` | 2% | 4% | Button presses, micro-interactions |
+| `flick` | 3% | 8% | Swipes, list scrolling |
+| `throw` | 5% | 12% | Drag release, physics |
+| `sneeze` | 8% | 15% | Hero reveals, emphasis |
+| `bounce` | 2% | 18% | Playful UI, notifications |
+| `whip` | 6% | 6% | Fast snaps, quick responses |
+| `breathe` | 1% | 2% | Ambient, subtle alive feel |
+
+**Velocity Inheritance for Chained Animations:**
+```tsx
+// When one animation ends, the next begins with momentum
+const x = useChainedMomentum([
+  [0, 0],      // Start at 0
+  [30, 100],   // Move to 100 at frame 30
+  [60, 50],    // Move to 50 at frame 60 (momentum carries!)
+], 'flick', 15);
+
+// Or get velocity for physics handoff
+const { value, velocity } = useMomentumWithVelocity(0, 100, startFrame, 20, 'throw');
+```
+
+**When to Use Each Type:**
+| Motion Type | When to Use |
+|-------------|-------------|
+| `spring` | Physical objects, bounce, settle |
+| `tween` | Opacity, color, controlled timing |
+| `momentum` | UI gestures, reveals, emphasis |
+| `physics` | Drag release, inertia scrolling |
+
+**Verification Tests:**
+1. **Anticipation visible?** — Watch at 0.5x. Should see slight "windup"
+2. **Overshoot natural?** — Element should briefly pass target
+3. **Settle smooth?** — Return to target should feel like energy dissipating
+4. **Chain connected?** — Multiple movements should feel like ONE gesture
+
+**Global Application:**
+This applies beyond animation:
+- **Music** — tension builds before the drop
+- **Comedy** — setup before punchline
+- **UX writing** — "Are you sure?" before destructive action
+- **Sports** — backswing before swing
+- **Magic** — misdirection before reveal
+
+**The Rule:** Motion without momentum is information transfer. Motion WITH momentum is storytelling. The "achoo" is universal.
+
+---
+
+## Quick Reference: Momentum Hooks (v0.27)
+
+```tsx
+import {
+  // Single value momentum
+  useMomentum,
+  useMomentumPreset,
+
+  // Multi-value momentum
+  useMomentumMulti,
+
+  // Chained momentum with velocity inheritance
+  useChainedMomentum,
+
+  // Get velocity for physics handoff
+  useMomentumWithVelocity,
+
+  // Momentum curves (for custom use)
+  MOMENTUM_CURVES,
+  createMomentumCurve,
+} from '../motion';
+
+// Basic usage
+const scale = useMomentum(0, 1, startFrame, 24, 'sneeze');
+
+// Using named presets
+const x = useMomentumPreset(0, 100, startFrame, 'heroReveal');
+
+// Multiple values
+const { x, y, scale } = useMomentumMulti({
+  x: [0, 100],
+  y: [0, 50],
+  scale: [0, 1],
+}, startFrame, 24, 'flick');
+
+// Chained with momentum carry-through
+const position = useChainedMomentum([
+  [0, 0], [30, 100], [60, 50], [90, 200]
+], 'flick', 15);
+
+// Custom momentum curve
+const customCurve = createMomentumCurve(
+  0.1,    // anticipation: 10% pullback
+  0.2,    // overshoot: 20% past target
+  0.2,    // anticipatePhase: ends at 20% progress
+  0.5     // actionPhase: main action ends at 50%
+);
 ```

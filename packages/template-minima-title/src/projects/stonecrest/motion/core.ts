@@ -9,7 +9,7 @@
  */
 
 import { spring as remotionSpring } from 'remotion';
-import { CurveFunction, CurveName, getCurve, CURVES } from './curves';
+import { CurveFunction, CurveName, getCurve, CURVES, MomentumCurveName, getMomentumCurve } from './curves';
 
 // ============================================
 // TRANSITION TYPES
@@ -48,7 +48,27 @@ export interface PhysicsTransition {
   delay?: number;       // Delay in frames
 }
 
-export type Transition = SpringTransition | TweenTransition | PhysicsTransition;
+/**
+ * Momentum transition - three-phase "achoo" pattern
+ *
+ * The sneeze metaphor:
+ * - Anticipation: "ah-ah-ah" - slight windup/pullback
+ * - Action: "CHOO!" - explosive release with peak velocity
+ * - Settle: energy dissipates, overshoots and returns
+ */
+export interface MomentumTransition {
+  type: 'momentum';
+  duration: number;       // Total duration in frames
+  preset?: MomentumCurveName;  // Named preset (tap, flick, throw, sneeze, etc.)
+  // Or custom config:
+  anticipation?: number;  // Pullback amount (0-0.15, default: 0.05)
+  overshoot?: number;     // Overshoot amount (0-0.2, default: 0.08)
+  anticipatePhase?: number; // When anticipation ends (0-1, default: 0.15)
+  actionPhase?: number;   // When action ends (0-1, default: 0.6)
+  delay?: number;         // Delay in frames
+}
+
+export type Transition = SpringTransition | TweenTransition | PhysicsTransition | MomentumTransition;
 
 // ============================================
 // SPRING PRESETS (Named configurations)
@@ -155,6 +175,80 @@ export function physicsTransition(
   return { type: 'physics', velocity, friction, delay };
 }
 
+/**
+ * Create a momentum transition
+ *
+ * The "achoo" pattern: anticipation → action → settle
+ *
+ * @param duration - Duration in frames
+ * @param preset - Named preset or 'custom' for manual config
+ * @param delay - Optional delay in frames
+ */
+export function momentumTransition(
+  duration: number,
+  preset: MomentumCurveName = 'flick',
+  delay?: number
+): MomentumTransition {
+  return { type: 'momentum', duration, preset, delay };
+}
+
+/**
+ * Create a custom momentum transition with fine-tuned parameters
+ */
+export function customMomentumTransition(
+  duration: number,
+  config: {
+    anticipation?: number;
+    overshoot?: number;
+    anticipatePhase?: number;
+    actionPhase?: number;
+  },
+  delay?: number
+): MomentumTransition {
+  return {
+    type: 'momentum',
+    duration,
+    ...config,
+    delay,
+  };
+}
+
+// ============================================
+// MOMENTUM PRESETS (Named timing configurations)
+// ============================================
+
+/**
+ * Momentum presets for common UI patterns
+ *
+ * Each preset defines:
+ * - duration: How long the animation takes (frames at 30fps)
+ * - preset: Which momentum curve to use
+ */
+export const MOMENTUM_PRESETS = {
+  /** Button tap - quick and snappy */
+  buttonTap: { duration: 8, preset: 'tap' as MomentumCurveName },
+
+  /** Card flick - medium feel, good for swipes */
+  cardFlick: { duration: 12, preset: 'flick' as MomentumCurveName },
+
+  /** Drag release - physics-like throw feel */
+  dragRelease: { duration: 18, preset: 'throw' as MomentumCurveName },
+
+  /** Hero reveal - dramatic "achoo" for key moments */
+  heroReveal: { duration: 24, preset: 'sneeze' as MomentumCurveName },
+
+  /** Notification bounce - playful attention-grab */
+  notificationBounce: { duration: 15, preset: 'bounce' as MomentumCurveName },
+
+  /** Fast snap - quick whip-like response */
+  fastSnap: { duration: 10, preset: 'whip' as MomentumCurveName },
+
+  /** Ambient pulse - subtle alive feel */
+  ambientPulse: { duration: 60, preset: 'breathe' as MomentumCurveName },
+} as const;
+
+export type MomentumPreset = keyof typeof MOMENTUM_PRESETS;
+
 // ============================================
 // MOTION VALUE CLASS
 // ============================================
@@ -202,6 +296,8 @@ export class MotionValue {
         return this.getTween(effectiveFrame);
       case 'physics':
         return this.getPhysics(effectiveFrame, fps);
+      case 'momentum':
+        return this.getMomentum(effectiveFrame);
       default:
         return this.to;
     }
@@ -260,6 +356,34 @@ export class MotionValue {
     }
 
     return position;
+  }
+
+  private getMomentum(frame: number): number {
+    const config = this.transition as MomentumTransition;
+    const duration = config.duration;
+
+    if (frame >= duration) {
+      return this.to;
+    }
+
+    // Get the momentum curve (preset or custom)
+    let curve: CurveFunction;
+    if (config.preset) {
+      curve = getMomentumCurve(config.preset);
+    } else {
+      // Import createMomentumCurve dynamically to avoid circular deps
+      const { createMomentumCurve } = require('./curves');
+      curve = createMomentumCurve(
+        config.anticipation ?? 0.05,
+        config.overshoot ?? 0.08,
+        config.anticipatePhase ?? 0.15,
+        config.actionPhase ?? 0.6
+      );
+    }
+
+    const linearProgress = frame / duration;
+    const momentumProgress = curve(linearProgress);
+    return this.from + (this.to - this.from) * momentumProgress;
   }
 
   /**

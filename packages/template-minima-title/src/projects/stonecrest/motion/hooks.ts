@@ -12,13 +12,17 @@ import {
   Transition,
   SpringTransition,
   TweenTransition,
+  MomentumTransition,
   SPRING_PRESETS,
   SpringPreset,
+  MOMENTUM_PRESETS,
+  MomentumPreset,
   MotionValue,
   motionSpring,
   motionTween,
+  momentumTransition,
 } from './core';
-import { getCurve, CurveName, CurveFunction, CURVES } from './curves';
+import { getCurve, CurveName, CurveFunction, CURVES, MomentumCurveName, getMomentumCurve, createMomentumCurve } from './curves';
 
 // ============================================
 // CORE HOOKS
@@ -131,6 +135,225 @@ export function useTween(
   const easedProgress = easeFn(linearProgress);
 
   return from + (to - from) * easedProgress;
+}
+
+// ============================================
+// MOMENTUM HOOKS (The "Achoo" Pattern)
+// ============================================
+
+/**
+ * useMomentum - Three-phase momentum animation
+ *
+ * The "achoo" pattern creates natural-feeling motion with:
+ * - Anticipation: slight windup (the "ah-ah-ah")
+ * - Action: explosive release (the "CHOO!")
+ * - Settle: overshoot and return (energy dissipation)
+ *
+ * @param from - Starting value
+ * @param to - Target value
+ * @param startFrame - Frame when animation begins
+ * @param duration - Duration in frames
+ * @param preset - Momentum curve preset
+ * @param delay - Optional delay in frames
+ *
+ * @example
+ * // Button press
+ * const scale = useMomentum(1, 0.95, clickFrame, 8, 'tap');
+ *
+ * // Card swipe
+ * const x = useMomentum(0, 300, swipeFrame, 12, 'flick');
+ *
+ * // Dramatic reveal
+ * const opacity = useMomentum(0, 1, revealFrame, 24, 'sneeze');
+ */
+export function useMomentum(
+  from: number,
+  to: number,
+  startFrame: number,
+  duration: number,
+  preset: MomentumCurveName = 'flick',
+  delay: number = 0
+): number {
+  const frame = useCurrentFrame();
+
+  const effectiveFrame = frame - startFrame - delay;
+
+  if (effectiveFrame < 0) {
+    return from;
+  }
+
+  if (effectiveFrame >= duration) {
+    return to;
+  }
+
+  const curve = getMomentumCurve(preset);
+  const linearProgress = effectiveFrame / duration;
+  const momentumProgress = curve(linearProgress);
+
+  return from + (to - from) * momentumProgress;
+}
+
+/**
+ * useMomentumPreset - Use a named momentum preset
+ *
+ * @param from - Starting value
+ * @param to - Target value
+ * @param startFrame - Frame when animation begins
+ * @param preset - Named preset from MOMENTUM_PRESETS
+ * @param delay - Optional delay in frames
+ *
+ * @example
+ * const scale = useMomentumPreset(0, 1, 30, 'heroReveal');
+ * const x = useMomentumPreset(0, 100, 45, 'cardFlick');
+ */
+export function useMomentumPreset(
+  from: number,
+  to: number,
+  startFrame: number,
+  preset: MomentumPreset,
+  delay: number = 0
+): number {
+  const config = MOMENTUM_PRESETS[preset];
+  return useMomentum(from, to, startFrame, config.duration, config.preset, delay);
+}
+
+/**
+ * useMomentumMulti - Animate multiple values with same momentum
+ *
+ * @example
+ * const { scale, opacity } = useMomentumMulti({
+ *   scale: [0, 1],
+ *   opacity: [0, 1],
+ * }, 30, 24, 'sneeze');
+ */
+export function useMomentumMulti<T extends Record<string, [number, number]>>(
+  values: T,
+  startFrame: number,
+  duration: number,
+  preset: MomentumCurveName = 'flick'
+): { [K in keyof T]: number } {
+  const frame = useCurrentFrame();
+
+  const effectiveFrame = frame - startFrame;
+  const curve = getMomentumCurve(preset);
+
+  const result: Record<string, number> = {};
+
+  for (const key in values) {
+    if (Object.prototype.hasOwnProperty.call(values, key)) {
+      const [from, to] = values[key];
+
+      if (effectiveFrame < 0) {
+        result[key] = from;
+      } else if (effectiveFrame >= duration) {
+        result[key] = to;
+      } else {
+        const progress = curve(effectiveFrame / duration);
+        result[key] = from + (to - from) * progress;
+      }
+    }
+  }
+
+  return result as { [K in keyof T]: number };
+}
+
+/**
+ * useChainedMomentum - Chain momentum animations with velocity inheritance
+ *
+ * When one animation ends, the next begins with inherited momentum.
+ * This creates fluid, connected motion where energy transfers between movements.
+ *
+ * @param keyframes - Array of [frame, value] pairs
+ * @param preset - Momentum preset for each transition
+ * @param transitionDuration - Duration of each transition
+ *
+ * @example
+ * // Element moves through three positions with momentum carrying through
+ * const x = useChainedMomentum([
+ *   [0, 0],      // Start at 0
+ *   [30, 100],   // Move to 100 at frame 30
+ *   [60, 50],    // Move to 50 at frame 60
+ *   [90, 200],   // Move to 200 at frame 90
+ * ], 'flick', 15);
+ */
+export function useChainedMomentum(
+  keyframes: [number, number][],
+  preset: MomentumCurveName = 'flick',
+  transitionDuration: number = 15
+): number {
+  const frame = useCurrentFrame();
+
+  if (keyframes.length === 0) return 0;
+  if (keyframes.length === 1) return keyframes[0][1];
+
+  // Sort keyframes by frame
+  const sorted = [...keyframes].sort((a, b) => a[0] - b[0]);
+
+  // Find which segment we're in
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const [startFrame, startValue] = sorted[i];
+    const [endFrame, endValue] = sorted[i + 1];
+
+    if (frame >= startFrame && frame < endFrame) {
+      // We're in this segment
+      const segmentProgress = (frame - startFrame) / (endFrame - startFrame);
+      const curve = getMomentumCurve(preset);
+      const easedProgress = curve(segmentProgress);
+      return startValue + (endValue - startValue) * easedProgress;
+    }
+  }
+
+  // Before first keyframe
+  if (frame < sorted[0][0]) {
+    return sorted[0][1];
+  }
+
+  // After last keyframe
+  return sorted[sorted.length - 1][1];
+}
+
+/**
+ * useMomentumWithVelocity - Track velocity for physics-based follow-up
+ *
+ * Returns both the current value and the instantaneous velocity,
+ * useful for handing off to physics simulations or next animations.
+ *
+ * @returns { value, velocity } - Current value and velocity
+ */
+export function useMomentumWithVelocity(
+  from: number,
+  to: number,
+  startFrame: number,
+  duration: number,
+  preset: MomentumCurveName = 'flick'
+): { value: number; velocity: number } {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  const effectiveFrame = frame - startFrame;
+  const curve = getMomentumCurve(preset);
+
+  if (effectiveFrame < 0) {
+    return { value: from, velocity: 0 };
+  }
+
+  if (effectiveFrame >= duration) {
+    return { value: to, velocity: 0 };
+  }
+
+  // Calculate value
+  const progress = effectiveFrame / duration;
+  const momentumProgress = curve(progress);
+  const value = from + (to - from) * momentumProgress;
+
+  // Estimate velocity (derivative approximation)
+  const epsilon = 0.001;
+  const nextProgress = Math.min(progress + epsilon, 1);
+  const nextMomentumProgress = curve(nextProgress);
+  const nextValue = from + (to - from) * nextMomentumProgress;
+  const velocity = ((nextValue - value) / epsilon) * fps / duration;
+
+  return { value, velocity };
 }
 
 // ============================================

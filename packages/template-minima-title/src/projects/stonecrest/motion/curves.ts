@@ -374,3 +374,114 @@ export function chainCurves(
     }
   };
 }
+
+// ============================================
+// MOMENTUM CURVES (The "Achoo" Pattern)
+// ============================================
+
+/**
+ * Three-phase momentum curve generator
+ *
+ * The "Achoo" Pattern:
+ * - Phase 1: Anticipation (0 to anticipateEnd) - slight pullback
+ * - Phase 2: Action (anticipateEnd to actionEnd) - peak velocity toward target
+ * - Phase 3: Settle (actionEnd to 1) - overshoot and ease back
+ *
+ * @param anticipation - How much to pull back (0 = none, 0.1 = 10% pullback)
+ * @param overshoot - How much to overshoot target (0 = none, 0.1 = 10% overshoot)
+ * @param anticipateEnd - When anticipation ends (0-1, typically 0.1-0.2)
+ * @param actionEnd - When main action ends (0-1, typically 0.5-0.7)
+ */
+export function createMomentumCurve(
+  anticipation: number = 0.05,
+  overshoot: number = 0.08,
+  anticipateEnd: number = 0.15,
+  actionEnd: number = 0.6
+): CurveFunction {
+  return (t: number): number => {
+    if (t <= 0) return 0;
+    if (t >= 1) return 1;
+
+    // Phase 1: Anticipation (slight pullback)
+    if (t < anticipateEnd) {
+      const phase = t / anticipateEnd;
+      // Smooth pullback curve (ease-in-out for subtle windup)
+      const eased = phase * phase * (3 - 2 * phase);
+      return -anticipation * Math.sin(eased * Math.PI);
+    }
+
+    // Phase 2: Action (fast movement toward and past target)
+    if (t < actionEnd) {
+      const phase = (t - anticipateEnd) / (actionEnd - anticipateEnd);
+      // Start from anticipation low point, accelerate through
+      const startValue = -anticipation * Math.sin(Math.PI); // = 0 at end of anticipation
+      const targetValue = 1 + overshoot;
+      // Fast ease-out for explosive release
+      const eased = 1 - Math.pow(1 - phase, 3);
+      return startValue + (targetValue - startValue) * eased;
+    }
+
+    // Phase 3: Settle (ease back from overshoot to target)
+    const phase = (t - actionEnd) / (1 - actionEnd);
+    const startValue = 1 + overshoot;
+    // Gentle ease-out for natural settle
+    const eased = 1 - Math.pow(1 - phase, 2);
+    return startValue - overshoot * eased;
+  };
+}
+
+/**
+ * Pre-built momentum curves for different UI contexts
+ */
+export const MOMENTUM_CURVES = {
+  /**
+   * Tap - minimal anticipation, quick settle
+   * Use for: button presses, toggles, micro-interactions
+   */
+  tap: createMomentumCurve(0.02, 0.04, 0.1, 0.5),
+
+  /**
+   * Flick - medium momentum, noticeable follow-through
+   * Use for: swipes, list scrolling, card dismissal
+   */
+  flick: createMomentumCurve(0.03, 0.08, 0.12, 0.55),
+
+  /**
+   * Throw - high momentum, long settle
+   * Use for: drag release, physics-based interactions
+   */
+  throw: createMomentumCurve(0.05, 0.12, 0.15, 0.5),
+
+  /**
+   * Sneeze ("Achoo") - full anticipation → explosive action → settle
+   * Use for: dramatic reveals, hero animations, emphasis
+   */
+  sneeze: createMomentumCurve(0.08, 0.15, 0.18, 0.55),
+
+  /**
+   * Bounce - minimal anticipation, extra overshoot
+   * Use for: playful UI, notifications, attention-grabbing
+   */
+  bounce: createMomentumCurve(0.02, 0.18, 0.1, 0.45),
+
+  /**
+   * Whip - strong anticipation, fast snap, quick settle
+   * Use for: fast UI transitions, snappy feedback
+   */
+  whip: createMomentumCurve(0.06, 0.06, 0.2, 0.65),
+
+  /**
+   * Breathe - very subtle, for ambient motion
+   * Use for: idle states, subtle "alive" feel
+   */
+  breathe: createMomentumCurve(0.01, 0.02, 0.25, 0.6),
+} as const;
+
+export type MomentumCurveName = keyof typeof MOMENTUM_CURVES;
+
+/**
+ * Get a momentum curve by name
+ */
+export function getMomentumCurve(name: MomentumCurveName): CurveFunction {
+  return MOMENTUM_CURVES[name];
+}
