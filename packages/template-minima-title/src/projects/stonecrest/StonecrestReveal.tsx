@@ -1,7 +1,13 @@
 /**
- * Stonecrest v0.21 - LEAP 2: Photo-to-SearchBar Metamorphosis
+ * Stonecrest v0.25 - Phase A: The Invisible Seam (Photo→SearchBar perfected)
  *
  * CHANGELOG:
+ * - v0.25: Phase A complete - "The Invisible Seam"
+ *   - v0.22: Gap Elimination - SEARCH_EMERGE moved to 297 (3 frames before merge)
+ *   - v0.23: Opacity Orchestration - Photo fade [0.15, 0.65] for ~100% combined opacity
+ *   - v0.24: Dimensional Precision - Bar starts at 340×86 (matches cluster)
+ *   - v0.25: Detail Continuity - borderRadius 8→25, elevation shadows
+ *
  * - v0.21: LEAP 2 - Photo-to-SearchBar Metamorphosis
  *   - Formation phase: middle row photos slide into horizontal strip
  *   - Blur-merge: photos blur + desaturate as they dissolve
@@ -135,7 +141,7 @@ const TIMELINE = {
   // Act 4: The Transform - v0.21: LEAP 2 Metamorphosis
   FORMATION_START: 275,   // NEW: Photos form horizontal strip
   MERGE_START: 300,       // CHANGED: Was 285 - merge starts after formation
-  SEARCH_EMERGE: 310,     // NEW: Search bar ghost appears (overlaps merge)
+  SEARCH_EMERGE: 297,     // v0.22: Bar ghost appears 3 frames BEFORE merge (was 310)
   MERGE_END: 325,         // CHANGED: Was 330 - tighter merge
   SEARCH_SOLIDIFIED: 325, // NEW: Bar fully opaque, photos gone
   SEARCH_BAR_READY: 350,  // NEW: Bar at full 500x50

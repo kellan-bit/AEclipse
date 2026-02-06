@@ -9,8 +9,8 @@ This file contains persistent instructions, preferences, and context that should
 ## Project Overview
 
 Building an Apple-style property introduction animation for Stonecrest using Remotion.
-- **Current version:** v0.21 (LEAP 2 - Metamorphosis complete)
-- **Next:** v0.3 "The Invisible Seam" - Phase A (v0.22-v0.25) in progress
+- **Current version:** v0.25 (Phase A complete - The Invisible Seam)
+- **Next:** v0.3 - Phase B (v0.26-v0.27): Folder→Photos metamorphosis
 - **Philosophy:** Fluidity = seamlessness, not effects
 - **v0.20 Philosophy:** Invisible enhancement - feel depth, don't see technique
 

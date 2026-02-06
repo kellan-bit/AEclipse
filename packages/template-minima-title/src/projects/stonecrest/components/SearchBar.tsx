@@ -1,7 +1,11 @@
 /**
- * SearchBar Component - v0.21
+ * SearchBar Component - v0.25
  *
  * CHANGELOG:
+ * - v0.25: Phase A - The Invisible Seam
+ *   - v0.24: Dimensions 340×86 to match photo cluster at emergence
+ *   - v0.25: borderRadius 8→25 (matches PhotoGrid), getElevationShadow()
+ *
  * - v0.21: LEAP 2 - Two-stage emergence from photo strip
  *   - Stage 1: Solidification (emergenceStart → photosFullyMerged)
  *     - Bar appears at 200x60 (matching compressed photo cluster)
@@ -24,7 +28,7 @@
 
 import React from 'react';
 import { useCurrentFrame, useVideoConfig, interpolate } from 'remotion';
-import { createSpring, springTo } from '../motion';
+import { createSpring, springTo, getElevationShadow, ELEVATION } from '../motion';
 
 interface SearchBarProps {
   text: string;
@@ -86,17 +90,17 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     const solidificationDuration = photosFullyMergedFrame - emergenceStartFrame;
     const solidifyProgress = (frame - emergenceStartFrame) / solidificationDuration;
 
-    barWidth = 200;   // Match compressed photo strip
-    barHeight = 60;   // Match photo height
-    borderRadius = 16; // Rounded but not pill-shaped yet
+    barWidth = 340;   // v0.24: Match actual photo cluster width (was 200)
+    barHeight = 86;   // v0.24: Match actual cluster height (was 60)
+    borderRadius = 8; // v0.25: Match PhotoGrid borderRadius (was 16)
     barOpacity = interpolate(solidifyProgress, [0, 1], [0.2, 0.7]);
   } else if (isGrowing) {
     // Stage 2: Growth - spring to full search bar size
     const growthSpring = createSpring(frame - photosFullyMergedFrame, fps, 'responsive', 0);
 
-    barWidth = springTo(growthSpring, [200, 500]);
-    barHeight = springTo(growthSpring, [60, 50]);
-    borderRadius = springTo(growthSpring, [16, 25]); // Become pill-shaped
+    barWidth = springTo(growthSpring, [340, 500]);   // v0.24: Start from cluster width (was 200)
+    barHeight = springTo(growthSpring, [86, 50]);    // v0.24: Start from cluster height (was 60)
+    borderRadius = springTo(growthSpring, [8, 25]);  // v0.25: Animate from 8, not 16
     barOpacity = springTo(growthSpring, [0.7, 1.0]);
   } else if (isExpanding) {
     // Stage 3: Expansion to browser
@@ -137,10 +141,10 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         opacity: barOpacity,
         background: 'rgba(255, 255, 255, 0.98)',
         borderRadius,
-        // v0.21: Shadow grows with emergence (subtle during solidification)
-        boxShadow: isSolidifying
-          ? '0 4px 20px rgba(0,0,0,0.1)'
-          : '0 8px 40px rgba(0,0,0,0.2)',
+        // v0.25: Shadow uses elevation system for consistency
+        boxShadow: getElevationShadow(
+          isSolidifying ? ELEVATION.resting : (isGrowing ? ELEVATION.hover : ELEVATION.lifted)
+        ),
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',

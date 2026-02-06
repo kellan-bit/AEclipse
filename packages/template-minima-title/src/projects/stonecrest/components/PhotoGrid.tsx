@@ -1,7 +1,11 @@
 /**
- * PhotoGrid Component - v0.21
+ * PhotoGrid Component - v0.25
  *
  * CHANGELOG:
+ * - v0.23: Phase A - Opacity Orchestration
+ *   - Fade range [0.5, 0.95] → [0.15, 0.65] for ~100% combined opacity with bar
+ *   - Photos fade WHILE bar solidifies (no opacity competition)
+ *
  * - v0.21: LEAP 2 - Photo-to-SearchBar Metamorphosis
  *   - Formation phase: middle row slides into horizontal strip (FORMATION_START)
  *   - Enhanced merge: blur peaks mid-animation, desaturation progressive
@@ -331,8 +335,8 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
       // DESATURATION: progressive grayscale as photos become search bar
       desaturation = Math.min(0.8, mergeSpring * 1.2);
 
-      // OPACITY: fades in final half (after blur peaks)
-      opacity = interpolate(mergeSpring, [0.5, 0.95], [1, 0], {
+      // OPACITY: v0.23 - fades early so photos+bar sum ~100% (was [0.5, 0.95])
+      opacity = interpolate(mergeSpring, [0.15, 0.65], [1, 0], {
         extrapolateLeft: 'clamp',
         extrapolateRight: 'clamp',
       });
