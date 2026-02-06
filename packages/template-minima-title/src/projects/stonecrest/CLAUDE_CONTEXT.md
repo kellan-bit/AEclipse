@@ -9,9 +9,10 @@ This file contains persistent instructions, preferences, and context that should
 ## Project Overview
 
 Building an Apple-style property introduction animation for Stonecrest using Remotion.
-- **Current version:** v0.16 (THE FOLDER - complete)
-- **Roadmap:** v0.17 → v0.20 (see plan file)
+- **Current version:** v0.20 (DEPTH SYSTEM - complete)
+- **Next:** LEAP 2 - Photo-to-SearchBar Metamorphosis
 - **Philosophy:** Fluidity = seamlessness, not effects
+- **v0.20 Philosophy:** Invisible enhancement - feel depth, don't see technique
 
 ---
 
@@ -55,12 +56,21 @@ Import from: `@minima-brand/colors` and `@minima-brand/themes`
 
 ## Documentation Requirements
 
-### After Every Session
-Update these files with any new learnings:
-1. `LESSONS.md` - Reusable patterns
-2. `CHANGELOG.md` - Version history
-3. `CLAUDE_CONTEXT.md` (this file) - Persistent instructions
-4. Plan file - Roadmap updates
+### ⚠️ CRITICAL: Update Documentation INCREMENTALLY
+
+**DO NOT wait until end of session to update docs.** Sessions can run out of context.
+
+**Update docs IMMEDIATELY when you:**
+- Complete a feature or version milestone
+- Learn a new lesson or pattern
+- Receive user feedback or preferences
+- Make a decision that future sessions should know
+
+**Update in this order (after each milestone):**
+1. `LESSONS.md` - Add new patterns/learnings FIRST
+2. `CLAUDE_CONTEXT.md` (this file) - Update version, add preferences
+3. Plan file - Mark completed, update next steps
+4. Commit the docs along with code changes
 
 ### What to Document
 - User preferences (so they don't repeat themselves)
@@ -68,40 +78,38 @@ Update these files with any new learnings:
 - What approaches failed
 - Asset sources used
 - Brand/style requirements
+- New reusable utilities (like v0.20 depth system)
 
 ---
 
-## Current Roadmap (v0.17-v0.20)
+## Current Roadmap
 
-### v0.16 - THE FOLDER ✅ COMPLETE
-- Updated gradient colors to Apple Blue palette
-- Dark label text (#141414)
-- Click state highlight (#0A84FF blue)
-- Sourced from icon archives research
+### v0.20 - DEPTH SYSTEM ✅ COMPLETE (APP MILESTONE)
+- Reusable depth utilities in motion.ts
+- ELEVATION: getElevationShadow() - shadows respond to height
+- FOCUS: getFocusBlur() - selective blur guides attention (max 3px)
+- PARALLAX: getParallaxFactor() - depth through motion (max 15%)
+- Philosophy: "Invisible enhancement" - feel depth, don't see technique
 
-### v0.17 - THE PHYSICS (NEXT)
-- Spring physics system (spring.ts)
-- Object-specific spring profiles
-- Velocity handoff between phases
-- Replace ~15-20 interpolate() calls
+### v0.19 - POLISH & FLOW ✅ COMPLETE
+- Folder anticipation pulse (scale 1.025 before opening)
+- Photo breathing during settle (micro-oscillation)
+- Disappearing photos tilt outward
 
-### v0.18 - THE TRANSITIONS
-- 20-30% overlap between all phases
-- Anticipation before every action
-- Follow-through after every landing
-- Timing diagram as source of truth
+### v0.18 - PHOTO EMERGENCE ✅ COMPLETE
+- Split folder into MacFolderBack + MacFolderLid layers
+- Photos genuinely emerge FROM folder (proper z-ordering)
+- Overlapping phases for seamless flow
 
-### v0.19 - THE SPACE
-- Z-layer depth system
-- Parallax motion
-- Shadow dynamics
-- Environmental response
+### v0.17 - SPRING PHYSICS ✅ COMPLETE
+- Spring physics system in motion.ts
+- SPRING profiles: gentle, responsive, bouncy, folder
+- createSpring(), createStaggeredSpring(), springTo() helpers
 
-### v0.20 - THE RHYTHM
-- Beat mapping (12 key moments)
-- Micro-timing (1-2 frame adjustments)
-- A/B testing vs Apple references
-- Sound design integration points
+### NEXT: LEAP 2 - Photo-to-SearchBar Metamorphosis
+- Formation phase: middle row slides into strip
+- Blur-merge transition: photos blur as they become search bar
+- Search bar emergence: grows FROM photo strip dimensions
 
 ---
 
@@ -144,9 +152,12 @@ Update these files with any new learnings:
 | v0.14 | Unified motion system, simplified mouse |
 | v0.15 | White background, tail transition fix |
 | v0.16 | Authentic folder: Apple gradients, dark label, click highlight |
-| v0.17 | (Next) Spring physics system |
+| v0.17 | Spring physics system (createSpring, springTo) |
+| v0.18 | Photo emergence (split folder layers, overlapping phases) |
+| v0.19 | Polish & flow (anticipation, breathing, tilt) |
+| v0.20 | **APP MILESTONE** - Cinematic depth system (elevation, focus, parallax) |
 
 ---
 
 **Last updated:** 2026-02-06
-**Update this file whenever user provides new persistent instructions.**
+**Update this file INCREMENTALLY - don't wait until end of session.**

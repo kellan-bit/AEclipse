@@ -363,3 +363,38 @@ const adjustedDelta = baseDelta * factor;
 3. **0.25x Speed Test** - Shadows smooth, blur transitions smooth, parallax barely visible
 
 **Rule:** Depth should be felt, not seen. If it's noticeable, it's too much.
+
+---
+
+## Lesson 12: Document Incrementally, Not At End
+
+**Problem:** Waiting until end of session to update documentation risks losing learnings if session runs out of context.
+
+**What Happened:** Session context can be exhausted mid-task. If documentation updates are queued for "later," they may never happen.
+
+**Rule:** Update documentation IMMEDIATELY after each milestone, not at end.
+
+**When to Update Docs:**
+- ✅ After completing a feature or version
+- ✅ After learning a new pattern
+- ✅ After receiving user feedback/preferences
+- ✅ After making a decision future sessions should know
+
+**Update Order (after each milestone):**
+1. `LESSONS.md` - Add new patterns/learnings FIRST
+2. `CLAUDE_CONTEXT.md` - Update version, add preferences
+3. Plan file - Mark completed, update next steps
+4. Commit docs WITH code changes (same commit)
+
+**Why This Matters:**
+- Session context is finite
+- Documentation is the knowledge transfer mechanism
+- Future sessions start by reading these files
+- Lost documentation = lost learnings = repeated mistakes
+
+**The Pattern:**
+```
+Complete feature → Update LESSONS.md → Update CLAUDE_CONTEXT.md → Commit all together
+```
+
+**Rule:** Treat documentation as part of the deliverable, not a post-task cleanup.
