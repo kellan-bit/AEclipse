@@ -222,3 +222,73 @@ Based on Carbon Design System and Apple HIG:
 | Complex sequence | 500ms+ | Multi-step animation |
 
 **Stagger Timing:** 30-50ms between items (not 100ms+)
+
+---
+
+## Lesson 8: Preferred Asset Sources
+
+**Problem:** Hand-drawing approximations of system icons wastes time and looks wrong.
+
+**Preferred Sources for Mac/iOS Icons:**
+- **macosicons.com** - Community collection of macOS app icons
+- **jim-nielsen's macOS icon gallery** - High-quality references
+- **System files:** `/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/`
+- **Extract tools:** `iconutil` to convert .icns to PNG/SVG
+
+**Rule:** Don't approximate system UI - source the actual assets.
+
+**Process:**
+1. Search icon archives first
+2. Download highest resolution available
+3. Trace to SVG if needed (Figma/Illustrator)
+4. Match exact gradients and proportions
+5. Compare side-by-side with original
+
+---
+
+## Lesson 9: Use Brand Colors Consistently
+
+**Minima Brand Palette:**
+```tsx
+// Primary
+black: '#141414'    // Primary text on light
+white: '#FFFFFF'    // Clean backgrounds
+
+// Neutral
+darkGray: '#4C4C4C' // Secondary text
+lightGray: '#E3DEDA'// Subtle backgrounds
+cream: '#F4F2F0'    // Light backgrounds
+
+// Accent
+taupe: '#C7BEB4'    // Warm accent
+```
+
+**Import from:**
+```tsx
+import { colors } from '@minima-brand/colors';
+import { lightTheme, darkTheme } from '@minima-brand/themes';
+```
+
+**Rule:** Always use brand colors, never arbitrary hex values.
+
+---
+
+## Lesson 10: Fluidity Over Effects
+
+**Problem (v0.12-v0.15):** Confused "complexity" with "more effects."
+
+**Wrong Thinking:**
+- Add hover glow → more complex
+- Add click feedback → more complex
+- Add spring physics → more complex
+
+**Right Thinking:**
+- Fluidity = seamlessness
+- Everything should flow naturally into everything else
+- No hard starts/stops - everything breathes
+- Overlapping transitions - one thing starts before previous ends
+- Connected motion - related elements move as a system
+
+**The Test:** Watch at 0.25x speed. If you see "cuts" between phases, it's not fluid.
+
+**Rule:** Complexity means seamless flow, not more effects.
