@@ -1,7 +1,12 @@
 /**
- * Stonecrest v0.15 - Structural Improvements
+ * Stonecrest v0.17 - Spring Physics System
  *
  * CHANGELOG:
+ * - v0.17: Spring physics for all major animations
+ *   - MacFolder lid uses SPRING.folder profile
+ *   - Passed openStartFrame to MacFolder for spring-based opening
+ *   - Using createSpring() helpers from motion.ts
+ *
  * - v0.15: White background, smooth tail transition
  *   - Changed from dark desktop to white background
  *   - Website reveal starts earlier (overlap with search bar)
@@ -16,6 +21,7 @@
  * - v0.12: Initial implementation
  *
  * LESSONS APPLIED:
+ * - Lesson 3: Spring Physics is Non-Negotiable
  * - Lesson 7: Professional Animation = Consistency Over Effects
  * - Lesson 8: Transitions Are Everything
  */
@@ -26,8 +32,6 @@ import {
   useCurrentFrame,
   useVideoConfig,
   interpolate,
-  Easing,
-  spring,
 } from 'remotion';
 
 import { EASE } from './motion';
@@ -172,12 +176,8 @@ export const StonecrestReveal: React.FC = () => {
   // v0.16: Label selection highlight (like macOS Finder) - triggers after double-click
   const isSelected = frame >= TIMELINE.SECOND_CLICK && frame < TIMELINE.PHOTOS_SETTLE;
 
-  const folderOpenProgress = interpolate(
-    frame,
-    [TIMELINE.FOLDER_OPEN_START, TIMELINE.PHOTOS_BURST],
-    [0, 1],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
-  );
+  // v0.17: Folder opening now uses spring physics in MacFolder component
+  // We pass openStartFrame and the component handles the spring animation internally
 
   // Folder fades out after photos burst
   const folderOpacity = interpolate(
@@ -194,7 +194,7 @@ export const StonecrestReveal: React.FC = () => {
 
   const photosVisible = frame >= TIMELINE.PHOTOS_PEEK && frame < TIMELINE.EXPAND_START;
 
-  // NEW: Peek phase (90-110) - photos appear small at folder position
+  // Peek phase (90-110) - photos appear small at folder position
   const peekProgress = interpolate(
     frame,
     [TIMELINE.PHOTOS_PEEK, TIMELINE.PHOTOS_BURST],
@@ -202,15 +202,10 @@ export const StonecrestReveal: React.FC = () => {
     { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: EASE.enter }
   );
 
-  // FIXED: Burst starts at PHOTOS_BURST (110), not PHOTOS_PEEK (90)
-  const burstProgress = interpolate(
-    frame,
-    [TIMELINE.PHOTOS_BURST, TIMELINE.PHOTOS_SETTLE],
-    [0, 1],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: EASE.default }
-  );
+  // v0.17: Burst and merge now use spring physics (frame-based, not progress-based)
+  // Pass start frames to PhotoGrid, spring calculations happen in component
 
-  // Settle into grid
+  // Settle into grid (kept for compatibility)
   const settleProgress = interpolate(
     frame,
     [TIMELINE.PHOTOS_SETTLE, TIMELINE.PHOTOS_HOLD],
@@ -218,18 +213,10 @@ export const StonecrestReveal: React.FC = () => {
     { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: EASE.default }
   );
 
-  // Filter - wave-based fade (not sporadic)
+  // Filter - wave-based fade (not sporadic) - kept as interpolate (opacity)
   const filterProgress = interpolate(
     frame,
     [TIMELINE.DISAPPEAR_START, TIMELINE.DISAPPEAR_END],
-    [0, 1],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: EASE.default }
-  );
-
-  // Merge remaining photos to center
-  const mergeProgress = interpolate(
-    frame,
-    [TIMELINE.MERGE_START, TIMELINE.MERGE_END],
     [0, 1],
     { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: EASE.default }
   );
@@ -252,28 +239,21 @@ export const StonecrestReveal: React.FC = () => {
     4
   );
 
-  const expandProgress = interpolate(
-    frame,
-    [TIMELINE.EXPAND_START, TIMELINE.EXPAND_END],
-    [0, 1],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.bezier(0.4, 0, 0.2, 1) }
-  );
+  // v0.17: SearchBar expansion now uses spring physics internally
+  // Pass start frame, spring calculations happen in component
 
   // ============================================
   // WEBSITE UI ANIMATION
+  // v0.17: Spring physics for reveal
   // v0.15: Start EARLIER to overlap with search bar expansion
   // ============================================
 
   // Start website reveal 30 frames before search bar finishes (overlap)
   const websiteVisible = frame >= TIMELINE.EXPAND_START + 30;
 
-  // Website fades in while search bar is still expanding (smoother transition)
-  const websiteRevealProgress = interpolate(
-    frame,
-    [TIMELINE.EXPAND_START + 40, TIMELINE.EXPAND_END + 20],
-    [0, 1],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: EASE.default }
-  );
+  // v0.17: Website reveal now uses spring physics internally
+  // Pass start frame, spring calculations happen in component
+  const websiteRevealStart = TIMELINE.EXPAND_START + 40;
 
   // ============================================
   // BACKGROUND - v0.15: White/branded instead of dark desktop
@@ -294,7 +274,7 @@ export const StonecrestReveal: React.FC = () => {
             isHovered={isHovered}
             isClicking={isClicking}
             isSelected={isSelected}
-            openProgress={folderOpenProgress}
+            openStartFrame={TIMELINE.FOLDER_OPEN_START}
             x={folderX}
             y={folderY}
           />
@@ -307,10 +287,10 @@ export const StonecrestReveal: React.FC = () => {
           photos={PHOTOS}
           visibleIndices={visibleIndices}
           peekProgress={peekProgress}
-          burstProgress={burstProgress}
+          burstStartFrame={TIMELINE.PHOTOS_BURST}
           settleProgress={settleProgress}
           filterProgress={filterProgress}
-          mergeProgress={mergeProgress}
+          mergeStartFrame={TIMELINE.MERGE_START}
           centerX={centerX}
           centerY={centerY}
         />
@@ -320,7 +300,7 @@ export const StonecrestReveal: React.FC = () => {
       <SearchBar
         text="minimahomes.com"
         typingProgress={typingProgress}
-        expandProgress={expandProgress}
+        expandStartFrame={TIMELINE.EXPAND_START}
         visible={searchBarVisible}
         centerX={centerX}
         centerY={centerY}
@@ -329,7 +309,7 @@ export const StonecrestReveal: React.FC = () => {
       {/* Website UI */}
       <WebsiteUI
         bannerImage={BANNER_IMAGE}
-        revealProgress={websiteRevealProgress}
+        revealStartFrame={websiteRevealStart}
         visible={websiteVisible}
       />
 

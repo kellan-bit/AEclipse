@@ -1,28 +1,48 @@
 /**
- * WebsiteUI Component
+ * WebsiteUI Component - v0.17
+ *
+ * CHANGELOG:
+ * - v0.17: Spring physics for reveal
+ *   - Uses SPRING.gentle for smooth, substantial arrival
+ *   - translateY springs to 0 with natural settle
+ *   - Opacity kept as interpolate (works well linear)
+ *
  * Minimal website mockup with Stonecrest as hero banner
  */
 
 import React from 'react';
-import { Img, staticFile, interpolate, Easing } from 'remotion';
+import { Img, staticFile, useCurrentFrame, useVideoConfig, interpolate } from 'remotion';
+import { createSpring, springTo } from '../motion';
 
 interface WebsiteUIProps {
   bannerImage: string;
-  revealProgress: number; // 0 = hidden, 1 = fully visible
+  revealStartFrame: number; // v0.17: Frame when reveal starts (for spring)
   visible: boolean;
 }
 
 export const WebsiteUI: React.FC<WebsiteUIProps> = ({
   bannerImage,
-  revealProgress,
+  revealStartFrame,
   visible,
 }) => {
-  if (!visible || revealProgress <= 0) return null;
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
 
-  const opacity = interpolate(revealProgress, [0, 1], [0, 1]);
-  const translateY = interpolate(revealProgress, [0, 1], [30, 0], {
-    easing: Easing.bezier(0, 0, 0.2, 1),
+  // v0.17: Spring-based reveal (SPRING.gentle for substantial arrival)
+  const isRevealing = revealStartFrame > 0 && frame >= revealStartFrame;
+  const revealSpring = isRevealing
+    ? createSpring(frame - revealStartFrame, fps, 'gentle', 0)
+    : 0;
+
+  if (!visible || revealSpring <= 0) return null;
+
+  // Opacity fades in (kept as interpolate - works well)
+  const opacity = interpolate(revealSpring, [0, 0.8], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
   });
+  // Position springs up with natural settle
+  const translateY = springTo(revealSpring, [30, 0]);
 
   return (
     <div

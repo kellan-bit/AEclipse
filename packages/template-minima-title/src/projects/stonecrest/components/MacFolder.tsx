@@ -1,7 +1,13 @@
 /**
- * MacFolder Component - v0.16.2
+ * MacFolder Component - v0.17
  *
  * CHANGELOG:
+ * - v0.17: Spring physics for lid animation
+ *   - Replaced Easing.out(cubic) with SPRING.folder
+ *   - Added frame/openStartFrame props for spring-based animation
+ *   - Lid now has natural overshoot and settle
+ *   - Fixes "weird" opening feel from v0.16.2
+ *
  * - v0.16.2: Complete SVG rebuild (proper macOS structure)
  *   - Simple rounded rectangles (not perspective geometry)
  *   - Layered gradients for depth illusion
@@ -41,15 +47,15 @@
  */
 
 import React from 'react';
-import { interpolate, Easing, useCurrentFrame } from 'remotion';
-import { SCALE } from '../motion';
+import { useCurrentFrame, useVideoConfig } from 'remotion';
+import { SCALE, createSpring, springTo } from '../motion';
 
 interface MacFolderProps {
   label: string;
   isHovered: boolean;
   isClicking: boolean; // Click feedback
-  isSelected: boolean; // NEW: Label highlight (like macOS Finder selection)
-  openProgress: number; // 0 = closed, 1 = fully open
+  isSelected: boolean; // Label highlight (like macOS Finder selection)
+  openStartFrame: number; // v0.17: Frame when folder starts opening (for spring physics)
   x: number;
   y: number;
 }
@@ -59,11 +65,12 @@ export const MacFolder: React.FC<MacFolderProps> = ({
   isHovered,
   isClicking,
   isSelected,
-  openProgress,
+  openStartFrame,
   x,
   y,
 }) => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
 
   // Size - much larger for visual presence (was 80px, now 200px)
   const folderWidth = 200;
@@ -86,21 +93,20 @@ export const MacFolder: React.FC<MacFolderProps> = ({
     ? 0.45 + Math.sin(frame * 0.15) * 0.08
     : 0;
 
-  // Open animation with proper easing
-  const easedOpenProgress = interpolate(
-    openProgress,
-    [0, 1],
-    [0, 1],
-    { easing: Easing.out(Easing.cubic) }
-  );
+  // v0.17: Spring-based lid animation (replaces eased interpolate)
+  // Spring starts when frame >= openStartFrame
+  const isOpening = openStartFrame > 0 && frame >= openStartFrame;
+  const lidSpring = isOpening
+    ? createSpring(frame - openStartFrame, fps, 'folder', 0)
+    : 0;
 
-  // Lid lifts up and rotates back
-  const lidRotation = interpolate(easedOpenProgress, [0, 1], [0, -55]);
-  const lidTranslateY = interpolate(easedOpenProgress, [0, 1], [0, -35]);
+  // Lid lifts up and rotates back with spring overshoot
+  const lidRotation = springTo(lidSpring, [0, -55]);
+  const lidTranslateY = springTo(lidSpring, [0, -35]);
 
-  // Folder wobble/anticipation before opening
-  const wobbleIntensity = openProgress > 0 && openProgress < 0.2
-    ? Math.sin(openProgress * Math.PI * 10) * 3 * (1 - openProgress * 5)
+  // v0.17: Simplified wobble - subtle anticipation before spring takes over
+  const wobbleIntensity = isOpening && lidSpring < 0.3
+    ? Math.sin(lidSpring * Math.PI * 6) * 2 * (1 - lidSpring * 3)
     : 0;
 
   // Gradient IDs (unique per instance to avoid conflicts) - v0.16.2 simplified

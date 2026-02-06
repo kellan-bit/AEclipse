@@ -1,15 +1,25 @@
 /**
- * SearchBar Component
+ * SearchBar Component - v0.17
+ *
+ * CHANGELOG:
+ * - v0.17: Spring physics for expansion
+ *   - Uses SPRING.responsive for snappy UI feel
+ *   - Width/height expand with natural overshoot
+ *   - Smooth settle into final browser size
+ *
+ * - v0.15: Keep content visible until 70%
+ *
  * Search bar with typing animation and expand to browser
  */
 
 import React from 'react';
-import { useCurrentFrame, interpolate, Easing } from 'remotion';
+import { useCurrentFrame, useVideoConfig, interpolate } from 'remotion';
+import { createSpring, springTo } from '../motion';
 
 interface SearchBarProps {
   text: string;
-  typingProgress: number; // 0 = empty, 1 = fully typed
-  expandProgress: number; // 0 = search bar, 1 = full browser window
+  typingProgress: number;      // 0 = empty, 1 = fully typed
+  expandStartFrame: number;    // v0.17: Frame when expansion starts (for spring)
   visible: boolean;
   centerX: number;
   centerY: number;
@@ -18,12 +28,13 @@ interface SearchBarProps {
 export const SearchBar: React.FC<SearchBarProps> = ({
   text,
   typingProgress,
-  expandProgress,
+  expandStartFrame,
   visible,
   centerX,
   centerY,
 }) => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
 
   if (!visible) return null;
 
@@ -34,22 +45,30 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   // Cursor blink
   const cursorVisible = Math.floor(frame / 15) % 2 === 0 || typingProgress < 1;
 
-  // Bar dimensions - expand from search bar to browser
-  const barWidth = interpolate(expandProgress, [0, 1], [500, 1600]);
-  const barHeight = interpolate(expandProgress, [0, 1], [50, 900]);
-  const borderRadius = interpolate(expandProgress, [0, 1], [25, 12]);
-  const y = interpolate(expandProgress, [0, 1], [centerY, centerY]);
+  // v0.17: Spring-based expansion (SPRING.responsive for snappy UI)
+  const isExpanding = expandStartFrame > 0 && frame >= expandStartFrame;
+  const expandSpring = isExpanding
+    ? createSpring(frame - expandStartFrame, fps, 'responsive', 0)
+    : 0;
+
+  // Bar dimensions - expand from search bar to browser with spring
+  const barWidth = springTo(expandSpring, [500, 1600]);
+  const barHeight = springTo(expandSpring, [50, 900]);
+  const borderRadius = springTo(expandSpring, [25, 12]);
 
   // Opacity for search bar UI elements
   // v0.15: Keep content visible until 70% (was 30% - too early)
-  const searchUIOpacity = interpolate(expandProgress, [0, 0.7], [1, 0]);
+  const searchUIOpacity = interpolate(expandSpring, [0, 0.7], [1, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
   return (
     <div
       style={{
         position: 'absolute',
         left: centerX,
-        top: y,
+        top: centerY,
         transform: 'translate(-50%, -50%)',
         width: barWidth,
         height: barHeight,

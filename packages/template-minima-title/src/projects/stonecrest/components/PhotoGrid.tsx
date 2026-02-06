@@ -1,7 +1,13 @@
 /**
- * PhotoGrid Component - v0.14
+ * PhotoGrid Component - v0.17
  *
  * CHANGELOG:
+ * - v0.17: Spring physics for burst and merge
+ *   - Burst uses SPRING.bouncy with staggered delay (center first)
+ *   - Merge uses SPRING.gentle for smooth convergence
+ *   - Position/scale now spring-based, opacity stays interpolate
+ *   - Natural overshoot and settle on photo landing
+ *
  * - v0.14: Added peek phase, coordinated motion
  *   - New peekProgress prop for frames 90-110
  *   - Photos appear at folder position during peek
@@ -12,6 +18,7 @@
  * - v0.12: Initial implementation with sporadic disappear
  *
  * LESSONS APPLIED:
+ * - Lesson 3: Spring Physics is Non-Negotiable
  * - Lesson 7: Coordinated movement, not chaotic
  * - Lesson 8: Smooth transitions between phases
  */
@@ -21,9 +28,10 @@ import {
   Img,
   staticFile,
   useCurrentFrame,
+  useVideoConfig,
   interpolate,
 } from 'remotion';
-import { EASE } from '../motion';
+import { createStaggeredSpring, createSpring, springTo } from '../motion';
 
 interface PhotoState {
   x: number;
@@ -36,11 +44,11 @@ interface PhotoState {
 interface PhotoGridProps {
   photos: string[];
   visibleIndices: number[];
-  peekProgress: number;    // NEW: 0 = hidden, 1 = peeking at folder
-  burstProgress: number;   // 0 = at folder, 1 = at grid positions
-  settleProgress: number;  // 0 = arriving, 1 = settled
-  filterProgress: number;  // 0 = all visible, 1 = only middle row
-  mergeProgress: number;   // 0 = grid, 1 = merged to center
+  peekProgress: number;      // 0 = hidden, 1 = peeking at folder
+  burstStartFrame: number;   // v0.17: Frame when burst starts (for spring)
+  settleProgress: number;    // 0 = arriving, 1 = settled (kept for compatibility)
+  filterProgress: number;    // 0 = all visible, 1 = only middle row
+  mergeStartFrame: number;   // v0.17: Frame when merge starts (for spring)
   centerX: number;
   centerY: number;
 }
@@ -68,14 +76,15 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
   photos,
   visibleIndices,
   peekProgress,
-  burstProgress,
+  burstStartFrame,
   settleProgress,
   filterProgress,
-  mergeProgress,
+  mergeStartFrame,
   centerX,
   centerY,
 }) => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
 
   const photoWidth = 180;
   const photoHeight = 120;
@@ -113,24 +122,38 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
 
     // ============================================
     // PHASE 2: BURST (expand to grid positions)
+    // v0.17: Spring physics with staggered delay
     // ============================================
-    if (burstProgress > 0) {
+    const isBursting = burstStartFrame > 0 && frame >= burstStartFrame;
+    if (isBursting) {
       // Coordinated stagger: center photo moves first, corners last
       const distFromCenter = Math.abs(index - 4);
-      const staggerDelay = distFromCenter * 0.08;
-      const adjustedBurst = Math.max(0, Math.min(1,
-        (burstProgress - staggerDelay) / (1 - staggerDelay * 4)
-      ));
+      const staggerFrames = distFromCenter * 3; // 3 frames per distance unit
 
-      x = interpolate(adjustedBurst, [0, 1], [folderX, gridX]);
-      y = interpolate(adjustedBurst, [0, 1], [folderY, gridY]);
+      // Use SPRING.bouncy for energetic pop
+      const burstSpring = createStaggeredSpring(
+        frame - burstStartFrame,
+        fps,
+        'bouncy',
+        distFromCenter,  // index for stagger
+        3,               // 3 frames stagger delay
+        0                // no base delay
+      );
 
-      // Scale: slight overshoot then settle
-      scale = interpolate(adjustedBurst, [0, 0.6, 1], [0.35, 1.03, 1]);
+      // Position springs from folder to grid
+      x = springTo(burstSpring, [folderX, gridX]);
+      y = springTo(burstSpring, [folderY, gridY]);
+
+      // Scale: spring naturally overshoots then settles
+      scale = springTo(burstSpring, [0.35, 1]);
 
       // Minimal rotation during burst (subtle, not chaotic)
       const targetRotation = (gridPos.col - 1) * 1.5; // -1.5, 0, 1.5 degrees
-      rotation = interpolate(adjustedBurst, [0, 0.7, 1], [0, targetRotation * 1.5, 0]);
+      // Rotation peaks at spring ~0.7 then returns to 0
+      const rotationProgress = burstSpring < 0.7
+        ? burstSpring / 0.7
+        : 1 - (burstSpring - 0.7) / 0.5;
+      rotation = targetRotation * 1.5 * Math.max(0, Math.min(1, rotationProgress));
 
       opacity = 1;
     }
@@ -158,13 +181,22 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
 
     // ============================================
     // PHASE 5: MERGE (middle row → center, then fade)
+    // v0.17: Spring physics for smooth convergence
     // ============================================
-    if (MIDDLE_ROW_INDICES.includes(index) && mergeProgress > 0) {
-      x = interpolate(mergeProgress, [0, 1], [gridX, mergedX]);
-      y = interpolate(mergeProgress, [0, 1], [gridY, mergedY]);
-      scale = interpolate(mergeProgress, [0, 1], [1, 0.6]);
-      // Fade out in second half
-      opacity = interpolate(mergeProgress, [0.4, 0.9], [1, 0]);
+    const isMerging = MIDDLE_ROW_INDICES.includes(index) && mergeStartFrame > 0 && frame >= mergeStartFrame;
+    if (isMerging) {
+      // Use SPRING.gentle for smooth convergence
+      const mergeSpring = createSpring(frame - mergeStartFrame, fps, 'gentle', 0);
+
+      x = springTo(mergeSpring, [gridX, mergedX]);
+      y = springTo(mergeSpring, [gridY, mergedY]);
+      scale = springTo(mergeSpring, [1, 0.6]);
+
+      // Fade out in second half (keep as interpolate - opacity works well linear)
+      opacity = interpolate(mergeSpring, [0.4, 0.9], [1, 0], {
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      });
     }
 
     return { x, y, scale, rotation, opacity };
