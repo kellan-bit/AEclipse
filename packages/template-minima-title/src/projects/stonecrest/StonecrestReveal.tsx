@@ -1,5 +1,5 @@
 /**
- * Stonecrest v0.25 - Phase A: The Invisible Seam (Photo→SearchBar perfected)
+ * Stonecrest v0.29 - THE MORPH (No Transitions)
  *
  * CHANGELOG:
  * - v0.25: Phase A complete - "The Invisible Seam"
@@ -92,7 +92,7 @@ import {
 } from './components/MouseCursor';
 import { PhotoGrid, getVisibleIndicesForDisappear } from './components/PhotoGrid';
 import { SearchBarV2 as SearchBar, getTypingProgress } from './components/SearchBarV2';
-import { WebsiteUI } from './components/WebsiteUI';
+import { WebsiteContent } from './components/WebsiteUI';
 
 // ============================================
 // ASSETS
@@ -233,31 +233,43 @@ export const StonecrestReveal: React.FC = () => {
 
   // ============================================
   // FOLDER ANIMATION
-  // v0.18.5: Folder hidden IMMEDIATELY when burst starts (no slow fade)
+  // v0.29: MORPH — folder shrinks behind photos (not fade)
+  //   Scale down creates the impression of folder transforming into photos.
+  //   Opacity only fades in the last 10 frames for cleanup.
   // ============================================
 
-  // Folder visible until burst starts + 5 frames (quick exit, not lingering)
-  const folderVisible = frame < TIMELINE.PHOTOS_BURST + 5;
+  // Folder visible until well into burst (shrinks behind photos)
+  const folderVisible = frame < TIMELINE.PHOTOS_BURST + 20;
   const isHovered = frame >= TIMELINE.MOUSE_ARRIVE && frame < TIMELINE.PHOTOS_BURST;
-  const isSelected = frame >= TIMELINE.SECOND_CLICK && frame < TIMELINE.PHOTOS_BURST + 5;
+  const isSelected = frame >= TIMELINE.SECOND_CLICK && frame < TIMELINE.PHOTOS_BURST + 20;
 
-  // v0.17: Folder opening now uses spring physics in MacFolder component
-  // We pass openStartFrame and the component handles the spring animation internally
+  // v0.29: Folder SHRINKS as photos burst out (instead of fading)
+  const folderScale = frame >= TIMELINE.PHOTOS_BURST
+    ? interpolate(
+        frame,
+        [TIMELINE.PHOTOS_BURST, TIMELINE.PHOTOS_BURST + 20],
+        [1, 0.3],
+        { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+      )
+    : 1;
 
-  // v0.18.5: VERY fast fade - 5 frames only (was 20, still too slow)
-  const folderOpacity = interpolate(
-    frame,
-    [TIMELINE.PHOTOS_BURST, TIMELINE.PHOTOS_BURST + 5],
-    [1, 0],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
-  );
+  // Opacity only drops at the end (cleanup, not transition)
+  const folderOpacity = frame >= TIMELINE.PHOTOS_BURST
+    ? interpolate(
+        frame,
+        [TIMELINE.PHOTOS_BURST + 10, TIMELINE.PHOTOS_BURST + 20],
+        [1, 0],
+        { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+      )
+    : 1;
 
   // ============================================
   // PHOTO GRID ANIMATION
   // v0.14: Fixed timeline - peek THEN burst
   // ============================================
 
-  const photosVisible = frame >= TIMELINE.PHOTOS_PEEK && frame < TIMELINE.EXPAND_START;
+  // v0.29: Photos stay until merge completes (white overlay handles visual handoff)
+  const photosVisible = frame >= TIMELINE.PHOTOS_PEEK && frame < TIMELINE.SEARCH_SOLIDIFIED;
 
   // Peek phase (90-110) - photos appear small at folder position
   const peekProgress = interpolate(
@@ -295,8 +307,8 @@ export const StonecrestReveal: React.FC = () => {
   // SEARCH BAR ANIMATION
   // ============================================
 
-  // v0.21: Search bar appears earlier (SEARCH_EMERGE), overlapping with photo merge
-  const searchBarVisible = frame >= TIMELINE.SEARCH_EMERGE && frame < TIMELINE.WEBSITE_REVEAL + 30;
+  // v0.29: Search bar starts exactly when photos finish merging (pixel-perfect handoff)
+  const searchBarVisible = frame >= TIMELINE.SEARCH_SOLIDIFIED && frame < TIMELINE.WEBSITE_REVEAL + 30;
 
   const typingProgress = getTypingProgress(
     frame,
@@ -310,16 +322,9 @@ export const StonecrestReveal: React.FC = () => {
 
   // ============================================
   // WEBSITE UI ANIMATION
-  // v0.17: Spring physics for reveal
-  // v0.15: Start EARLIER to overlap with search bar expansion
+  // v0.29: Website renders INSIDE SearchBarV2 via renderExpandedContent.
+  // No separate component needed — the bar IS the website container.
   // ============================================
-
-  // Start website reveal 30 frames before search bar finishes (overlap)
-  const websiteVisible = frame >= TIMELINE.EXPAND_START + 30;
-
-  // v0.17: Website reveal now uses spring physics internally
-  // Pass start frame, spring calculations happen in component
-  const websiteRevealStart = TIMELINE.EXPAND_START + 40;
 
   // ============================================
   // BACKGROUND - v0.15: White/branded instead of dark desktop
@@ -333,17 +338,25 @@ export const StonecrestReveal: React.FC = () => {
       {/* v0.15: Removed dark desktop gradient - clean white background */}
 
       {/* v0.18.4: Folder BACK (body) - renders BEHIND photos */}
+      {/* v0.29: Wrapper applies shrink transform (folder shrinks behind burst) */}
       {folderVisible && (
-        <MacFolderBack
-          label="Stonecrest (secret)"
-          isHovered={isHovered}
-          isClicking={isClicking}
-          isSelected={isSelected}
-          openStartFrame={TIMELINE.FOLDER_OPEN_START}
-          x={folderX}
-          y={folderY}
-          opacity={folderOpacity}
-        />
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          transform: `scale(${folderScale})`,
+          transformOrigin: `${folderX}px ${folderY}px`,
+        }}>
+          <MacFolderBack
+            label="Stonecrest (secret)"
+            isHovered={isHovered}
+            isClicking={isClicking}
+            isSelected={isSelected}
+            openStartFrame={TIMELINE.FOLDER_OPEN_START}
+            x={folderX}
+            y={folderY}
+            opacity={folderOpacity}
+          />
+        </div>
       )}
 
       {/* Photo Grid - renders BETWEEN folder body and lid */}
@@ -363,20 +376,28 @@ export const StonecrestReveal: React.FC = () => {
       )}
 
       {/* v0.18.4: Folder LID - renders ABOVE photos for emergence effect */}
+      {/* v0.29: Same shrink transform as folder back */}
       {folderVisible && (
-        <MacFolderLid
-          label="Stonecrest (secret)"
-          isHovered={isHovered}
-          isClicking={isClicking}
-          isSelected={isSelected}
-          openStartFrame={TIMELINE.FOLDER_OPEN_START}
-          x={folderX}
-          y={folderY}
-          opacity={folderOpacity}
-        />
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          transform: `scale(${folderScale})`,
+          transformOrigin: `${folderX}px ${folderY}px`,
+        }}>
+          <MacFolderLid
+            label="Stonecrest (secret)"
+            isHovered={isHovered}
+            isClicking={isClicking}
+            isSelected={isSelected}
+            openStartFrame={TIMELINE.FOLDER_OPEN_START}
+            x={folderX}
+            y={folderY}
+            opacity={folderOpacity}
+          />
+        </div>
       )}
 
-      {/* Search Bar - v0.21: Two-stage emergence from photo strip */}
+      {/* Search Bar — v0.29: Bar IS the website container */}
       <SearchBar
         text="minimahomes.com"
         typingProgress={typingProgress}
@@ -387,13 +408,7 @@ export const StonecrestReveal: React.FC = () => {
         visible={searchBarVisible}
         centerX={centerX}
         centerY={centerY}
-      />
-
-      {/* Website UI */}
-      <WebsiteUI
-        bannerImage={BANNER_IMAGE}
-        revealStartFrame={websiteRevealStart}
-        visible={websiteVisible}
+        renderExpandedContent={() => <WebsiteContent bannerImage={BANNER_IMAGE} />}
       />
 
       {/* Mouse Cursor (always on top) */}

@@ -1,7 +1,16 @@
 /**
- * PhotoGrid Component - v0.28
+ * PhotoGrid Component - v0.29
  *
  * CHANGELOG:
+ * - v0.29: THE MORPH — No Transitions
+ *   - FILTER: Photos SLIDE OUT of frame (top up, bottom down) instead of fading
+ *     - Uses sneeze momentum for explosive exit with anticipation
+ *     - No opacity change until 80% off-screen (cleanup only)
+ *     - Physical movement > opacity exit
+ *   - MERGE: White overlay grows over photos ("frost on glass")
+ *     - Photos physically become the search bar rectangle
+ *     - borderRadius morphs from 8 → 25 to match bar
+ *
  * - v0.28: The "Achoo" - Momentum System applied
  *   - BURST: Replaced createStaggeredSpring with getMomentumCurve('sneeze')
  *     - Photos now dip slightly INTO folder (anticipation), then explode outward
@@ -63,6 +72,9 @@ interface PhotoState {
   blur: number;           // Focus blur in pixels (max 3)
   // v0.21: Metamorphosis
   desaturation: number;   // 0 (full color) to 1 (grayscale)
+  // v0.29: Morph — photos become the search bar
+  whiteOverlay: number;   // 0 (no overlay) to 1 (fully white) — "frost on glass"
+  morphedRadius: number;  // borderRadius morphing from photo (8) to bar (25)
 }
 
 interface PhotoGridProps {
@@ -163,6 +175,9 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
     let blur = 0;
     // v0.21: Desaturation for metamorphosis (grayscale during merge)
     let desaturation = 0;
+    // v0.29: Morph properties (photos become search bar)
+    let whiteOverlay = 0;
+    let morphedRadius = 8;
 
     // ============================================
     // PHASE 2: BURST (expand to grid positions)
@@ -237,9 +252,10 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
     }
 
     // ============================================
-    // PHASE 4: FILTER (non-middle-row fades out in wave)
-    // v0.19.3: Enhanced with rotation for "floating away" feel
-    // v0.20: Added focus blur - photos blur BEFORE fading (guides attention)
+    // PHASE 4: FILTER (non-middle-row SLIDES OUT of frame)
+    // v0.29: MORPH — no fading. Top row shoots UP, bottom row shoots DOWN.
+    //   Physical exit > opacity exit. The brain tracks spatial movement
+    //   naturally but notices opacity changes as "an effect was applied."
     // ============================================
     if (!MIDDLE_ROW_INDICES.includes(index) && filterProgress > 0) {
       // Wave: top row first (row 0), then bottom row (row 2)
@@ -248,20 +264,30 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
         (filterProgress - rowDelay) / (1 - rowDelay)
       ));
 
-      opacity = interpolate(adjustedFilter, [0, 1], [1, 0]);
-      scale = interpolate(adjustedFilter, [0, 1], [1, 0.9]);
-      // Gentle drift up as fading
-      y = y - adjustedFilter * 15;
-      // v0.19.3: Subtle tilt as photos float away (left photos tilt left, right photos tilt right)
-      const tiltDirection = gridPos.col - 1; // -1, 0, 1
-      rotation = tiltDirection * adjustedFilter * 5; // Max 5 degrees
+      // Momentum-driven exit (anticipation → explosive launch)
+      const exitCurve = getMomentumCurve('sneeze');
+      const exitProgress = exitCurve(adjustedFilter);
 
-      // v0.20: Blur BEFORE fade - cinematic focus transition
-      // Blur starts early (0-0.4), fade happens later (0.2-1.0)
-      blur = interpolate(adjustedFilter, [0, 0.4], [0, 2], {
-        extrapolateLeft: 'clamp',
-        extrapolateRight: 'clamp',
-      });
+      // Direction: top row goes UP, bottom row goes DOWN
+      const exitDirection = gridPos.row === 0 ? -1 : 1;
+
+      // Photos accelerate off screen (800px = well past viewport edge)
+      y = y + exitDirection * exitProgress * 800;
+
+      // Slight scale UP as they fly away (perspective: moving toward viewer)
+      scale = 1 + exitProgress * 0.15;
+
+      // Tilt in exit direction (left photos tilt left, right photos tilt right)
+      const tiltDirection = gridPos.col - 1; // -1, 0, 1
+      rotation = tiltDirection * exitProgress * 8;
+
+      // Opacity stays 1 until 80% through, then quick cleanup
+      opacity = exitProgress > 0.8
+        ? interpolate(exitProgress, [0.8, 1], [1, 0])
+        : 1;
+
+      // Elevation increases as photos fly away
+      elevation = ELEVATION.lifted + exitProgress * 0.3;
     }
 
     // ============================================
@@ -293,9 +319,10 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
     }
 
     // ============================================
-    // PHASE 5B: BLUR-MERGE (photos blur + desaturate → dissolve)
-    // v0.28: Momentum 'whip' — photos snap together with slight anticipation
-    //   then dissolve. Energy transfers TO the search bar emergence.
+    // PHASE 5B: MORPH-MERGE (photos physically become the search bar)
+    // v0.29: MORPH — no fade. Photos compress together, white frost grows
+    //   over them, borderRadius morphs to match search bar shape.
+    //   The merged rectangle IS the search bar.
     // ============================================
     const isMerging = MIDDLE_ROW_INDICES.includes(index) && mergeStartFrame > 0 && frame >= mergeStartFrame;
     if (isMerging) {
@@ -305,30 +332,45 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
       const mergeProgress = Math.min((frame - mergeStartFrame) / mergeDuration, 1);
       const whipProgress = whipCurve(mergeProgress);
 
-      // Position: compress from strip to tight center with whip momentum
-      x = stripX + (mergedX + (index - 4) * 30 - stripX) * whipProgress;
+      // Position: compress from strip to TIGHT center (gap closes to 0)
+      // End positions: photos touch each other at center
+      const mergedGap = 0; // No gap — photos form one continuous rect
+      const mergedOffset = (index - 4) * (photoWidth * 0.5 * 0.6); // Tight cluster
+      x = stripX + (mergedX + mergedOffset - stripX) * whipProgress;
       y = gridY + (mergedY - gridY) * whipProgress;
-      // Continue shrinking from formation scale
-      scale = 0.85 + (0.5 - 0.85) * whipProgress;
 
-      // BLUR: peaks at 0.4-0.6 of progress, then reduces as opacity fades
-      // This guides attention away from dissolving photos
-      const blurCurve = mergeProgress < 0.5
-        ? mergeProgress * 6  // 0 → 3px
-        : 3 - (mergeProgress - 0.5) * 6; // 3px → 0
-      blur = Math.max(0, Math.min(3, blurCurve));
+      // Scale: compress to match search bar height
+      // Formation ends at 0.85, target is roughly search bar proportions
+      scale = 0.85 + (0.45 - 0.85) * whipProgress;
 
-      // DESATURATION: progressive grayscale as photos become search bar
-      desaturation = Math.min(0.8, mergeProgress * 1.2);
-
-      // OPACITY: v0.23 - fades early so photos+bar sum ~100%
-      opacity = interpolate(mergeProgress, [0.15, 0.65], [1, 0], {
+      // v0.29: WHITE OVERLAY — "frost on glass" effect
+      // Starts at 30% merge progress, fully white by 90%
+      // This replaces the opacity fade — photos don't disappear, they whiten
+      whiteOverlay = interpolate(mergeProgress, [0.3, 0.9], [0, 1], {
         extrapolateLeft: 'clamp',
         extrapolateRight: 'clamp',
       });
+
+      // v0.29: borderRadius morphs from photo (8) to search bar (25)
+      morphedRadius = 8 + (25 - 8) * whipProgress;
+
+      // DESATURATION: progressive grayscale as photos whiten
+      desaturation = Math.min(0.8, mergeProgress * 1.2);
+
+      // OPACITY: stays 1 throughout! The white overlay handles the visual transition.
+      // Only fade at the very end for cleanup (99% → 0% in last 10% of progress)
+      opacity = mergeProgress > 0.9
+        ? interpolate(mergeProgress, [0.9, 1], [1, 0], {
+            extrapolateLeft: 'clamp',
+            extrapolateRight: 'clamp',
+          })
+        : 1;
+
+      // No blur — the white overlay is the transition, not blur
+      blur = 0;
     }
 
-    return { x, y, scale, rotation, opacity, clipTop, elevation, blur, desaturation };
+    return { x, y, scale, rotation, opacity, clipTop, elevation, blur, desaturation, whiteOverlay, morphedRadius };
   };
 
   return (
@@ -370,7 +412,8 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
               height: photoHeight,
               transform: `translate(-50%, -50%) scale(${state.scale}) rotate(${state.rotation}deg)`,
               opacity: state.opacity,
-              borderRadius: 8,
+              // v0.29: borderRadius morphs during merge (photo shape → bar shape)
+              borderRadius: state.morphedRadius,
               overflow: 'hidden',
               // v0.20: Elevation-aware shadow (replaces static shadow)
               boxShadow: getElevationShadow(state.elevation),
@@ -390,6 +433,17 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
                 objectFit: 'cover',
               }}
             />
+            {/* v0.29: White overlay — "frost on glass" morph effect */}
+            {state.whiteOverlay > 0 && (
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: '#FFFFFF',
+                  opacity: state.whiteOverlay,
+                }}
+              />
+            )}
           </div>
         );
       })}

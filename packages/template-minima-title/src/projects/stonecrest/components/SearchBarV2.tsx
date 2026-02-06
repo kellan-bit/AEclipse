@@ -1,34 +1,31 @@
 /**
- * SearchBar Component - v0.26
+ * SearchBar Component - v0.29
  *
- * REFACTORED to use new motion infrastructure.
+ * CHANGELOG:
+ * - v0.29: THE MORPH — Bar IS the website container
+ *   - Removed ghost/solidification opacity ramp (no more fading in)
+ *   - Bar starts at merged-photo geometry (280×54), fully opaque
+ *   - Springs to search bar size (500×50)
+ *   - renderExpandedContent prop: website renders INSIDE expanding bar
+ *   - Same container throughout — no separate WebsiteUI layer
  *
- * CHANGES FROM v0.25:
- * - Uses useSpring, useSpringMulti, usePhaseProgress from motion/hooks
- * - Cleaner phase detection with useInPhase
- * - Multi-value springs replace manual springTo calls
- * - More declarative, less imperative code
- *
- * This serves as a proof-of-concept for the new motion system.
- * Once validated, other components will be refactored similarly.
+ * - v0.26: Refactored to new motion infrastructure
+ *   - Uses useSpringMulti, usePhaseProgress from motion/hooks
+ *   - Cleaner phase detection with useInPhase
  *
  * LESSONS APPLIED:
- * - Declarative motion > imperative interpolation
- * - Named presets > magic numbers
- * - Hooks > class instances in React
+ * - Morph, don't transition — same container changes content
+ * - Physical geometry handoff > opacity crossover
  */
 
 import React from 'react';
 import { useCurrentFrame, useVideoConfig, interpolate } from 'remotion';
 import {
-  useSpring,
   useSpringMulti,
   usePhaseProgress,
   useInPhase,
-  SPRING_PRESETS,
   getElevationShadow,
   ELEVATION,
-  // v0.28: Momentum for solidification — "catching" energy from dissolving photos
   getMomentumCurve,
 } from '../motion/index';
 
@@ -42,6 +39,8 @@ interface SearchBarProps {
   visible: boolean;
   centerX: number;
   centerY: number;
+  // v0.29: Website content renders INSIDE the expanding bar
+  renderExpandedContent?: () => React.ReactNode;
 }
 
 // ============================================
@@ -50,18 +49,13 @@ interface SearchBarProps {
 // ============================================
 
 const DIMENSIONS = {
-  // Stage 1: Solidification (matches photo cluster)
-  solidify: { width: 340, height: 86, borderRadius: 8 },
+  // v0.29: Stage 1 starts at merged photo geometry (pixel-perfect handoff)
+  // 3 photos (180px each) compressed at scale 0.45 ≈ ~240px combined width
+  merged: { width: 280, height: 54, borderRadius: 25 },
   // Stage 2: Growth (full search bar)
   ready: { width: 500, height: 50, borderRadius: 25 },
   // Stage 3: Expansion (browser viewport)
   expanded: { width: 1600, height: 900, borderRadius: 12 },
-};
-
-const OPACITY = {
-  ghostStart: 0.2,
-  solidified: 0.7,
-  full: 1.0,
 };
 
 export const SearchBarV2: React.FC<SearchBarProps> = ({
@@ -74,6 +68,7 @@ export const SearchBarV2: React.FC<SearchBarProps> = ({
   visible,
   centerX,
   centerY,
+  renderExpandedContent,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -91,10 +86,11 @@ export const SearchBarV2: React.FC<SearchBarProps> = ({
   const isExpanding = frame >= expandStartFrame;
 
   // ============================================
-  // STAGE 1: SOLIDIFICATION
-  // v0.28: Bar materializes with momentum — "catches" energy from dissolving photos.
-  // Uses 'bounce' momentum curve: slight overshoot in opacity then settles.
-  // This creates the feeling that the photos' energy PUSHED the bar into existence.
+  // STAGE 1: MORPH FROM PHOTOS
+  // v0.29: Bar appears at merged photo geometry, fully opaque.
+  // The white overlay on photos already handles the visual transition.
+  // Bar then springs to its normal search bar dimensions.
+  // No ghost stage. No opacity ramp. Pixel-perfect handoff.
   // ============================================
 
   const solidifyProgress = usePhaseProgress(
@@ -105,16 +101,14 @@ export const SearchBarV2: React.FC<SearchBarProps> = ({
 
   // ============================================
   // STAGE 2: GROWTH
-  // Bar springs to full search bar size
-  // Using useSpringMulti for coordinated animation
+  // Bar springs from merged-photo size to full search bar size
   // ============================================
 
   const growthValues = useSpringMulti(
     {
-      width: [DIMENSIONS.solidify.width, DIMENSIONS.ready.width],
-      height: [DIMENSIONS.solidify.height, DIMENSIONS.ready.height],
-      borderRadius: [DIMENSIONS.solidify.borderRadius, DIMENSIONS.ready.borderRadius],
-      opacity: [OPACITY.solidified, OPACITY.full],
+      width: [DIMENSIONS.merged.width, DIMENSIONS.ready.width],
+      height: [DIMENSIONS.merged.height, DIMENSIONS.ready.height],
+      borderRadius: [DIMENSIONS.merged.borderRadius, DIMENSIONS.ready.borderRadius],
     },
     photosFullyMergedFrame,
     'responsive'
@@ -156,29 +150,30 @@ export const SearchBarV2: React.FC<SearchBarProps> = ({
   let barOpacity: number;
 
   if (isSolidifying) {
-    // Stage 1: Fixed dimensions, fading in
-    barWidth = DIMENSIONS.solidify.width;
-    barHeight = DIMENSIONS.solidify.height;
-    borderRadius = DIMENSIONS.solidify.borderRadius;
-    barOpacity = OPACITY.ghostStart + solidifyProgress * (OPACITY.solidified - OPACITY.ghostStart);
+    // v0.29: Stage 1 — bar appears at merged photo size, fully opaque
+    // The white overlay on photos handles the visual bridge
+    barWidth = DIMENSIONS.merged.width;
+    barHeight = DIMENSIONS.merged.height;
+    borderRadius = DIMENSIONS.merged.borderRadius;
+    barOpacity = 1.0;
   } else if (isGrowing) {
-    // Stage 2: Spring to search bar size
+    // Stage 2: Spring from merged size to search bar size
     barWidth = growthValues.width;
     barHeight = growthValues.height;
     borderRadius = growthValues.borderRadius;
-    barOpacity = growthValues.opacity;
+    barOpacity = 1.0;
   } else if (isExpanding) {
     // Stage 3: Expand to browser
     barWidth = expandValues.width;
     barHeight = expandValues.height;
     borderRadius = expandValues.borderRadius;
-    barOpacity = OPACITY.full;
+    barOpacity = 1.0;
   } else {
     // Static state (between stages)
     barWidth = DIMENSIONS.ready.width;
     barHeight = DIMENSIONS.ready.height;
     borderRadius = DIMENSIONS.ready.borderRadius;
-    barOpacity = OPACITY.full;
+    barOpacity = 1.0;
   }
 
   // Search UI opacity (expandProgress computed above, before early return)
@@ -226,7 +221,7 @@ export const SearchBarV2: React.FC<SearchBarProps> = ({
         overflow: 'hidden',
       }}
     >
-      {/* Search bar content */}
+      {/* Search bar content — fades out during expansion */}
       <div
         style={{
           opacity: searchUIOpacity,
@@ -234,6 +229,7 @@ export const SearchBarV2: React.FC<SearchBarProps> = ({
           alignItems: 'center',
           height: 50,
           padding: '0 20px',
+          flexShrink: 0,
         }}
       >
         {/* Search icon */}
@@ -271,6 +267,25 @@ export const SearchBarV2: React.FC<SearchBarProps> = ({
           />
         </span>
       </div>
+
+      {/* v0.29: Website content renders INSIDE the expanding bar.
+          Same container, content swap — the bar IS the website.
+          Fades in as search UI fades out. Clipped by overflow:hidden. */}
+      {isExpanding && renderExpandedContent && expandProgress > 0.15 && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            opacity: interpolate(expandProgress, [0.15, 0.55], [0, 1], {
+              extrapolateLeft: 'clamp',
+              extrapolateRight: 'clamp',
+            }),
+            overflow: 'hidden',
+          }}
+        >
+          {renderExpandedContent()}
+        </div>
+      )}
     </div>
   );
 };

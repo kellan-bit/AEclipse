@@ -9,12 +9,13 @@ This file contains persistent instructions, preferences, and context that should
 ## Project Overview
 
 Building an Apple-style property introduction animation for Stonecrest using Remotion.
-- **Current version:** v0.28 (Apply the Achoo — Momentum in all components)
-- **Next:** v0.29 - Timeline Architecture (Phase 2) — replace magic frame numbers
+- **Current version:** v0.29 (The Morph — No Transitions)
+- **Next:** v0.30 - Timeline Architecture (Phase 2) — replace magic frame numbers
 - **Philosophy:** Fluidity = seamlessness, not effects
 - **v0.20 Philosophy:** Invisible enhancement - feel depth, don't see technique
 - **v0.26 Philosophy:** Declarative motion > imperative interpolation
 - **v0.28 Philosophy:** Momentum is the default motion language
+- **v0.29 Philosophy:** Morph, don't transition — transform geometry, not opacity
 
 ---
 
@@ -26,7 +27,8 @@ Building an Apple-style property introduction animation for Stonecrest using Rem
 - Phase 1: Unified Motion Primitives (v0.26) - **COMPLETE**
 - Phase 1.5: Momentum System (v0.27) - **COMPLETE** (hooks defined)
 - Phase 1.5b: Apply Momentum (v0.28) - **COMPLETE** (hooks applied to components)
-- Phase 2: Timeline Architecture (v0.29) - **NEXT**
+- Phase 1.5c: The Morph (v0.29) - **COMPLETE** (geometry morphs replace opacity transitions)
+- Phase 2: Timeline Architecture (v0.30) - **NEXT**
 - Phase 3: Animation State Machine - PLANNED
 - Phase 4: Motion Presets Library - PLANNED
 - Phase 5: Component Refactor - PLANNED

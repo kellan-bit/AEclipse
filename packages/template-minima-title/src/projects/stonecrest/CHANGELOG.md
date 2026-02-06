@@ -4,6 +4,45 @@ All notable changes to the Stonecrest property introduction animation.
 
 ---
 
+## [v0.29] - 2026-02-06
+
+### Changed - "The Morph (No Transitions)"
+Philosophy shift: transform geometry instead of swapping elements with opacity.
+The brain tracks objects through space — physical movement > opacity changes.
+
+- **PhotoGrid.tsx**: v0.28 → v0.29
+  - FILTER: Non-middle photos now SLIDE OUT of frame (top row up, bottom row down)
+    - Uses sneeze momentum for explosive exit with anticipation
+    - No opacity change until 80% off-screen (cleanup only)
+    - Replaces fade-based filter (opacity 1→0, scale 1→0.9, blur)
+  - MERGE: White overlay "frost on glass" grows over photos during merge
+    - Photos physically become the search bar rectangle
+    - borderRadius morphs from 8 → 25 to match search bar
+    - No opacity crossover — same pixels change what they are
+  - Added `whiteOverlay` and `morphedRadius` to PhotoState interface
+
+- **SearchBarV2.tsx**: v0.26 → v0.29
+  - Removed ghost/solidification opacity ramp entirely
+  - Bar starts at merged-photo geometry (280×54), fully opaque at frame 225
+  - Springs to search bar size (500×50) — same container, different dimensions
+  - Added `renderExpandedContent` render prop
+  - Website renders INSIDE the expanding bar (clipped by overflow:hidden)
+  - Removed separate WebsiteUI layer from composition
+
+- **WebsiteUI.tsx**: v0.17 → v0.29
+  - Extracted `WebsiteContent` as standalone component (no animation wrapper)
+  - `WebsiteContent` passed to SearchBarV2 via renderExpandedContent prop
+  - Legacy `WebsiteUI` wrapper kept for backward compat
+
+- **StonecrestReveal.tsx**: v0.25 → v0.29
+  - Folder: shrinks (scale 1→0.3) behind photos instead of 5-frame fade
+  - Photos: visible until SEARCH_SOLIDIFIED (was EXPAND_START)
+  - SearchBar: starts at SEARCH_SOLIDIFIED (was SEARCH_EMERGE)
+  - Removed separate WebsiteUI component from render tree
+  - Passes renderExpandedContent to SearchBar
+
+---
+
 ## [v0.28] - 2026-02-06
 
 ### Changed - "Apply the Achoo"

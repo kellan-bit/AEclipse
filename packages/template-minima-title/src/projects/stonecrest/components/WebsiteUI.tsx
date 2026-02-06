@@ -1,7 +1,14 @@
 /**
- * WebsiteUI Component - v0.17
+ * WebsiteUI Component - v0.29
  *
  * CHANGELOG:
+ * - v0.29: THE MORPH — Website renders INSIDE expanding search bar
+ *   - Extracted WebsiteContent as standalone component (no animation wrapper)
+ *   - WebsiteContent is passed to SearchBarV2 via renderExpandedContent prop
+ *   - The search bar's bounding box IS the website container
+ *   - No separate layer swap — same container, swapping interior content
+ *   - Kept WebsiteUI wrapper for backward compat (delegates to WebsiteContent)
+ *
  * - v0.17: Spring physics for reveal
  *   - Uses SPRING.gentle for smooth, substantial arrival
  *   - translateY springs to 0 with natural settle
@@ -14,44 +21,22 @@ import React from 'react';
 import { Img, staticFile, useCurrentFrame, useVideoConfig, interpolate } from 'remotion';
 import { createSpring, springTo } from '../motion';
 
-interface WebsiteUIProps {
+// ============================================
+// v0.29: EXTRACTED CONTENT (no animation, no positioning)
+// This is the raw website HTML that renders INSIDE the search bar
+// ============================================
+
+interface WebsiteContentProps {
   bannerImage: string;
-  revealStartFrame: number; // v0.17: Frame when reveal starts (for spring)
-  visible: boolean;
 }
 
-export const WebsiteUI: React.FC<WebsiteUIProps> = ({
-  bannerImage,
-  revealStartFrame,
-  visible,
-}) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  // v0.17: Spring-based reveal (SPRING.gentle for substantial arrival)
-  const isRevealing = revealStartFrame > 0 && frame >= revealStartFrame;
-  const revealSpring = isRevealing
-    ? createSpring(frame - revealStartFrame, fps, 'gentle', 0)
-    : 0;
-
-  if (!visible || revealSpring <= 0) return null;
-
-  // Opacity fades in (kept as interpolate - works well)
-  const opacity = interpolate(revealSpring, [0, 0.8], [0, 1], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  });
-  // Position springs up with natural settle
-  const translateY = springTo(revealSpring, [30, 0]);
-
+export const WebsiteContent: React.FC<WebsiteContentProps> = ({ bannerImage }) => {
   return (
     <div
       style={{
-        position: 'absolute',
-        inset: 0,
+        width: '100%',
+        height: '100%',
         background: '#FFFFFF',
-        opacity,
-        transform: `translateY(${translateY}px)`,
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -66,6 +51,7 @@ export const WebsiteUI: React.FC<WebsiteUIProps> = ({
           alignItems: 'center',
           padding: '0 16px',
           gap: 8,
+          flexShrink: 0,
         }}
       >
         {/* Traffic lights */}
@@ -107,6 +93,7 @@ export const WebsiteUI: React.FC<WebsiteUIProps> = ({
             justifyContent: 'space-between',
             padding: '0 60px',
             borderBottom: '1px solid #F0F0F0',
+            flexShrink: 0,
           }}
         >
           {/* Logo */}
@@ -233,6 +220,56 @@ export const WebsiteUI: React.FC<WebsiteUIProps> = ({
           ))}
         </div>
       </div>
+    </div>
+  );
+};
+
+// ============================================
+// LEGACY WRAPPER (kept for backward compatibility)
+// v0.29: No longer used in main composition — SearchBarV2
+// renders WebsiteContent directly inside its expanding container
+// ============================================
+
+interface WebsiteUIProps {
+  bannerImage: string;
+  revealStartFrame: number;
+  visible: boolean;
+}
+
+export const WebsiteUI: React.FC<WebsiteUIProps> = ({
+  bannerImage,
+  revealStartFrame,
+  visible,
+}) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  const isRevealing = revealStartFrame > 0 && frame >= revealStartFrame;
+  const revealSpring = isRevealing
+    ? createSpring(frame - revealStartFrame, fps, 'gentle', 0)
+    : 0;
+
+  if (!visible || revealSpring <= 0) return null;
+
+  const opacity = interpolate(revealSpring, [0, 0.8], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+  const translateY = springTo(revealSpring, [30, 0]);
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        background: '#FFFFFF',
+        opacity,
+        transform: `translateY(${translateY}px)`,
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <WebsiteContent bannerImage={bannerImage} />
     </div>
   );
 };

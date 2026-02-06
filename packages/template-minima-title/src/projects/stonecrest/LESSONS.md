@@ -985,3 +985,59 @@ This pattern appears everywhere in React:
 - Hooks are convenience wrappers — the underlying functions work anywhere
 
 **The Rule:** Hooks are convenience wrappers for React component scope. When you need the same math in non-component code, use the underlying functions directly.
+
+---
+
+## Lesson 21: Morph, Don't Transition (v0.29)
+
+**Problem:** Even with momentum curves and spring physics, the animation felt like a sequence of separate events. The viewer could identify exactly when each element started and ended.
+
+**What Happened:** Every phase used opacity-based transitions — fading elements out and fading new elements in. Cross-dissolves, ghost stages, opacity ramps. These are all *visible transitions*. The brain notices "something is disappearing" and "something is appearing" — no matter how smooth the fade.
+
+**The Insight:** A morph means the SAME OBJECT changes shape. No appearing, no disappearing. The viewer's brain tracks one continuous thing transforming.
+
+**Three Techniques:**
+
+### 1. Physical Exit > Opacity Exit
+```tsx
+// DON'T: Fade out (visible transition)
+opacity = interpolate(progress, [0, 1], [1, 0]);
+
+// DO: Fly off screen (physical movement)
+y = y + exitDirection * exitProgress * 800;
+opacity = exitProgress > 0.8 ? interpolate(exitProgress, [0.8, 1], [1, 0]) : 1;
+```
+The brain processes spatial movement naturally. An object flying off screen is "gone" without any visible technique applied.
+
+### 2. Content Substitution > Layer Swap
+```tsx
+// DON'T: Two separate components with opacity crossover
+{photosVisible && <PhotoGrid opacity={fadeOut} />}
+{barVisible && <SearchBar opacity={fadeIn} />}
+
+// DO: Same container, white overlay covers old content
+<div style={{ position: 'absolute', inset: 0, background: '#FFF', opacity: whiteOverlay }} />
+```
+A white overlay growing from center ("frost on glass") replaces both the old content and the new content in the same visual space.
+
+### 3. Render Prop > Separate Layer
+```tsx
+// DON'T: Bar expands, then separate website component fades in
+<SearchBar {...props} />
+<WebsiteUI visible={expanded} />
+
+// DO: Website content renders INSIDE the bar as it expands
+<SearchBar
+  renderExpandedContent={() => <WebsiteContent />}
+/>
+```
+Same container throughout — no layer swap visible to the viewer.
+
+**Global Application:**
+This applies to ANY visual state change in UI:
+- Page transitions: morph shared elements, don't cross-fade pages
+- Modal → page: expand the modal to full screen, don't fade+replace
+- Loading states: same skeleton shape as the final content, not a spinner swap
+- Tab switches: slide content, don't fade
+
+**The Rule:** If the viewer can tell that a transition happened, it's not a morph. Transform the existing geometry. Same pixels, different content.
