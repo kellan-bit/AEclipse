@@ -213,10 +213,10 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
     // ============================================
     const isBursting = burstStartFrame > 0 && frame >= burstStartFrame;
     if (isBursting) {
-      // Coordinated stagger: center photo moves first, corners last
+      // v0.40: Tighter stagger + shorter burst to match 20fr phase
       const distFromCenter = Math.abs(index - 4);
-      const staggerDelay = distFromCenter * 3; // 3 frames per distance unit
-      const burstDuration = 30; // Full achoo cycle in frames
+      const staggerDelay = Math.round(distFromCenter * 1.5); // was 3 — max 6fr
+      const burstDuration = 15; // was 30 — snappier burst
 
       const effectiveFrame = frame - burstStartFrame - staggerDelay;
       const sneezeCurve = getMomentumCurve('sneeze');
@@ -264,38 +264,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
         ? ELEVATION.lifted
         : ELEVATION.lifted + (ELEVATION.hover - ELEVATION.lifted) * Math.min(effectiveFrame / burstDuration, 1);
 
-      // ============================================
-      // PHASE 3: SETTLE (deceleration + breathing)
-      // v0.31: settleProgress wired up — breathing amplitude decays as
-      //   photos "land" into grid position. Creates a gradual arrival
-      //   rather than instant lock-into-place.
-      // v0.19.2: Micro-oscillation prevents "dead" static feel
-      // ============================================
-      if (normalizedProgress >= 0.85) {
-        // v0.31: Breathing amplitude decays with settle progress
-        // Early settle (0): larger oscillation (0.01) — still "landing"
-        // Late settle (1): smaller oscillation (0.005) — resting state
-        const maxAmplitude = 0.01;
-        const minAmplitude = 0.005;
-
-        // v0.35: Dampen breathing over last 5 frames before formation
-        // Prevents mid-cycle oscillation cutoff at phase boundary
-        const framesToFormation = formationStartFrame - frame;
-        const breatheDampen = formationStartFrame > 0 && framesToFormation <= 5
-          ? Math.max(0, framesToFormation / 5)
-          : 1;
-
-        const breatheAmplitude = (maxAmplitude + (minAmplitude - maxAmplitude) * settleProgress) * breatheDampen;
-
-        const breathePhase = (frame + index * 5) * 0.08;
-        const breatheAmount = Math.sin(breathePhase) * breatheAmplitude;
-        scale = scale * (1 + breatheAmount);
-
-        // Micro-float: amplitude also decays (2px landing → 1px resting)
-        const floatAmplitude = (2 - settleProgress) * breatheDampen;
-        const floatAmount = Math.sin(breathePhase * 0.7) * floatAmplitude;
-        y = y + floatAmount;
-      }
+      // v0.40: Breathing/settle removed — at 4fr settle, it's imperceptible noise.
     }
 
     // ============================================
@@ -354,7 +323,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
       frame >= formationStartFrame;
 
     if (isTransforming) {
-      const mergeDuration = 20; // matches timeline
+      const mergeDuration = 12; // v0.40: was 20, matches compressed timeline
       const transformEnd = mergeStartFrame + mergeDuration;
       const totalDuration = transformEnd - formationStartFrame; // 38
 
