@@ -1,7 +1,13 @@
 /**
- * PhotoGrid Component - v0.18.1
+ * PhotoGrid Component - v0.18.2
  *
  * CHANGELOG:
+ * - v0.18.2: Photos CLIPPED to folder opening (CRITICAL FIX)
+ *   - Added clipPath to hide portion of photos below folder lid
+ *   - Photos now visually emerge THROUGH the folder opening
+ *   - Only the portion above the lid line is visible during peek
+ *   - Clipping removed once burst starts
+ *
  * - v0.18.1: Photos emerge FROM INSIDE folder
  *   - Photos start at folderInsideY (inside folder body)
  *   - Rise upward to folderLidY during peek phase
@@ -45,6 +51,7 @@ interface PhotoState {
   scale: number;
   rotation: number;
   opacity: number;
+  clipTop: number | null; // v0.18.2: Clip photos to simulate emerging from folder
 }
 
 interface PhotoGridProps {
@@ -121,16 +128,19 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
 
     // ============================================
     // PHASE 1: PEEK (photos EMERGE from inside folder)
-    // v0.18.1: Photos start INSIDE folder and move UP through lid opening
+    // v0.18.2: Photos clipped to folder opening - only visible portion above lid
     // ============================================
     let x = folderX;
     // Photos rise from inside folder to above lid during peek
     let y = interpolate(peekProgress, [0, 1], [folderInsideY, folderLidY]);
     // Scale from tiny to small as they emerge
-    let scale = interpolate(peekProgress, [0, 1], [0.1, 0.4]);
+    let scale = interpolate(peekProgress, [0, 1], [0.15, 0.4]);
     let rotation = 0;
     // Fade in as they emerge
-    let opacity = interpolate(peekProgress, [0, 0.3, 1], [0, 0.7, 1]);
+    let opacity = interpolate(peekProgress, [0, 0.2, 1], [0, 0.8, 1]);
+    // v0.18.2: Clip to folder opening - hide bottom portion during peek
+    // clipTop is the Y coordinate of the folder lid (photos below this are hidden)
+    let clipTop: number | null = centerY - 30; // Folder lid line
 
     // ============================================
     // PHASE 2: BURST (expand to grid positions)
@@ -140,7 +150,6 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
     if (isBursting) {
       // Coordinated stagger: center photo moves first, corners last
       const distFromCenter = Math.abs(index - 4);
-      const staggerFrames = distFromCenter * 3; // 3 frames per distance unit
 
       // Use SPRING.bouncy for energetic pop
       const burstSpring = createStaggeredSpring(
@@ -153,7 +162,6 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
       );
 
       // Position springs from above folder lid to grid positions
-      // v0.18.1: Start from folderLidY (where peek ends), not folderInsideY
       x = springTo(burstSpring, [folderX, gridX]);
       y = springTo(burstSpring, [folderLidY, gridY]);
 
@@ -169,6 +177,8 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
       rotation = targetRotation * 1.5 * Math.max(0, Math.min(1, rotationProgress));
 
       opacity = 1;
+      // v0.18.2: Remove clipping once burst starts - photos are free
+      clipTop = null;
     }
 
     // ============================================
@@ -212,7 +222,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
       });
     }
 
-    return { x, y, scale, rotation, opacity };
+    return { x, y, scale, rotation, opacity, clipTop };
   };
 
   return (
@@ -222,6 +232,26 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
 
         const state = getPhotoState(index);
         if (state.opacity <= 0.01) return null;
+
+        // v0.18.2: Calculate clip path to hide portion below folder lid
+        // This makes photos appear to emerge FROM the folder, not on top
+        let clipPath: string | undefined;
+        if (state.clipTop !== null) {
+          // How much of the photo is above the clip line?
+          const photoTop = state.y - (photoHeight * state.scale) / 2;
+          const photoBottom = state.y + (photoHeight * state.scale) / 2;
+          const visibleTop = Math.max(photoTop, state.clipTop);
+
+          // If photo is entirely below clip line, hide it completely
+          if (photoTop >= state.clipTop) {
+            // Photo hasn't emerged yet - clip entirely
+            clipPath = 'inset(100% 0 0 0)';
+          } else if (photoBottom > state.clipTop) {
+            // Photo is partially emerged - clip the bottom portion
+            const clipPercent = ((state.clipTop - photoTop) / (photoBottom - photoTop)) * 100;
+            clipPath = `inset(0 0 ${100 - clipPercent}% 0)`;
+          }
+        }
 
         return (
           <div
@@ -237,6 +267,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
               borderRadius: 8,
               overflow: 'hidden',
               boxShadow: `0 ${4 + state.scale * 4}px ${8 + state.scale * 8}px rgba(0,0,0,${0.15 + state.scale * 0.1})`,
+              clipPath, // v0.18.2: Clip to folder opening
             }}
           >
             <Img
