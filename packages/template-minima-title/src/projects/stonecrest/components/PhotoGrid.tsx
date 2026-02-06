@@ -1,7 +1,12 @@
 /**
- * PhotoGrid Component - v0.18.3
+ * PhotoGrid Component - v0.19.2
  *
  * CHANGELOG:
+ * - v0.19.2: Added subtle breathing during settle phase
+ *   - Photos have micro-scale oscillation (0.995-1.005) after landing
+ *   - Keeps grid feeling alive before disappear phase
+ *   - Prevents "dead" feeling of static photos
+ *
  * - v0.18.3: Photos DRAMATICALLY larger during peek (VISIBILITY FIX)
  *   - Scale: [0.15, 0.4] → [0.5, 0.85] - photos now 50-85% size, not tiny
  *   - Rise higher: folderLidY - 40 (well above folder)
@@ -191,12 +196,24 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
     }
 
     // ============================================
-    // PHASE 3: SETTLE (already at grid, minor adjustments)
+    // PHASE 3: SETTLE (subtle breathing to keep photos alive)
+    // v0.19.2: Micro-oscillation prevents "dead" static feel
     // ============================================
-    // No additional changes needed - burst brings to final position
+    if (isBursting && burstSpring > 0.8) {
+      // Breathing effect: subtle scale oscillation based on photo index
+      // Each photo breathes at slightly different phase for organic feel
+      const breathePhase = (frame + index * 5) * 0.08;
+      const breatheAmount = Math.sin(breathePhase) * 0.005; // Very subtle: 0.995-1.005
+      scale = scale * (1 + breatheAmount);
+
+      // Micro-float: tiny Y movement
+      const floatAmount = Math.sin(breathePhase * 0.7) * 1; // 1px max
+      y = y + floatAmount;
+    }
 
     // ============================================
     // PHASE 4: FILTER (non-middle-row fades out in wave)
+    // v0.19.3: Enhanced with rotation for "floating away" feel
     // ============================================
     if (!MIDDLE_ROW_INDICES.includes(index) && filterProgress > 0) {
       // Wave: top row first (row 0), then bottom row (row 2)
@@ -209,6 +226,9 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
       scale = interpolate(adjustedFilter, [0, 1], [1, 0.9]);
       // Gentle drift up as fading
       y = y - adjustedFilter * 15;
+      // v0.19.3: Subtle tilt as photos float away (left photos tilt left, right photos tilt right)
+      const tiltDirection = gridPos.col - 1; // -1, 0, 1
+      rotation = tiltDirection * adjustedFilter * 5; // Max 5 degrees
     }
 
     // ============================================

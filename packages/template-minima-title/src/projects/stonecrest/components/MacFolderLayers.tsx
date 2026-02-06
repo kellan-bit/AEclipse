@@ -1,12 +1,16 @@
 /**
- * MacFolderLayers - v0.18.4
+ * MacFolderLayers - v0.19.1
  *
- * Split folder into two layers for proper z-ordering:
- * - MacFolderBack: Body, tab, shadows (renders BEHIND photos)
- * - MacFolderLid: Animated front panel (renders ABOVE photos)
+ * CHANGELOG:
+ * - v0.19.1: Added anticipation pulse before opening
+ *   - Folder scales to 1.025 just before opening (wind-up)
+ *   - Creates "something is about to happen" feel
+ *   - Classic animation principle: anticipation → action → follow-through
  *
- * This allows photos to genuinely emerge FROM the folder,
- * not just appear on top of it.
+ * - v0.18.4: Split folder into body + lid for proper z-ordering
+ *   - MacFolderBack: Body, tab, shadows (renders BEHIND photos)
+ *   - MacFolderLid: Animated front panel (renders ABOVE photos)
+ *   - Photos genuinely emerge FROM the folder
  *
  * Usage in StonecrestReveal:
  * 1. <MacFolderBack {...props} />
@@ -15,7 +19,7 @@
  */
 
 import React from 'react';
-import { useCurrentFrame, useVideoConfig } from 'remotion';
+import { useCurrentFrame, useVideoConfig, interpolate } from 'remotion';
 import { SCALE, createSpring, springTo } from '../motion';
 
 interface MacFolderLayerProps {
@@ -46,8 +50,30 @@ function useFolderState(props: MacFolderLayerProps) {
   const hoverScale = isHovered ? SCALE.hover : 1;
   const hoverBrightness = isHovered ? 1.05 : 1;
 
-  // Combined
-  const finalScale = isClicking ? clickScale : hoverScale;
+  // v0.19.1: ANTICIPATION - folder "bulges" slightly before opening
+  // This creates the classic animation wind-up: something is about to happen!
+  // Timing: 6 frames before open, peak at 2 frames before, then release
+  const anticipationWindow = 6;
+  const isAnticipating = openStartFrame > 0 &&
+    frame >= openStartFrame - anticipationWindow &&
+    frame < openStartFrame + 4; // Continue slightly into opening for smooth handoff
+
+  const anticipationScale = isAnticipating
+    ? interpolate(
+        frame,
+        [
+          openStartFrame - anticipationWindow,  // Start (frame 42)
+          openStartFrame - 2,                    // Peak (frame 46)
+          openStartFrame + 4,                    // Release (frame 52)
+        ],
+        [1, 1.025, 1],
+        { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+      )
+    : 1;
+
+  // Combined scale: click/hover + anticipation
+  const baseScale = isClicking ? clickScale : hoverScale;
+  const finalScale = baseScale * anticipationScale;
   const finalBrightness = isClicking ? clickBrightness : hoverBrightness;
 
   // Glow pulse

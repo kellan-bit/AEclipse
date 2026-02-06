@@ -1,7 +1,12 @@
 /**
- * Stonecrest v0.18.5 - Overlapping Phases
+ * Stonecrest v0.19 - Polish & Flow
  *
  * CHANGELOG:
+ * - v0.19: Polish & Flow improvements
+ *   - v0.19.1: Folder anticipation pulse (scale 1.025) before opening
+ *   - v0.19.2: Photos "breathe" during settle (micro-oscillation)
+ *   - v0.19.3: Disappearing photos tilt outward as they float away
+ *
  * - v0.18.5: Overlap folder open + photo peek for seamless flow
  *   - PHOTOS_PEEK: 75 → 60 (photos start while lid still opening)
  *   - PHOTOS_BURST: 90 → 80 (tighter timing)
