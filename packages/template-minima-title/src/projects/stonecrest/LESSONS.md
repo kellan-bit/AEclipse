@@ -398,3 +398,72 @@ Complete feature → Update LESSONS.md → Update CLAUDE_CONTEXT.md → Commit a
 ```
 
 **Rule:** Treat documentation as part of the deliverable, not a post-task cleanup.
+
+---
+
+## Lesson 13: Metamorphosis Over Teleportation (v0.21)
+
+**Problem:** Elements appearing and disappearing feels disconnected. "Photos disappear, then search bar appears" lacks narrative.
+
+**Wrong Approach:**
+- Element A fades out completely
+- Gap of time
+- Element B fades in from nothing
+- Viewer perceives two separate things
+
+**Right Approach: METAMORPHOSIS**
+- Element A transforms INTO Element B
+- Overlapping phases: A dissolves AS B materializes
+- Dimensional continuity: B starts at A's final size/position
+- Visual connection: blur/desaturation bridges the transformation
+
+**Three-Phase Transformation Pattern:**
+```tsx
+// Phase 1: FORMATION (prepare for transformation)
+// Element A moves toward target shape (e.g., strip formation)
+
+// Phase 2: BLUR-MERGE (dissolve with attention guidance)
+// A blurs (peak mid-animation), desaturates, fades
+// Blur peaks BEFORE opacity fades - guides attention away
+
+// Phase 3: EMERGENCE (B materializes from A's ghost)
+// B appears at A's final dimensions (not magic arbitrary size)
+// Two stages: solidification (opacity 0.2→0.7) then growth
+```
+
+**Key Techniques:**
+
+1. **Dimensional Inheritance:**
+   - Search bar initial size (200×60) matches compressed photo cluster
+   - NOT arbitrary 500×50 appearing from nothing
+
+2. **Blur Curve:**
+   ```tsx
+   // Blur peaks mid-animation, reduces as opacity fades
+   const blurCurve = spring < 0.5
+     ? spring * 6        // 0 → 3px
+     : 3 - (spring - 0.5) * 6;  // 3px → 0
+   ```
+
+3. **Overlapping Phases:**
+   - Photos at frame 310: blurring, 50% opacity
+   - Search bar at frame 310: 20% opacity, solidifying
+   - Both visible simultaneously = transformation, not replacement
+
+4. **Desaturation Bridge:**
+   - Photos lose color as they merge (become neutral like UI)
+   - Visual signal: "becoming something else"
+
+**Thresholds:**
+| Effect | Max Value | Rationale |
+|--------|-----------|-----------|
+| Blur peak | 3px | Beyond = distracting |
+| Desaturation | 80% | Some color remains until fade |
+| Overlap duration | 15-20 frames | Too short = jarring, too long = sluggish |
+
+**Verification:**
+- Frame 310: Both elements visible, mid-transformation
+- Frame 317: Peak blur, search bar 50% visible
+- Frame 325: Clean handoff complete
+
+**Rule:** Elements should transform, not teleport. If you can point to "where A ends and B begins," the transition isn't seamless enough.

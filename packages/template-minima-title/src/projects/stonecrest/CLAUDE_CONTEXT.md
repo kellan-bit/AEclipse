@@ -9,8 +9,8 @@ This file contains persistent instructions, preferences, and context that should
 ## Project Overview
 
 Building an Apple-style property introduction animation for Stonecrest using Remotion.
-- **Current version:** v0.20 (DEPTH SYSTEM - complete)
-- **Next:** LEAP 2 - Photo-to-SearchBar Metamorphosis
+- **Current version:** v0.21 (LEAP 2 - Metamorphosis complete)
+- **Next:** Polish, verification, and potential LEAP 3
 - **Philosophy:** Fluidity = seamlessness, not effects
 - **v0.20 Philosophy:** Invisible enhancement - feel depth, don't see technique
 
@@ -106,10 +106,12 @@ Import from: `@minima-brand/colors` and `@minima-brand/themes`
 - SPRING profiles: gentle, responsive, bouncy, folder
 - createSpring(), createStaggeredSpring(), springTo() helpers
 
-### NEXT: LEAP 2 - Photo-to-SearchBar Metamorphosis
-- Formation phase: middle row slides into strip
-- Blur-merge transition: photos blur as they become search bar
-- Search bar emergence: grows FROM photo strip dimensions
+### v0.21 - LEAP 2: METAMORPHOSIS ✅ COMPLETE
+- Formation phase: middle row slides into horizontal strip (frames 275-300)
+- Blur-merge: photos blur (peak 3px) + desaturate → dissolve (frames 300-325)
+- Search bar emergence: two-stage (solidify 200×60, grow to 500×50)
+- Overlapping phases: photos dissolve AS bar solidifies
+- Photos BECOME the search bar, not disappear then bar appears
 
 ---
 
@@ -156,6 +158,7 @@ Import from: `@minima-brand/colors` and `@minima-brand/themes`
 | v0.18 | Photo emergence (split folder layers, overlapping phases) |
 | v0.19 | Polish & flow (anticipation, breathing, tilt) |
 | v0.20 | **APP MILESTONE** - Cinematic depth system (elevation, focus, parallax) |
+| v0.21 | **LEAP 2** - Photo-to-SearchBar Metamorphosis (formation, blur-merge, emergence) |
 
 ---
 

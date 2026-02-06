@@ -1,7 +1,14 @@
 /**
- * PhotoGrid Component - v0.20
+ * PhotoGrid Component - v0.21
  *
  * CHANGELOG:
+ * - v0.21: LEAP 2 - Photo-to-SearchBar Metamorphosis
+ *   - Formation phase: middle row slides into horizontal strip (FORMATION_START)
+ *   - Enhanced merge: blur peaks mid-animation, desaturation progressive
+ *   - Photos start from strip position, not grid position
+ *   - Blur curve: 0 → 3px (peak) → 0 as opacity fades
+ *   - Desaturation: photos become grayscale as they dissolve
+ *
  * - v0.20: DEPTH SYSTEM - Cinematic depth & weight
  *   - Elevation-aware shadows: lifted photos have softer, longer shadows
  *   - Focus blur: disappearing photos blur before fading (guides attention)
@@ -83,6 +90,8 @@ interface PhotoState {
   // v0.20: Depth system
   elevation: number;      // 0 (resting) to 1 (highest) - affects shadow
   blur: number;           // Focus blur in pixels (max 3)
+  // v0.21: Metamorphosis
+  desaturation: number;   // 0 (full color) to 1 (grayscale)
 }
 
 interface PhotoGridProps {
@@ -92,6 +101,7 @@ interface PhotoGridProps {
   burstStartFrame: number;   // v0.17: Frame when burst starts (for spring)
   settleProgress: number;    // 0 = arriving, 1 = settled (kept for compatibility)
   filterProgress: number;    // 0 = all visible, 1 = only middle row
+  formationStartFrame: number; // v0.21: Frame when middle row forms strip
   mergeStartFrame: number;   // v0.17: Frame when merge starts (for spring)
   centerX: number;
   centerY: number;
@@ -123,6 +133,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
   burstStartFrame,
   settleProgress,
   filterProgress,
+  formationStartFrame,
   mergeStartFrame,
   centerX,
   centerY,
@@ -179,6 +190,8 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
     const photoDepth = interpolate(distFromCenter, [0, 4], [DEPTH_LAYER.foreground, DEPTH_LAYER.midground]);
     let elevation = ELEVATION.resting;
     let blur = 0;
+    // v0.21: Desaturation for metamorphosis (grayscale during merge)
+    let desaturation = 0;
 
     // ============================================
     // PHASE 2: BURST (expand to grid positions)
@@ -269,26 +282,63 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
     }
 
     // ============================================
-    // PHASE 5: MERGE (middle row → center, then fade)
-    // v0.17: Spring physics for smooth convergence
+    // PHASE 5A: FORMATION (middle row → horizontal strip)
+    // v0.21: Photos slide into tight strip before merge
+    // ============================================
+    // Strip target positions (tighter than grid)
+    const stripOffsets: Record<number, number> = { 3: -150, 4: 0, 5: 150 };
+    const stripX = centerX + (stripOffsets[index] || 0);
+
+    const isForming = MIDDLE_ROW_INDICES.includes(index) &&
+      formationStartFrame > 0 &&
+      frame >= formationStartFrame &&
+      frame < mergeStartFrame;
+
+    if (isForming) {
+      const formationSpring = createSpring(frame - formationStartFrame, fps, 'responsive', 0);
+
+      // Slide from grid to strip position
+      x = springTo(formationSpring, [gridX, stripX]);
+      // Y stays at grid Y (horizontal movement only)
+      scale = springTo(formationSpring, [1, 0.85]);
+      // Align rotation to 0 as photos form strip
+      rotation = springTo(formationSpring, [rotation, 0]);
+    }
+
+    // ============================================
+    // PHASE 5B: BLUR-MERGE (photos blur + desaturate → dissolve)
+    // v0.21: Enhanced with blur curve and desaturation
     // ============================================
     const isMerging = MIDDLE_ROW_INDICES.includes(index) && mergeStartFrame > 0 && frame >= mergeStartFrame;
     if (isMerging) {
       // Use SPRING.gentle for smooth convergence
       const mergeSpring = createSpring(frame - mergeStartFrame, fps, 'gentle', 0);
 
-      x = springTo(mergeSpring, [gridX, mergedX]);
+      // Position: compress from strip to tight center
+      // Photos start from strip position, not grid position
+      x = springTo(mergeSpring, [stripX, mergedX + (index - 4) * 30]); // Slight offset to avoid perfect overlap
       y = springTo(mergeSpring, [gridY, mergedY]);
-      scale = springTo(mergeSpring, [1, 0.6]);
+      // Continue shrinking from formation scale
+      scale = springTo(mergeSpring, [0.85, 0.5]);
 
-      // Fade out in second half (keep as interpolate - opacity works well linear)
-      opacity = interpolate(mergeSpring, [0.4, 0.9], [1, 0], {
+      // BLUR: peaks at 0.4-0.6 of spring, then reduces as opacity fades
+      // This guides attention away from dissolving photos
+      const blurCurve = mergeSpring < 0.5
+        ? mergeSpring * 6  // 0 → 3px
+        : 3 - (mergeSpring - 0.5) * 6; // 3px → 0
+      blur = Math.max(0, Math.min(3, blurCurve));
+
+      // DESATURATION: progressive grayscale as photos become search bar
+      desaturation = Math.min(0.8, mergeSpring * 1.2);
+
+      // OPACITY: fades in final half (after blur peaks)
+      opacity = interpolate(mergeSpring, [0.5, 0.95], [1, 0], {
         extrapolateLeft: 'clamp',
         extrapolateRight: 'clamp',
       });
     }
 
-    return { x, y, scale, rotation, opacity, clipTop, elevation, blur };
+    return { x, y, scale, rotation, opacity, clipTop, elevation, blur, desaturation };
   };
 
   return (
@@ -334,8 +384,11 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
               overflow: 'hidden',
               // v0.20: Elevation-aware shadow (replaces static shadow)
               boxShadow: getElevationShadow(state.elevation),
-              // v0.20: Focus blur for cinematic depth-of-field
-              filter: state.blur > 0 ? `blur(${state.blur}px)` : undefined,
+              // v0.20/v0.21: Combined filter for blur and desaturation
+              filter: [
+                state.blur > 0 ? `blur(${state.blur}px)` : '',
+                state.desaturation > 0 ? `grayscale(${state.desaturation})` : '',
+              ].filter(Boolean).join(' ') || undefined,
               clipPath, // v0.18.2: Clip to folder opening
             }}
           >

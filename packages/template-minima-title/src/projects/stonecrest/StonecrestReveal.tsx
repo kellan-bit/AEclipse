@@ -1,7 +1,14 @@
 /**
- * Stonecrest v0.20 - Cinematic Depth System
+ * Stonecrest v0.21 - LEAP 2: Photo-to-SearchBar Metamorphosis
  *
  * CHANGELOG:
+ * - v0.21: LEAP 2 - Photo-to-SearchBar Metamorphosis
+ *   - Formation phase: middle row photos slide into horizontal strip
+ *   - Blur-merge: photos blur + desaturate as they dissolve
+ *   - Search bar emergence: bar grows FROM photo strip dimensions
+ *   - Overlapping phases for seamless transformation
+ *   - Photos BECOME the search bar, not disappear then bar appears
+ *
  * - v0.20: DEPTH SYSTEM - Cinematic depth & weight
  *   - Elevation shadows: photos lift during burst, shadows respond to height
  *   - Focus blur: disappearing photos blur before fading (guides attention)
@@ -125,14 +132,18 @@ const TIMELINE = {
   DISAPPEAR_END: 250,     // Was 290
   MIDDLE_ROW_HOLD: 275,   // Was 320
 
-  // Act 4: The Transform - v0.18: Tightened
-  MERGE_START: 285,       // Was 330
-  MERGE_END: 330,         // Was 380
-  TYPING_START: 340,      // Was 390
-  TYPING_END: 390,        // Was 440
+  // Act 4: The Transform - v0.21: LEAP 2 Metamorphosis
+  FORMATION_START: 275,   // NEW: Photos form horizontal strip
+  MERGE_START: 300,       // CHANGED: Was 285 - merge starts after formation
+  SEARCH_EMERGE: 310,     // NEW: Search bar ghost appears (overlaps merge)
+  MERGE_END: 325,         // CHANGED: Was 330 - tighter merge
+  SEARCH_SOLIDIFIED: 325, // NEW: Bar fully opaque, photos gone
+  SEARCH_BAR_READY: 350,  // NEW: Bar at full 500x50
+  TYPING_START: 355,      // ADJUSTED: Was 340
+  TYPING_END: 405,        // Was 390
 
-  // Act 5: The Website - v0.18: Tightened
-  EXPAND_START: 400,      // Was 450
+  // Act 5: The Website - v0.21: Adjusted for new timing
+  EXPAND_START: 420,      // ADJUSTED: Was 400
   EXPAND_END: 460,        // Was 510
   WEBSITE_REVEAL: 470,    // Was 520
 
@@ -271,7 +282,8 @@ export const StonecrestReveal: React.FC = () => {
   // SEARCH BAR ANIMATION
   // ============================================
 
-  const searchBarVisible = frame >= TIMELINE.MERGE_END - 20 && frame < TIMELINE.WEBSITE_REVEAL + 30;
+  // v0.21: Search bar appears earlier (SEARCH_EMERGE), overlapping with photo merge
+  const searchBarVisible = frame >= TIMELINE.SEARCH_EMERGE && frame < TIMELINE.WEBSITE_REVEAL + 30;
 
   const typingProgress = getTypingProgress(
     frame,
@@ -330,6 +342,7 @@ export const StonecrestReveal: React.FC = () => {
           burstStartFrame={TIMELINE.PHOTOS_BURST}
           settleProgress={settleProgress}
           filterProgress={filterProgress}
+          formationStartFrame={TIMELINE.FORMATION_START}
           mergeStartFrame={TIMELINE.MERGE_START}
           centerX={centerX}
           centerY={centerY}
@@ -350,10 +363,13 @@ export const StonecrestReveal: React.FC = () => {
         />
       )}
 
-      {/* Search Bar */}
+      {/* Search Bar - v0.21: Two-stage emergence from photo strip */}
       <SearchBar
         text="minimahomes.com"
         typingProgress={typingProgress}
+        emergenceStartFrame={TIMELINE.SEARCH_EMERGE}
+        photosFullyMergedFrame={TIMELINE.SEARCH_SOLIDIFIED}
+        searchBarReadyFrame={TIMELINE.SEARCH_BAR_READY}
         expandStartFrame={TIMELINE.EXPAND_START}
         visible={searchBarVisible}
         centerX={centerX}

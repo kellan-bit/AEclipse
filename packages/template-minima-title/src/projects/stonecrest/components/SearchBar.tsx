@@ -1,7 +1,17 @@
 /**
- * SearchBar Component - v0.17
+ * SearchBar Component - v0.21
  *
  * CHANGELOG:
+ * - v0.21: LEAP 2 - Two-stage emergence from photo strip
+ *   - Stage 1: Solidification (emergenceStart → photosFullyMerged)
+ *     - Bar appears at 200x60 (matching compressed photo cluster)
+ *     - Opacity: 0.2 → 0.7 (ghost → solidifying)
+ *   - Stage 2: Growth (photosFullyMerged → searchBarReady)
+ *     - Width: 200 → 500, Height: 60 → 50
+ *     - Border-radius: 16 → 25 (pill shape)
+ *     - Opacity: 0.7 → 1.0
+ *   - Photos dissolve AS bar solidifies (overlapping phases)
+ *
  * - v0.17: Spring physics for expansion
  *   - Uses SPRING.responsive for snappy UI feel
  *   - Width/height expand with natural overshoot
@@ -18,8 +28,11 @@ import { createSpring, springTo } from '../motion';
 
 interface SearchBarProps {
   text: string;
-  typingProgress: number;      // 0 = empty, 1 = fully typed
-  expandStartFrame: number;    // v0.17: Frame when expansion starts (for spring)
+  typingProgress: number;         // 0 = empty, 1 = fully typed
+  emergenceStartFrame: number;    // v0.21: Frame when bar ghost appears
+  photosFullyMergedFrame: number; // v0.21: Frame when photos are gone, bar solidifies
+  searchBarReadyFrame: number;    // v0.21: Frame when bar is at full 500x50
+  expandStartFrame: number;       // v0.17: Frame when expansion starts (for spring)
   visible: boolean;
   centerX: number;
   centerY: number;
@@ -28,6 +41,9 @@ interface SearchBarProps {
 export const SearchBar: React.FC<SearchBarProps> = ({
   text,
   typingProgress,
+  emergenceStartFrame,
+  photosFullyMergedFrame,
+  searchBarReadyFrame,
   expandStartFrame,
   visible,
   centerX,
@@ -45,19 +61,64 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   // Cursor blink
   const cursorVisible = Math.floor(frame / 15) % 2 === 0 || typingProgress < 1;
 
-  // v0.17: Spring-based expansion (SPRING.responsive for snappy UI)
+  // ============================================
+  // v0.21: Two-stage emergence from photo strip
+  // ============================================
+
+  let barWidth: number;
+  let barHeight: number;
+  let borderRadius: number;
+  let barOpacity: number;
+
+  // Stage 1: Solidification (emergence → photosFullyMerged)
+  // Bar appears at photo strip dimensions, opacity increases
+  const isSolidifying = frame >= emergenceStartFrame && frame < photosFullyMergedFrame;
+
+  // Stage 2: Growth (photosFullyMerged → searchBarReady)
+  // Bar grows from 200x60 to 500x50
+  const isGrowing = frame >= photosFullyMergedFrame && frame < expandStartFrame;
+
+  // Stage 3: Expansion (expandStart → browser size)
   const isExpanding = expandStartFrame > 0 && frame >= expandStartFrame;
+
+  if (isSolidifying) {
+    // Stage 1: Solidification - match photo strip, fade in
+    const solidificationDuration = photosFullyMergedFrame - emergenceStartFrame;
+    const solidifyProgress = (frame - emergenceStartFrame) / solidificationDuration;
+
+    barWidth = 200;   // Match compressed photo strip
+    barHeight = 60;   // Match photo height
+    borderRadius = 16; // Rounded but not pill-shaped yet
+    barOpacity = interpolate(solidifyProgress, [0, 1], [0.2, 0.7]);
+  } else if (isGrowing) {
+    // Stage 2: Growth - spring to full search bar size
+    const growthSpring = createSpring(frame - photosFullyMergedFrame, fps, 'responsive', 0);
+
+    barWidth = springTo(growthSpring, [200, 500]);
+    barHeight = springTo(growthSpring, [60, 50]);
+    borderRadius = springTo(growthSpring, [16, 25]); // Become pill-shaped
+    barOpacity = springTo(growthSpring, [0.7, 1.0]);
+  } else if (isExpanding) {
+    // Stage 3: Expansion to browser
+    const expandSpring = createSpring(frame - expandStartFrame, fps, 'responsive', 0);
+
+    barWidth = springTo(expandSpring, [500, 1600]);
+    barHeight = springTo(expandSpring, [50, 900]);
+    borderRadius = springTo(expandSpring, [25, 12]);
+    barOpacity = 1;
+  } else {
+    // Static search bar (after growth, before expansion)
+    barWidth = 500;
+    barHeight = 50;
+    borderRadius = 25;
+    barOpacity = 1;
+  }
+
+  // Opacity for search bar UI elements (text, icon)
+  // v0.15: Keep content visible until 70% of expansion
   const expandSpring = isExpanding
     ? createSpring(frame - expandStartFrame, fps, 'responsive', 0)
     : 0;
-
-  // Bar dimensions - expand from search bar to browser with spring
-  const barWidth = springTo(expandSpring, [500, 1600]);
-  const barHeight = springTo(expandSpring, [50, 900]);
-  const borderRadius = springTo(expandSpring, [25, 12]);
-
-  // Opacity for search bar UI elements
-  // v0.15: Keep content visible until 70% (was 30% - too early)
   const searchUIOpacity = interpolate(expandSpring, [0, 0.7], [1, 0], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -72,11 +133,14 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         transform: 'translate(-50%, -50%)',
         width: barWidth,
         height: barHeight,
-        background: expandSpring < 0.5
-          ? 'rgba(255, 255, 255, 0.95)'
-          : 'rgba(255, 255, 255, 1)',
+        // v0.21: Opacity driven by emergence stage
+        opacity: barOpacity,
+        background: 'rgba(255, 255, 255, 0.98)',
         borderRadius,
-        boxShadow: '0 8px 40px rgba(0,0,0,0.2)',
+        // v0.21: Shadow grows with emergence (subtle during solidification)
+        boxShadow: isSolidifying
+          ? '0 4px 20px rgba(0,0,0,0.1)'
+          : '0 8px 40px rgba(0,0,0,0.2)',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
