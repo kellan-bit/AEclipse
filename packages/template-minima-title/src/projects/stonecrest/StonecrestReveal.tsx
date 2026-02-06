@@ -307,8 +307,9 @@ export const StonecrestReveal: React.FC = () => {
   // SEARCH BAR ANIMATION
   // ============================================
 
-  // v0.29: Search bar starts exactly when photos finish merging (pixel-perfect handoff)
-  const searchBarVisible = frame >= TIMELINE.SEARCH_SOLIDIFIED && frame < TIMELINE.WEBSITE_REVEAL + 30;
+  // v0.29: Search bar starts when photos finish merging, stays visible forever
+  // (bar IS the website container — no separate website layer to hand off to)
+  const searchBarVisible = frame >= TIMELINE.SEARCH_SOLIDIFIED;
 
   const typingProgress = getTypingProgress(
     frame,

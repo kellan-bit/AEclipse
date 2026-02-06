@@ -1075,3 +1075,31 @@ This is about matching tool to intent:
 - **Architecture** — load-bearing walls are thick, partitions are thin (form follows function)
 
 **The Rule:** Every easing curve has a semantic meaning. Anticipation means "watch this." Overshoot means "energy." Deceleration means "arriving." Match the curve to what the motion means, not what looks cool.
+
+---
+
+## Lesson 23: Stale Visibility Guards After Architecture Changes (v0.29.1)
+
+**Problem:** Frame 400 was blank — the entire final hold of the animation was an empty white screen.
+
+**What Happened:** In v0.29, the search bar became the website container (morph architecture). But `searchBarVisible` still had a legacy cutoff from the old architecture: `frame < WEBSITE_REVEAL + 30`. This was correct when the website was a separate layer that took over from the search bar, but in v0.29 there IS no separate website layer — the bar IS the website.
+
+At frame 375 (345 + 30), `searchBarVisible` became `false`, hiding the only element on screen.
+
+**Root Cause: Partial Refactoring.** The architecture changed (search bar = website container) but the visibility guard wasn't updated to match. The old guard assumed a separate component would take over.
+
+**Right Approach: AUDIT ALL GUARDS AFTER ARCHITECTURE CHANGES**
+
+When you change *what a component is responsible for*, you must audit:
+1. **Visibility guards** — does the show/hide logic still match the new lifetime?
+2. **Cleanup timing** — are other components still correctly handing off?
+3. **Terminal state** — what does the final frame look like? Test it.
+
+**Global Application:**
+This is about **contract violations during refactoring**:
+- **API migrations** — when you merge two endpoints, clients pointing to the old endpoint get 404s
+- **State machines** — when you combine two states, transitions that targeted the old state break
+- **CSS architecture** — when you move styles from one class to another, stale selectors go dead
+- **Database schema** — when you merge tables, queries referencing the old table fail silently
+
+**The Rule:** When a component absorbs another's responsibility, it also absorbs its *lifetime*. A container that becomes the final element must never have an early exit condition.

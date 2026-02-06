@@ -6,14 +6,19 @@ All notable changes to the Stonecrest property introduction animation.
 
 ## [v0.29.1] - 2026-02-06
 
-### Fixed - "Right Curve for Right Motion"
-Momentum curves (anticipation + overshoot) were being used for exit and merge motions where they're semantically wrong.
+### Fixed - "Right Curve for Right Motion" + Blank Frame Bug
+Momentum curves (anticipation + overshoot) were being used for exit and merge motions where they're semantically wrong. Also fixed a critical blank screen at the end of the animation.
 
 - **PhotoGrid.tsx**: v0.29 → v0.29.1
   - FILTER exit: `sneeze` → `materialAccelerate` (no pullback, smooth acceleration out)
   - MERGE: `whip` → `materialStandard` (no bounce, smooth compression)
   - Exit distance 800→600px, scale 0.15→0.05, rotation 8→3 degrees
   - Lesson: Momentum curves are for reveals/emphasis, not exits/merges
+
+- **StonecrestReveal.tsx**: Fixed blank screen at frame 375+
+  - `searchBarVisible` had `frame < WEBSITE_REVEAL + 30` cutoff (legacy from pre-v0.29)
+  - Since v0.29 the bar IS the website container — it must stay visible forever
+  - Removed upper bound: now `frame >= SEARCH_SOLIDIFIED` (no end condition)
 
 - **Root.tsx**: Fixed durationInFrames 600 → 420 to match TIMELINE.TOTAL
 
