@@ -9,7 +9,7 @@ This file contains persistent instructions, preferences, and context that should
 ## Project Overview
 
 Building an Apple-style property introduction animation for Stonecrest using Remotion.
-- **Current version:** v0.29 (The Morph — No Transitions)
+- **Current version:** v0.29.1 (Curve Selection Fix + Frame Grab Tooling)
 - **Next:** v0.30 - Timeline Architecture (Phase 2) — replace magic frame numbers
 - **Philosophy:** Fluidity = seamlessness, not effects
 - **v0.20 Philosophy:** Invisible enhancement - feel depth, don't see technique
@@ -109,6 +109,71 @@ Import from: `@minima-brand/colors` and `@minima-brand/themes`
 - Asset sources used
 - Brand/style requirements
 - New reusable utilities (like v0.20 depth system)
+
+---
+
+## Testing Workflow — Frame Grab & Push
+
+**EVERY TIME you make visual changes, provide the user with this command to capture and push key frames.**
+
+The user runs this on their machine, frames get pushed to git, then you pull and view them.
+
+### Remotion Setup
+- Composition ID: `StonecrestReveal`
+- Entry point: `src/index.ts`
+- Resolution: 1920×1080, 30fps
+- Working dir: `packages/template-minima-title/`
+- CLI tool: `bunx remotion still`
+
+### Frame-Grab-and-Push Command
+
+Adjust frame numbers based on what phases you changed. Default key frames:
+
+```bash
+cd ~/Documents/AEclipse/packages/template-minima-title && mkdir -p out/frames && \
+for f in 44 60 80 100 115 140 175 178 200 210 225 252 295 320 345 400; do \
+  bunx remotion still src/index.ts StonecrestReveal "out/frames/frame-$(printf '%03d' $f).png" --frame=$f 2>/dev/null && \
+  echo "✓ frame $f" || echo "✗ frame $f"; \
+done && echo "Done capturing!" && \
+cd ~/Documents/AEclipse && \
+git add packages/template-minima-title/out/frames/ && \
+git commit -m "debug: add frame captures for visual review" && \
+git push origin claude/stonecrest-template-improvements-O5TmO && \
+echo "Frames pushed! Claude can now pull and view them."
+```
+
+### Key Frames Reference
+
+| Frame | Phase | What's Happening |
+|-------|-------|-----------------|
+| 44 | Peek | Photos peek from folder |
+| 60 | Burst | Burst starts |
+| 80 | Burst | Burst mid-flight |
+| 100 | Settle | Photos settled in grid |
+| 115 | Filter | Slide-out begins |
+| 140 | Filter | Slide-out mid-flight |
+| 175 | Filter | Only middle row remains |
+| 178 | Formation | Strip formation starts |
+| 200 | Merge | Merge starts |
+| 210 | Merge | Merge mid-progress |
+| 225 | Merge | Merge complete → bar handoff |
+| 252 | Search | Typing in search bar |
+| 295 | Expand | Bar expansion starts |
+| 320 | Expand | Bar expanding with website |
+| 345 | Website | Website fully revealed |
+| 400 | Hold | Final hold |
+
+### How to Use
+
+**After pushing code changes**, always tell the user:
+> "Run this to capture and push key frames for review:"
+> (paste the command above, adjusting frame numbers for changed phases)
+
+**After user pushes frames**, pull and view:
+```bash
+git pull origin claude/stonecrest-template-improvements-O5TmO
+```
+Then use the Read tool to view PNGs in `packages/template-minima-title/out/frames/`.
 
 ---
 
@@ -234,5 +299,5 @@ This project is a TRAINING GROUND for animation principles. Each fix should buil
 
 ---
 
-**Last updated:** 2026-02-06 (v0.28)
+**Last updated:** 2026-02-06 (v0.29.1)
 **Update this file INCREMENTALLY - don't wait until end of session.**

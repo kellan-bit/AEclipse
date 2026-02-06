@@ -1041,3 +1041,37 @@ This applies to ANY visual state change in UI:
 - Tab switches: slide content, don't fade
 
 **The Rule:** If the viewer can tell that a transition happened, it's not a morph. Transform the existing geometry. Same pixels, different content.
+
+---
+
+## Lesson 22: Curve Selection Semantics (v0.29.1)
+
+**Problem:** Photo slide-out was erratic (pulling back before launching) and merge was bouncing photos apart before compressing them.
+
+**What Happened:** Momentum curves (`sneeze`, `whip`) designed for reveals/emphasis were being used for exit and merge motions. These curves have anticipation (pullback) and overshoot (bounce past target) — perfect for "look at this!" moments, but wrong for:
+- **Exit**: Elements leaving don't wind up first. A ball rolling off a table accelerates away.
+- **Merge**: Elements compressing shouldn't bounce apart. Hands closing together just close.
+
+**Right Approach: MATCH CURVE TO MOTION SEMANTICS**
+
+| Motion Type | Right Curve | Why |
+|-------------|-------------|-----|
+| Reveal/Emphasis | `sneeze`, `bounce`, `throw` | Anticipation builds excitement, overshoot adds drama |
+| Exit/Departure | `materialAccelerate` | Zero anticipation, accelerates away from rest |
+| Compression/Merge | `materialStandard` | Zero overshoot, smooth ease-in-out to target |
+| Entry/Arrival | `materialDecelerate` | Approaches rest from speed, settles without bounce |
+| Quick response | `flick`, `tap`, `whip` | Minimal anticipation, appropriate for UI feedback |
+
+**The Material Design Trio:**
+- `materialAccelerate` `bezier(0.4, 0, 1, 1)` — leaving screen
+- `materialDecelerate` `bezier(0, 0, 0.2, 1)` — entering screen
+- `materialStandard` `bezier(0.4, 0, 0.2, 1)` — moving within screen
+
+**Global Application:**
+This is about matching tool to intent:
+- **Audio mixing** — compression on vocals, reverb on instruments (not reversed)
+- **Typography** — serif for body, sans-serif for headings (each has a semantic role)
+- **Color** — warm for CTAs, cool for backgrounds (color has meaning)
+- **Architecture** — load-bearing walls are thick, partitions are thin (form follows function)
+
+**The Rule:** Every easing curve has a semantic meaning. Anticipation means "watch this." Overshoot means "energy." Deceleration means "arriving." Match the curve to what the motion means, not what looks cool.

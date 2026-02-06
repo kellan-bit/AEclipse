@@ -1,12 +1,16 @@
 /**
- * PhotoGrid Component - v0.29
+ * PhotoGrid Component - v0.29.1
  *
  * CHANGELOG:
+ * - v0.29.1: Curve Selection Fix
+ *   - FILTER: materialAccelerate replaces sneeze (no anticipation for exit)
+ *     - Reduced distance 800→600, scale 0.15→0.05, rotation 8→3
+ *   - MERGE: materialStandard replaces whip (no overshoot for compression)
+ *
  * - v0.29: THE MORPH — No Transitions
  *   - FILTER: Photos SLIDE OUT of frame (top up, bottom down) instead of fading
- *     - Uses sneeze momentum for explosive exit with anticipation
- *     - No opacity change until 80% off-screen (cleanup only)
  *     - Physical movement > opacity exit
+ *     - No opacity change until 80% off-screen (cleanup only)
  *   - MERGE: White overlay grows over photos ("frost on glass")
  *     - Photos physically become the search bar rectangle
  *     - borderRadius morphs from 8 → 25 to match bar
@@ -50,8 +54,10 @@ import {
   interpolate,
 } from 'remotion';
 import {
-  // v0.28: Momentum curves for burst, formation, and merge
+  // v0.28: Momentum curves for burst and formation
   getMomentumCurve,
+  // v0.29.1: Standard curves for exit and merge (no anticipation/overshoot)
+  getCurve,
   // v0.20: Depth system imports
   ELEVATION,
   getElevationShadow,
@@ -264,22 +270,23 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
         (filterProgress - rowDelay) / (1 - rowDelay)
       ));
 
-      // Momentum-driven exit (anticipation → explosive launch)
-      const exitCurve = getMomentumCurve('sneeze');
+      // v0.29.1: materialAccelerate for exit — no anticipation, no overshoot.
+      // Elements leaving screen should accelerate out, not wind up first.
+      const exitCurve = getCurve('materialAccelerate');
       const exitProgress = exitCurve(adjustedFilter);
 
       // Direction: top row goes UP, bottom row goes DOWN
       const exitDirection = gridPos.row === 0 ? -1 : 1;
 
-      // Photos accelerate off screen (800px = well past viewport edge)
-      y = y + exitDirection * exitProgress * 800;
+      // Photos accelerate off screen (600px clears viewport from center)
+      y = y + exitDirection * exitProgress * 600;
 
-      // Slight scale UP as they fly away (perspective: moving toward viewer)
-      scale = 1 + exitProgress * 0.15;
+      // Subtle scale UP as they fly away (perspective: moving toward viewer)
+      scale = 1 + exitProgress * 0.05;
 
-      // Tilt in exit direction (left photos tilt left, right photos tilt right)
+      // Tilt in exit direction (subtle, not dramatic)
       const tiltDirection = gridPos.col - 1; // -1, 0, 1
-      rotation = tiltDirection * exitProgress * 8;
+      rotation = tiltDirection * exitProgress * 3;
 
       // Opacity stays 1 until 80% through, then quick cleanup
       opacity = exitProgress > 0.8
@@ -326,22 +333,23 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
     // ============================================
     const isMerging = MIDDLE_ROW_INDICES.includes(index) && mergeStartFrame > 0 && frame >= mergeStartFrame;
     if (isMerging) {
-      // v0.28: Momentum 'whip' for the merge — quick snap with anticipation
+      // v0.29.1: materialStandard for merge — no anticipation, no overshoot.
+      // Elements compressing together should glide smoothly, not bounce apart.
       const mergeDuration = 25; // Duration of the merge animation
-      const whipCurve = getMomentumCurve('whip');
+      const mergeCurve = getCurve('materialStandard');
       const mergeProgress = Math.min((frame - mergeStartFrame) / mergeDuration, 1);
-      const whipProgress = whipCurve(mergeProgress);
+      const mergeEased = mergeCurve(mergeProgress);
 
       // Position: compress from strip to TIGHT center (gap closes to 0)
       // End positions: photos touch each other at center
       const mergedGap = 0; // No gap — photos form one continuous rect
       const mergedOffset = (index - 4) * (photoWidth * 0.5 * 0.6); // Tight cluster
-      x = stripX + (mergedX + mergedOffset - stripX) * whipProgress;
-      y = gridY + (mergedY - gridY) * whipProgress;
+      x = stripX + (mergedX + mergedOffset - stripX) * mergeEased;
+      y = gridY + (mergedY - gridY) * mergeEased;
 
       // Scale: compress to match search bar height
       // Formation ends at 0.85, target is roughly search bar proportions
-      scale = 0.85 + (0.45 - 0.85) * whipProgress;
+      scale = 0.85 + (0.45 - 0.85) * mergeEased;
 
       // v0.29: WHITE OVERLAY — "frost on glass" effect
       // Starts at 30% merge progress, fully white by 90%
@@ -352,7 +360,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
       });
 
       // v0.29: borderRadius morphs from photo (8) to search bar (25)
-      morphedRadius = 8 + (25 - 8) * whipProgress;
+      morphedRadius = 8 + (25 - 8) * mergeEased;
 
       // DESATURATION: progressive grayscale as photos whiten
       desaturation = Math.min(0.8, mergeProgress * 1.2);

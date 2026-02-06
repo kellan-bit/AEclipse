@@ -4,6 +4,25 @@ All notable changes to the Stonecrest property introduction animation.
 
 ---
 
+## [v0.29.1] - 2026-02-06
+
+### Fixed - "Right Curve for Right Motion"
+Momentum curves (anticipation + overshoot) were being used for exit and merge motions where they're semantically wrong.
+
+- **PhotoGrid.tsx**: v0.29 → v0.29.1
+  - FILTER exit: `sneeze` → `materialAccelerate` (no pullback, smooth acceleration out)
+  - MERGE: `whip` → `materialStandard` (no bounce, smooth compression)
+  - Exit distance 800→600px, scale 0.15→0.05, rotation 8→3 degrees
+  - Lesson: Momentum curves are for reveals/emphasis, not exits/merges
+
+- **Root.tsx**: Fixed durationInFrames 600 → 420 to match TIMELINE.TOTAL
+
+- **CLAUDE_CONTEXT.md**: Added "Testing Workflow — Frame Grab & Push" section
+  - Standard `bunx remotion still` command for capturing key frames
+  - Git push workflow for visual review
+
+---
+
 ## [v0.29] - 2026-02-06
 
 ### Changed - "The Morph (No Transitions)"
