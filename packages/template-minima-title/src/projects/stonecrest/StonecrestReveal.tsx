@@ -147,10 +147,12 @@ export const StonecrestReveal: React.FC = () => {
     mouseY = pos.y;
   } else if (frame < TIMELINE.HESITATION_END) {
     // Hesitating over folder
+    // v0.18: Simplified for shorter hesitation period (15 frames)
+    const hesitationMid = (TIMELINE.HESITATION_START + TIMELINE.HESITATION_END) / 2;
     const hesitationIntensity = interpolate(
       frame,
-      [TIMELINE.HESITATION_START, TIMELINE.HESITATION_START + 10, TIMELINE.HESITATION_END - 5, TIMELINE.HESITATION_END],
-      [0, 1, 1, 0]
+      [TIMELINE.HESITATION_START, hesitationMid, TIMELINE.HESITATION_END],
+      [0, 1, 0]
     );
     const pos = getMousePositionWithHesitation(frame, folderX, folderY - 20, hesitationIntensity);
     mouseX = pos.x;
