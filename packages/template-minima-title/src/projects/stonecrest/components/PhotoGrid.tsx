@@ -193,22 +193,22 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
       opacity = 1;
       // v0.18.2: Remove clipping once burst starts - photos are free
       clipTop = null;
-    }
 
-    // ============================================
-    // PHASE 3: SETTLE (subtle breathing to keep photos alive)
-    // v0.19.2: Micro-oscillation prevents "dead" static feel
-    // ============================================
-    if (isBursting && burstSpring > 0.8) {
-      // Breathing effect: subtle scale oscillation based on photo index
-      // Each photo breathes at slightly different phase for organic feel
-      const breathePhase = (frame + index * 5) * 0.08;
-      const breatheAmount = Math.sin(breathePhase) * 0.005; // Very subtle: 0.995-1.005
-      scale = scale * (1 + breatheAmount);
+      // ============================================
+      // PHASE 3: SETTLE (subtle breathing to keep photos alive)
+      // v0.19.2: Micro-oscillation prevents "dead" static feel
+      // ============================================
+      if (burstSpring > 0.8) {
+        // Breathing effect: subtle scale oscillation based on photo index
+        // Each photo breathes at slightly different phase for organic feel
+        const breathePhase = (frame + index * 5) * 0.08;
+        const breatheAmount = Math.sin(breathePhase) * 0.005; // Very subtle: 0.995-1.005
+        scale = scale * (1 + breatheAmount);
 
-      // Micro-float: tiny Y movement
-      const floatAmount = Math.sin(breathePhase * 0.7) * 1; // 1px max
-      y = y + floatAmount;
+        // Micro-float: tiny Y movement
+        const floatAmount = Math.sin(breathePhase * 0.7) * 1; // 1px max
+        y = y + floatAmount;
+      }
     }
 
     // ============================================
