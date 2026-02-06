@@ -1,11 +1,16 @@
 /**
- * SearchBar Component - v0.31
+ * SearchBar Component - v0.32 (Morph Envelope)
  *
  * CHANGELOG:
+ * - v0.32: MORPH ENVELOPE — bar renders behind photos during merge
+ *   - Renders BEFORE PhotoGrid in DOM (lower z-index = behind)
+ *   - Visible from merge start; search UI hidden during solidify
+ *   - Photos mask bar during merge, fade to reveal it at merge end
+ *   - One continuous element from merge through website reveal
+ *
  * - v0.31: SEAL THE MERGE SEAM — geometry match
  *   - Merged dimensions match actual photo cluster (189×54, was 280×54)
  *   - Eliminates 48% width jump at merge→bar boundary
- *   - Bar still appears after merge (v0.29 white overlay handles transition)
  *
  * - v0.29: THE MORPH — Bar IS the website container
  *   - Bar starts at merged-photo geometry, fully opaque
@@ -92,10 +97,10 @@ export const SearchBarV2: React.FC<SearchBarProps> = ({
   const isExpanding = frame >= expandStartFrame;
 
   // ============================================
-  // STAGE 1: MORPH FROM PHOTOS
-  // v0.29: Bar starts at merged-photo geometry (189px), fully opaque.
-  // Springs to search bar size (500×50).
-  // v0.31: Geometry matched to photo cluster (189px, not 280px).
+  // STAGE 1: MORPH ENVELOPE (bar behind photos during merge)
+  // v0.32: Bar renders from merge start, BEHIND PhotoGrid in DOM.
+  // During solidify: white rectangle (searchUIOpacity=0), masked by photos.
+  // Photos fade at 90-100% merge → bar revealed at matching geometry.
   // ============================================
 
   const solidifyProgress = usePhaseProgress(
@@ -180,13 +185,22 @@ export const SearchBarV2: React.FC<SearchBarProps> = ({
     barOpacity = 1.0;
   }
 
-  // Search UI opacity: fades out during expansion (content dissolves into website)
-  const searchUIOpacity = isExpanding
-    ? interpolate(expandProgress, [0, 0.7], [1, 0], {
-        extrapolateLeft: 'clamp',
-        extrapolateRight: 'clamp',
-      })
-    : 1;
+  // v0.32: Search UI hidden during solidify (bar is plain white, masked by
+  // photos above in DOM order). Fades in during growth as bar expands.
+  // Fades out during expansion (content dissolves into website).
+  const searchUIOpacity = isSolidifying
+    ? 0
+    : isExpanding
+      ? interpolate(expandProgress, [0, 0.7], [1, 0], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        })
+      : isGrowing
+        ? interpolate(growthValues.width,
+            [DIMENSIONS.merged.width, DIMENSIONS.merged.width + 60],
+            [0, 1],
+            { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
+        : 1;
 
   // ============================================
   // TYPING DISPLAY

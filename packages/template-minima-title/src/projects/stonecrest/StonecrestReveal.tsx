@@ -1,7 +1,13 @@
 /**
- * Stonecrest v0.31 - SEAL THE MERGE SEAM (Phase 3, Step 1)
+ * Stonecrest v0.32 - THE MORPH ENVELOPE (Phase 3, Step 2)
  *
  * CHANGELOG:
+ * - v0.32: Morph Envelope — one element from merge to website
+ *   - SearchBar renders BEFORE PhotoGrid in DOM (behind, not on top)
+ *   - Bar visible from merge start (frame 200), masked by photos above
+ *   - When photos fade at 90-100% merge, bar is already there
+ *   - One continuous element: merge → search bar → website
+ *
  * - v0.31: Seal the Merge Seam — geometry match
  *   - Merged dimensions match photo cluster geometry (189px, was 280px)
  *   - settleProgress wired up in PhotoGrid (breathing amplitude decay)
@@ -197,9 +203,11 @@ export const StonecrestReveal: React.FC = () => {
   // SEARCH BAR ANIMATION
   // ============================================
 
-  // v0.31: Bar appears after merge with matched geometry (189px = photo cluster width).
-  // v0.29 white overlay handles the visual transition — no crossfade needed.
-  const searchBarVisible = t.isAfter('merge');
+  // v0.32: MORPH ENVELOPE — bar renders from merge start, BEHIND photos in DOM.
+  // Photos mask it during merge (they're on top). When photos fade at 90-100%
+  // merge, the bar is already there at matching geometry. One continuous element
+  // from merge through search bar through website reveal.
+  const searchBarVisible = !t.isBefore('merge');
 
   const typingProgress = getTypingProgress(
     t.frame,
@@ -237,7 +245,25 @@ export const StonecrestReveal: React.FC = () => {
         </div>
       )}
 
-      {/* Photo Grid - renders BETWEEN folder body and lid */}
+      {/* v0.32: MORPH ENVELOPE — SearchBar renders BEHIND photos.
+          During merge, photos are on top (opaque + white overlay).
+          When photos fade at 90-100% merge, the white bar is already
+          underneath at matching geometry. One continuous element from
+          merge → search bar → website. */}
+      <SearchBar
+        text="minimahomes.com"
+        typingProgress={typingProgress}
+        emergenceStartFrame={t.startOf('searchEmerge')}
+        photosFullyMergedFrame={t.startOf('searchGrow')}
+        searchBarReadyFrame={t.endOf('searchGrow')}
+        expandStartFrame={t.startOf('expand')}
+        visible={searchBarVisible}
+        centerX={centerX}
+        centerY={centerY}
+        renderExpandedContent={() => <WebsiteContent bannerImage={BANNER_IMAGE} />}
+      />
+
+      {/* Photo Grid - renders ON TOP of envelope during merge */}
       {photosVisible && (
         <PhotoGrid
           photos={PHOTOS}
@@ -273,20 +299,6 @@ export const StonecrestReveal: React.FC = () => {
           />
         </div>
       )}
-
-      {/* Search Bar — v0.29: Bar IS the website container */}
-      <SearchBar
-        text="minimahomes.com"
-        typingProgress={typingProgress}
-        emergenceStartFrame={t.startOf('searchEmerge')}
-        photosFullyMergedFrame={t.startOf('searchGrow')}
-        searchBarReadyFrame={t.endOf('searchGrow')}
-        expandStartFrame={t.startOf('expand')}
-        visible={searchBarVisible}
-        centerX={centerX}
-        centerY={centerY}
-        renderExpandedContent={() => <WebsiteContent bannerImage={BANNER_IMAGE} />}
-      />
 
       {/* Mouse Cursor (always on top) */}
       <MouseCursor

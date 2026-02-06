@@ -89,7 +89,7 @@ const burstFrame = t.startOf('photoBurst');
 ---
 
 ### Phase 3: The Relay Architecture (v0.31–v0.33)
-**Status**: IN PROGRESS (Step 1 starting)
+**Status**: IN PROGRESS (Steps 1-2 complete, Step 3 next)
 **Goal**: Make animation FLOW — one continuous gesture, not 18 separate phases
 
 #### The Problem (Evidence)
@@ -106,24 +106,22 @@ The animation is built as **separate components taking turns**:
 2. **C¹ Continuity** — Velocity must match at phase boundaries (not just position)
 3. **The Envelope Pattern** — Wrap separate elements in ONE morphing container
 
-#### Step 1: Seal the Merge Seam (v0.31)
+#### Step 1: Seal the Merge Seam (v0.31) ✅ COMPLETE
 **Earns**: Most visible discontinuity fixed
 
 Changes:
-- `StonecrestReveal.tsx`: searchBarVisible during merge (not after)
-- `SearchBarV2.tsx`: Merged dimensions match photo cluster geometry
-- `PhotoGrid.tsx`: Merge end-state matches bar start-state + settle wired up
-- Opacity crossfade: bar fades in as photos fade out (no swap)
+- `SearchBarV2.tsx`: Merged dimensions match photo cluster geometry (189px)
+- `PhotoGrid.tsx`: settleProgress wired up (breathing amplitude decay)
+- Lesson: crossfade between separate DOM elements = double exposure
 
-#### Step 2: The Morph Envelope (v0.32)
+#### Step 2: The Morph Envelope (v0.32) ✅ COMPLETE
 **Earns**: One DOM element from merge through website reveal
 
-Changes:
-- NEW: `components/MorphEnvelope.tsx` — single div with geometric keyframes
-- Photos render INSIDE envelope during merge (overflow:hidden)
-- Envelope morphs: cluster → bar → website (one element)
-- Content crossfades inside envelope
-- SearchBarV2 refactored from container to content renderer
+Changes (3 edits, no new files — SearchBarV2 IS the envelope):
+- `StonecrestReveal.tsx`: SearchBar moved BEFORE PhotoGrid in JSX (behind, not on top)
+- `StonecrestReveal.tsx`: `searchBarVisible = !t.isBefore('merge')` (from frame 200)
+- `SearchBarV2.tsx`: searchUIOpacity=0 during solidify (plain white, masked by photos)
+- Photos cover bar during merge, fade at 90-100% to reveal bar underneath
 
 #### Step 3: Continuous Motion Arcs (v0.33)
 **Earns**: No micro-pauses at any phase boundary
@@ -381,6 +379,7 @@ If new infrastructure introduces regressions:
 **Last Updated**: 2026-02-06
 **Phase 1 Completed**: 2026-02-06
 **Phase 2 Completed**: 2026-02-06
+**Phase 3 Steps 1-2 Completed**: 2026-02-06
 
 ---
 

@@ -4,6 +4,30 @@ All notable changes to the Stonecrest property introduction animation.
 
 ---
 
+## [v0.32] - 2026-02-06
+
+### Changed - "The Morph Envelope" (Phase 3, Step 2)
+One continuous element from merge through website reveal. No more element swap — the search bar exists from merge start, hidden behind photos.
+
+- **StonecrestReveal.tsx**: SearchBar renders BEFORE PhotoGrid in DOM (behind, not on top)
+  - `searchBarVisible = !t.isBefore('merge')` — bar exists from frame 200
+  - During merge: photos are on top, bar invisible underneath (white on white)
+  - When photos fade at 90-100% merge → bar revealed at same geometry
+- **SearchBarV2.tsx**: Search UI hidden during solidify (searchUIOpacity=0)
+  - Bar is plain white rectangle during merge (invisible behind photos)
+  - Search icon/text fade in during growth phase as bar expands
+
+**Why this works (vs Step 1's "double exposure"):**
+- Step 1 had bar ON TOP of photos (later in DOM) → both visible simultaneously
+- Step 2 has bar BEHIND photos (earlier in DOM) → only photos visible during merge
+- Photos fully cover bar (81px photos with 27px overlap, no gaps in 189px cluster)
+- At merge end: photos=white, bar=white → indistinguishable → seamless handoff
+
+**Principle: DOM Order as Z-Layer Control**
+In position:absolute layouts, later elements render on top. Reordering JSX children controls which element masks which. The envelope pattern works by rendering the target BEHIND the source.
+
+---
+
 ## [v0.31] - 2026-02-06
 
 ### Changed - "Seal the Merge Seam" (Phase 3, Step 1)

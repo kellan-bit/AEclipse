@@ -9,8 +9,8 @@ This file contains persistent instructions, preferences, and context that should
 ## Project Overview
 
 Building an Apple-style property introduction animation for Stonecrest using Remotion.
-- **Current version:** v0.31 (Seal the Merge Seam — Phase 3, Step 1)
-- **Next:** Phase 3, Step 2 - The Morph Envelope — one DOM element from merge to website
+- **Current version:** v0.32 (The Morph Envelope — Phase 3, Step 2)
+- **Next:** Phase 3, Step 3 - Continuous Motion Arcs — C¹ velocity continuity
 - **Philosophy:** Fluidity = seamlessness, not effects
 - **v0.20 Philosophy:** Invisible enhancement - feel depth, don't see technique
 - **v0.26 Philosophy:** Declarative motion > imperative interpolation
@@ -29,7 +29,10 @@ Building an Apple-style property introduction animation for Stonecrest using Rem
 - Phase 1.5b: Apply Momentum (v0.28) - **COMPLETE** (hooks applied to components)
 - Phase 1.5c: The Morph (v0.29) - **COMPLETE** (geometry morphs replace opacity transitions)
 - Phase 2: Timeline Architecture (v0.30) - **COMPLETE** (createTimeline + useTimeline)
-- Phase 3: Animation State Machine - **NEXT**
+- Phase 3: The Relay Architecture - **IN PROGRESS**
+  - Step 1: Seal the Merge Seam (v0.31) - **COMPLETE**
+  - Step 2: The Morph Envelope (v0.32) - **COMPLETE**
+  - Step 3: Continuous Motion Arcs (v0.33) - **NEXT**
 - Phase 4: Motion Presets Library - PLANNED
 - Phase 5: Component Refactor - PLANNED
 
@@ -349,8 +352,12 @@ This project is a TRAINING GROUND for animation principles. Each fix should buil
 | v0.26 | **INFRASTRUCTURE** - Unified Motion Primitives (curves, core, hooks) |
 | v0.27 | Momentum System - "Achoo" hooks defined |
 | v0.28 | **APPLY THE ACHOO** - Momentum applied to all components |
+| v0.29 | **THE MORPH** - Geometry morphs replace opacity transitions |
+| v0.30 | **TIMELINE ARCHITECTURE** - createTimeline + useTimeline |
+| v0.31 | **SEAL THE MERGE SEAM** - Geometry match (189px), settle wiring |
+| v0.32 | **THE MORPH ENVELOPE** - One DOM element from merge to website |
 
 ---
 
-**Last updated:** 2026-02-06 (v0.30)
+**Last updated:** 2026-02-06 (v0.32)
 **Update this file INCREMENTALLY - don't wait until end of session.**

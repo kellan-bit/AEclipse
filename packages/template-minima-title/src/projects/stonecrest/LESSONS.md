@@ -1166,3 +1166,45 @@ Tried making bar visible during merge with opacity ramping 0→1 while photos fa
 - **Game design** — sprite swap at identical bounding box is invisible; different sizes = "pop"
 
 **The Rule:** Fix geometry first. Only add crossfade complexity with a single container (Envelope Pattern), not two separate DOM elements.
+
+---
+
+## Lesson 26: DOM Order as Z-Layer Control — The Envelope Pattern (v0.32)
+
+**Problem:** In v0.31, the search bar appeared AFTER photos vanished — a clean swap, but still visibly two separate elements taking turns. The viewer perceives "element A leaves, element B arrives."
+
+**What Happened:** Step 1 (v0.31) fixed the geometry mismatch (189px match), but the bar still rendered AFTER PhotoGrid in DOM order (higher z-index = on top of photos). Any attempt at crossfade created "double exposure" — both elements visible simultaneously.
+
+**The Insight: DOM Order = Z-Layer Control**
+In `position: absolute` layouts, later JSX children render on top of earlier ones. By moving `<SearchBar>` BEFORE `<PhotoGrid>` in the JSX tree, the bar renders BEHIND photos. Now:
+- During merge: photos are opaque with white overlay → bar invisible behind them
+- At merge 90-100%: photos fade → bar "shows through" at identical geometry
+- After merge: PhotoGrid unmounts → bar is the only element → grows to search bar → website
+
+**The Envelope Pattern:**
+One container exists continuously from state A through state Z. Content changes inside; the container morphs. The audience tracks the container, not the contents.
+
+```tsx
+// The bar IS the envelope — exists from merge (frame 200) through website (frame 420)
+// Content phases:
+// 1. Solidify: plain white rectangle (searchUIOpacity=0), masked by photos
+// 2. Growth: search icon + text fade in as bar expands
+// 3. Expansion: search UI fades out, website content fades in
+// One div the whole time. No swap frame.
+```
+
+**Key Implementation Details:**
+1. Bar visible from merge start (`!t.isBefore('merge')`)
+2. Search UI hidden during solidify (`searchUIOpacity = 0`) — bar is just a white rectangle
+3. Search UI fades in during growth (keyed to width expansion, not time)
+4. Photos fully cover bar during merge (81px photos, 27px overlap, no gaps in 189px cluster)
+
+**Global Application:**
+- **Page transitions** — persistent layout shell morphs, page content crossfades inside
+- **Modal → fullscreen** — expand the modal container, don't swap modal for page
+- **Tab navigation** — one content area morphs size, tab content crossfades
+- **List → detail** — list item container expands to detail view
+- **Onboarding flows** — one card morphs through steps
+- **Video editing** — match cuts work because the "container" (framing) stays continuous
+
+**The Rule:** When two elements need to look like one transformation, make ONE element exist the entire time. Render it behind the source, let the source mask it, then remove the source. The audience never sees a swap because there is no swap.
