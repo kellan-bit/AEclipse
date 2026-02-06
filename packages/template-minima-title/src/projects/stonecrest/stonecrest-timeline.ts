@@ -1,21 +1,11 @@
 /**
- * Stonecrest Animation Timeline - v0.35
+ * Stonecrest Animation Timeline - v0.40
  *
- * Declarative phase definitions for the Stonecrest property reveal.
- * Maps the 5-act story structure to typed, queryable phases.
- *
- * Usage:
- *   import { stonecrestTimeline } from './stonecrest-timeline';
- *   const t = useTimeline(stonecrestTimeline);
- *   t.progress('photoBurst')  // 0-1 progress through burst phase
- *   t.startOf('filter')       // frame 115
+ * v0.40: Professional pacing overhaul — 391fr → 200fr (13s → 6.7s)
+ * Every phase compressed 2-4x to match Apple/Material standards.
  */
 
 import { createTimeline } from './motion/index';
-
-// ============================================
-// PHASE NAMES (typed union for autocomplete)
-// ============================================
 
 export const STONECREST_PHASES = [
   'mouseApproach', 'hesitation', 'firstClick', 'secondClick',
@@ -27,42 +17,32 @@ export const STONECREST_PHASES = [
 
 export type StonecrestPhase = typeof STONECREST_PHASES[number];
 
-// ============================================
-// TIMELINE DEFINITION
-// ============================================
-
 export const stonecrestTimeline = createTimeline<StonecrestPhase>({
-  // Act 1: The Folder
-  // Mouse approaches from right, hesitates, double-clicks
+  // Act 1: Folder (kept — already snappy)
   mouseApproach:  { start: 0,   duration: 12 },
   hesitation:     { start: 12,  duration: 10 },
   firstClick:     { start: 26,  duration: 6 },
   secondClick:    { start: 32,  duration: 2 },
 
-  // Act 2: The Reveal
-  // Folder opens, photos peek out, burst to grid, settle
-  folderOpen:     { start: 34,  duration: 10 },
-  photoPeek:      { start: 44,  duration: 16 },
-  photoBurst:     { start: 60,  duration: 40 },
-  photoSettle:    { start: 100, duration: 10 },
-  photoHold:      { start: 110, duration: 5 },
+  // Act 2: Photo Reveal (was 81fr → 34fr)
+  folderOpen:     { start: 34,  duration: 8 },
+  photoPeek:      { start: 42,  duration: 8 },
+  photoBurst:     { start: 50,  duration: 20 },
+  photoSettle:    { start: 70,  duration: 4 },
+  photoHold:      { start: 74,  duration: 2 },
 
-  // Act 3: The Filter
-  // Top/bottom rows slide out, middle row remains
-  filter:         { start: 115, duration: 60 },
+  // Act 3: Filter (was 60fr → 15fr)
+  filter:         { start: 76,  duration: 15 },
 
-  // Act 4: The Transform
-  // v0.35: Closed gaps — formation starts at filter end, typing at searchGrow end
-  // Middle row forms strip, merges into search bar, typing
-  formation:      { start: 175, duration: 18 },    // was 178 — no gap after filter
-  searchEmerge:   { start: 190, duration: 23 },    // overlaps merge (3fr head start)
-  merge:          { start: 193, duration: 20 },    // was 196
-  searchGrow:     { start: 213, duration: 18 },    // was 216
-  typing:         { start: 231, duration: 48 },    // was 238 — no gap after searchGrow
+  // Act 4: Transform (was 89fr → 36fr)
+  formation:      { start: 91,  duration: 10 },
+  searchEmerge:   { start: 98,  duration: 14 },
+  merge:          { start: 101, duration: 12 },
+  searchGrow:     { start: 113, duration: 10 },
+  typing:         { start: 123, duration: 15 },
 
-  // Act 5: The Website
-  // Bar expands to browser viewport, website content revealed
-  expand:         { start: 274, duration: 32 },    // was 281
-  websiteReveal:  { start: 306, duration: 10 },
-  hold:           { start: 316, duration: 75 },
+  // Act 5: Website (was 117fr → 65fr)
+  expand:         { start: 135, duration: 20 },
+  websiteReveal:  { start: 155, duration: 5 },
+  hold:           { start: 160, duration: 40 },
 });
