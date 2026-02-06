@@ -519,3 +519,109 @@ git push origin claude/analyze-program-functionality-gb52b
 ```
 
 **Rule:** Every push should be immediately testable by the user.
+
+---
+
+## Global Learning Framework
+
+**Every local fix teaches a transferable principle.** This section captures global insights that apply beyond this specific project.
+
+### Principle: Perceptual Continuity
+**Local Fix:** Move SEARCH_EMERGE 13 frames earlier (310 → 297)
+**Global Application:** When transitioning between visual elements, the replacement must be perceptible BEFORE the original begins dissolving. The brain needs to register "something is here" before it can accept transformation.
+
+**Applies to:**
+- UI state transitions (skeleton loaders appear before content fades)
+- Video editing (B-roll underlaps audio transition)
+- Presentation design (next slide's element hints before transition)
+- Game design (spawn indicators before enemies appear)
+- Magic/illusion (misdirection establishes "where to look next")
+
+**The Rule:** Never leave a perceptual void. The viewer's attention needs a landing zone.
+
+---
+
+### Principle: Optical Mixing
+**Local Fix:** Photo opacity fade [0.5, 0.95] → [0.15, 0.65]
+**Global Application:** When two elements overlap during transition, their combined visual weight must be orchestrated. Combined opacity >100% = visual noise/competition. Combined <100% = intentional "dissolve" breathing room.
+
+**Applies to:**
+- CSS transitions (crossfade timing)
+- Video dissolves (overlap duration and curve)
+- Audio crossfades (avoid volume spikes)
+- Lighting design (gel layering)
+- Layer compositing (blend modes)
+
+**The Rule:** Transitions are two-body problems. You can't tune one element's curve without considering the other.
+
+---
+
+### Principle: Dimensional Inheritance
+**Local Fix:** Bar starts at 340×86px to match photo cluster, not arbitrary 200×60px
+**Global Application:** A transformed element must inherit the spatial footprint of its predecessor at the moment of handoff. Mismatches break the illusion of metamorphosis.
+
+**Applies to:**
+- Morphing animations (shared element transitions)
+- Responsive design breakpoints (content flow)
+- State machine transitions (UI component sizing)
+- Shape tweening (matching anchor points)
+- Video VFX (match-moving)
+
+**The Rule:** Measure the source at the handoff frame. Start the target at those exact dimensions.
+
+---
+
+### Principle: Property Continuity
+**Local Fix:** Border-radius animates from 8 → 25, doesn't jump from 16 → 25
+**Global Application:** Every animatable property that changes between states must have an interpolation path. Instant jumps are perceptible as "cuts" even in peripheral vision.
+
+**Applies to:**
+- CSS transitions (ensure all changing properties are listed)
+- Keyframe animation (hold keyframes for non-animated properties)
+- Procedural generation (interpolate all parameters)
+- State machines (transition functions for all state variables)
+- 3D animation (all transform channels need curves)
+
+**The Rule:** Audit every property that differs between states. If it changes, it animates.
+
+---
+
+### Principle: Shadow-Elevation Consistency
+**Local Fix:** Use getElevationShadow() instead of hardcoded shadow values
+**Global Application:** Shadows must track logical "height" of elements. When elements move in Z-space (appear to lift or lower), shadows must respond consistently across the entire system.
+
+**Applies to:**
+- Material Design elevation system
+- CSS shadow progressions
+- 3D lighting consistency
+- Photography/cinematography key-light ratios
+- Game UI depth layering
+
+**The Rule:** Shadows are not decorative - they're information. They tell the viewer where things are in space.
+
+---
+
+### How to Add New Global Learnings
+
+When you discover a new principle through local fixes:
+
+1. **Name it** - Give the principle a memorable 2-3 word name
+2. **State the local fix** - What specific change triggered this insight?
+3. **Generalize** - What's the underlying principle that made this work?
+4. **List domains** - Where else does this apply? (minimum 4 domains)
+5. **The Rule** - One sentence that captures the actionable insight
+
+**Template:**
+```markdown
+### Principle: [Name]
+**Local Fix:** [Specific change made]
+**Global Application:** [Why this works, the underlying principle]
+
+**Applies to:**
+- [Domain 1]
+- [Domain 2]
+- [Domain 3]
+- [Domain 4+]
+
+**The Rule:** [One sentence, actionable]
+```

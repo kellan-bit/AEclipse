@@ -10,7 +10,7 @@ This file contains persistent instructions, preferences, and context that should
 
 Building an Apple-style property introduction animation for Stonecrest using Remotion.
 - **Current version:** v0.21 (LEAP 2 - Metamorphosis complete)
-- **Next:** Polish, verification, and potential LEAP 3
+- **Next:** v0.3 "The Invisible Seam" - Phase A (v0.22-v0.25) in progress
 - **Philosophy:** Fluidity = seamlessness, not effects
 - **v0.20 Philosophy:** Invisible enhancement - feel depth, don't see technique
 
@@ -142,6 +142,36 @@ Import from: `@minima-brand/colors` and `@minima-brand/themes`
 - Don't confuse "adding effects" with "improving animation"
 - When user says "structural improvements" - focus on flow, not features
 - Document learnings so user doesn't repeat instructions
+
+---
+
+## Global Learning Requirement
+
+**When explaining improvements, always articulate the transferable knowledge.**
+
+For EVERY change or improvement, explain:
+
+1. **Local Impact** - What this fixes in the Stonecrest animation specifically
+2. **Global Skill** - What generalizable principle, technique, or understanding this teaches that applies to ANY animation, software, or creative project
+
+### Examples of Global Framing:
+
+| Local Fix | Global Skill |
+|-----------|--------------|
+| "Move SEARCH_EMERGE 10 frames earlier" | **Perceptual Continuity**: When transitioning between visual elements, the replacement must be perceptible BEFORE the original begins dissolving. The brain needs to register "something is here" before it can accept transformation. Applies to: UI transitions, video editing, presentation slides, magic tricks. |
+| "Opacity should sum to ~100% during crossfade" | **Optical Mixing**: When two elements overlap during transition, their combined visual weight must remain constant. >100% = visual noise/competition. <100% = intentional "dissolve" breathing room. Applies to: CSS transitions, video dissolves, audio crossfades, lighting design. |
+| "Bar dimensions must match photo cluster at emergence" | **Dimensional Inheritance**: A transformed element must inherit the spatial footprint of its predecessor at the moment of handoff. Mismatches break the illusion of metamorphosis. Applies to: morphing animations, responsive design breakpoints, state machine transitions. |
+| "Border-radius must animate, not jump" | **Property Continuity**: Every animatable property that changes between states must have an interpolation path. Instant jumps are perceptible as "cuts" even in peripheral vision. Applies to: CSS transitions, keyframe animation, procedural generation. |
+
+### Why This Matters:
+
+This project is a TRAINING GROUND for animation principles. Each fix should build the user's mental model of:
+- Motion design psychology (what the eye/brain expects)
+- Technical animation craft (how to achieve smoothness)
+- Systematic debugging (how to identify and categorize visual problems)
+- Transferable vocabulary (terms that apply across tools and domains)
+
+**Document these global insights in LESSONS.md as reusable patterns.**
 
 ---
 
