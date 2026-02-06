@@ -9,10 +9,35 @@ This file contains persistent instructions, preferences, and context that should
 ## Project Overview
 
 Building an Apple-style property introduction animation for Stonecrest using Remotion.
-- **Current version:** v0.25 (Phase A complete - The Invisible Seam)
-- **Next:** v0.3 - Phase B (v0.26-v0.27): Folder→Photos metamorphosis
+- **Current version:** v0.26 (Infrastructure Phase 1 - Unified Motion Primitives)
+- **Next:** v0.27 - Infrastructure Phase 2 (Timeline Architecture)
 - **Philosophy:** Fluidity = seamlessness, not effects
 - **v0.20 Philosophy:** Invisible enhancement - feel depth, don't see technique
+- **v0.26 Philosophy:** Declarative motion > imperative interpolation
+
+---
+
+## Infrastructure Improvement (v0.26+)
+
+**IMPORTANT:** This project is undergoing a multi-session infrastructure improvement.
+
+### Current Status
+- Phase 1: Unified Motion Primitives - **COMPLETE**
+- Phase 2: Timeline Architecture - PLANNED
+- Phase 3: Animation State Machine - PLANNED
+- Phase 4: Motion Presets Library - PLANNED
+- Phase 5: Component Refactor - PLANNED
+
+### Key Files for Infrastructure
+- `INFRASTRUCTURE_PLAN.md` - Full roadmap and specifications
+- `motion/curves.ts` - Comprehensive easing library (40+ named curves)
+- `motion/core.ts` - MotionValue class and transitions
+- `motion/hooks.ts` - React hooks (useSpring, useTween, etc.)
+- `motion/index.ts` - Unified exports
+
+### Proof of Concept
+- `components/SearchBarV2.tsx` - Refactored with new motion system
+- Shows cleaner code with hooks vs manual interpolation
 
 ---
 
@@ -84,34 +109,35 @@ Import from: `@minima-brand/colors` and `@minima-brand/themes`
 
 ## Current Roadmap
 
-### v0.20 - DEPTH SYSTEM ✅ COMPLETE (APP MILESTONE)
-- Reusable depth utilities in motion.ts
-- ELEVATION: getElevationShadow() - shadows respond to height
-- FOCUS: getFocusBlur() - selective blur guides attention (max 3px)
-- PARALLAX: getParallaxFactor() - depth through motion (max 15%)
-- Philosophy: "Invisible enhancement" - feel depth, don't see technique
+### v0.26 - INFRASTRUCTURE PHASE 1 ✅ COMPLETE
+- **Unified Motion Primitives** - New motion system foundation
+- `motion/curves.ts` - 40+ named easing curves (Apple, Material, custom)
+- `motion/core.ts` - MotionValue class, Transition types, Spring presets
+- `motion/hooks.ts` - React hooks: useSpring, useTween, usePhaseProgress
+- SearchBarV2.tsx - Proof of concept using new system
+- INFRASTRUCTURE_PLAN.md - Multi-session roadmap
 
-### v0.19 - POLISH & FLOW ✅ COMPLETE
-- Folder anticipation pulse (scale 1.025 before opening)
-- Photo breathing during settle (micro-oscillation)
-- Disappearing photos tilt outward
+### v0.27 - INFRASTRUCTURE PHASE 2 (NEXT)
+- **Timeline Architecture** - Declarative, composable timeline system
+- Named phases with automatic overlapping
+- Event system instead of magic frame numbers
+- Keyframe syntax for declarative animation
 
-### v0.18 - PHOTO EMERGENCE ✅ COMPLETE
-- Split folder into MacFolderBack + MacFolderLid layers
-- Photos genuinely emerge FROM folder (proper z-ordering)
-- Overlapping phases for seamless flow
-
-### v0.17 - SPRING PHYSICS ✅ COMPLETE
-- Spring physics system in motion.ts
-- SPRING profiles: gentle, responsive, bouncy, folder
-- createSpring(), createStaggeredSpring(), springTo() helpers
+### v0.25 - PHASE A: THE INVISIBLE SEAM ✅ COMPLETE
+- Photo→SearchBar metamorphosis perfected
+- Gap elimination, opacity orchestration, dimensional precision
 
 ### v0.21 - LEAP 2: METAMORPHOSIS ✅ COMPLETE
 - Formation phase: middle row slides into horizontal strip (frames 275-300)
 - Blur-merge: photos blur (peak 3px) + desaturate → dissolve (frames 300-325)
 - Search bar emergence: two-stage (solidify 200×60, grow to 500×50)
 - Overlapping phases: photos dissolve AS bar solidifies
-- Photos BECOME the search bar, not disappear then bar appears
+
+### v0.20 - DEPTH SYSTEM ✅ COMPLETE (APP MILESTONE)
+- Reusable depth utilities in motion.ts
+- ELEVATION: getElevationShadow() - shadows respond to height
+- FOCUS: getFocusBlur() - selective blur guides attention (max 3px)
+- PARALLAX: getParallaxFactor() - depth through motion (max 15%)
 
 ---
 
@@ -189,6 +215,8 @@ This project is a TRAINING GROUND for animation principles. Each fix should buil
 | v0.19 | Polish & flow (anticipation, breathing, tilt) |
 | v0.20 | **APP MILESTONE** - Cinematic depth system (elevation, focus, parallax) |
 | v0.21 | **LEAP 2** - Photo-to-SearchBar Metamorphosis (formation, blur-merge, emergence) |
+| v0.22-v0.25 | **Phase A** - The Invisible Seam (gap elimination, opacity, dimensions) |
+| v0.26 | **INFRASTRUCTURE** - Unified Motion Primitives (curves, core, hooks) |
 
 ---
 

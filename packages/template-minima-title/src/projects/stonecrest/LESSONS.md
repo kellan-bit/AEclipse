@@ -625,3 +625,175 @@ When you discover a new principle through local fixes:
 
 **The Rule:** [One sentence, actionable]
 ```
+
+---
+
+## Lesson 15: Declarative Motion Over Imperative Interpolation (v0.26)
+
+**Problem:** Code like `const springVal = createSpring(...); const x = springTo(springVal, [a, b])` is hard to read and maintain.
+
+**What Happened:** Every animation required:
+1. Calling createSpring with frame math
+2. Calling springTo to map the spring value
+3. Manually checking if we're in the right phase
+4. Complex if/else chains for multi-phase animations
+
+**Right Approach: DECLARATIVE HOOKS**
+```tsx
+// Before (v0.25 - imperative)
+const growthSpring = createSpring(frame - photosFullyMergedFrame, fps, 'responsive', 0);
+barWidth = springTo(growthSpring, [340, 500]);
+barHeight = springTo(growthSpring, [86, 50]);
+
+// After (v0.26 - declarative)
+const { width, height } = useSpringMulti({
+  width: [340, 500],
+  height: [86, 50],
+}, photosFullyMergedFrame, 'responsive');
+```
+
+**Benefits:**
+- Intent is clear: "spring these values from A to B starting at frame X"
+- Frame math is hidden inside the hook
+- Multi-value animations are coordinated automatically
+- Easier to tune timing by changing one number
+
+**Rule:** Prefer hooks that express WHAT you want, not HOW to calculate it.
+
+---
+
+## Lesson 16: Named Curves Over Magic Numbers (v0.26)
+
+**Problem:** `Easing.bezier(0.34, 1.56, 0.64, 1)` means nothing at a glance.
+
+**What Happened:** Every bezier curve required looking up what those control points do. Team members couldn't understand or tune animations without deep knowledge.
+
+**Right Approach: NAMED CURVE LIBRARY**
+```tsx
+// Before - what does this even do?
+easing: Easing.bezier(0.34, 1.56, 0.64, 1)
+
+// After - intent is clear
+easing: CURVES.overshootLarge
+// or
+easing: CURVES.appleDefault
+// or
+easing: CURVES.photoBurst  // project-specific
+```
+
+**Curve Library Categories:**
+1. **Standard** - CSS spec (ease, easeIn, easeOut, easeInOut)
+2. **Apple** - Measured from iOS/macOS (appleDefault, appleKeyboard, appleSheet)
+3. **Material** - Google spec (materialStandard, materialDecelerate)
+4. **Emphasis** - Overshoot/anticipation (overshootSmall, anticipateMedium)
+5. **Project** - Custom curves (folderOpen, photoBurst, metamorphosis)
+
+**Rule:** If a curve isn't named, you'll forget what it does. Name all curves.
+
+---
+
+## Lesson 17: Phase Hooks for Clean State Detection (v0.26)
+
+**Problem:** Complex if/else chains for detecting animation phases.
+
+**What Happened:** Code like this was everywhere:
+```tsx
+const isSolidifying = frame >= emergenceStartFrame && frame < photosFullyMergedFrame;
+const isGrowing = frame >= photosFullyMergedFrame && frame < expandStartFrame;
+const isExpanding = expandStartFrame > 0 && frame >= expandStartFrame;
+```
+
+**Right Approach: PHASE HOOKS**
+```tsx
+// Cleaner detection
+const isSolidifying = useInPhase(emergenceStartFrame, solidifyDuration);
+const isGrowing = useInPhase(photosFullyMergedFrame, growthDuration);
+
+// Progress through a phase
+const progress = usePhaseProgress(startFrame, duration, 'easeOut');
+```
+
+**Benefits:**
+- Phase logic is encapsulated
+- Edge cases handled consistently
+- Easing can be applied to progress
+- Easier to debug (inspect hook values)
+
+**Rule:** Encapsulate phase detection in reusable hooks.
+
+---
+
+## Lesson 18: Infrastructure Enables Velocity (v0.26)
+
+**Problem:** Adding new animations required copy-pasting boilerplate.
+
+**Global Application:** Investing in infrastructure (motion primitives, hooks, presets) pays off exponentially. The time spent building reusable foundations is recovered many times over as the project grows.
+
+**Signs You Need Infrastructure:**
+- Copy-pasting animation code between components
+- Same bug appearing in multiple places
+- Team members afraid to touch animation code
+- Tuning one animation breaks another
+- No naming convention for timing/easing values
+
+**Infrastructure Investment Levels:**
+| Level | What | When |
+|-------|------|------|
+| 0 | Inline everything | Prototype, throwaway code |
+| 1 | Constants | Any shared project |
+| 2 | Utility functions | 3+ components with animation |
+| 3 | Custom hooks | Animation-heavy applications |
+| 4 | Full motion system | Animation is core to product |
+
+**Rule:** Build infrastructure when you find yourself explaining the same pattern twice.
+
+---
+
+## Quick Reference: New Motion Hooks (v0.26)
+
+```tsx
+import {
+  useSpring,         // Single value spring
+  useTween,          // Single value tween
+  useSpringMulti,    // Multi-value spring
+  usePhaseProgress,  // 0-1 progress through phase
+  useInPhase,        // Boolean: in phase?
+  useBreathe,        // Subtle oscillation
+  useFloat,          // Gentle vertical float
+  useStaggeredSpring, // Staggered by index
+} from '../motion';
+
+// Examples
+const scale = useSpring(0, 1, startFrame, 'bouncy');
+const opacity = useTween(0, 1, startFrame, 15, 'easeOut');
+const { x, y } = useSpringMulti({ x: [0, 100], y: [0, 50] }, startFrame, 'responsive');
+const progress = usePhaseProgress(startFrame, duration, 'appleDefault');
+const isActive = useInPhase(startFrame, duration);
+const breathingScale = useBreathe(1, 0.005, 1, index * 5);
+```
+
+---
+
+## Quick Reference: Named Curves (v0.26)
+
+```tsx
+import { CURVES } from '../motion';
+
+// Apple ecosystem
+CURVES.appleDefault      // Standard system animation
+CURVES.appleKeyboard     // Keyboard appearance
+CURVES.appleSheet        // Sheet presentation
+CURVES.appleLaunch       // App launch zoom
+
+// Emphasis
+CURVES.overshootSmall    // Subtle bounce past target
+CURVES.overshootMedium   // Noticeable spring
+CURVES.overshootLarge    // Playful bounce
+CURVES.anticipateSmall   // Slight pullback before
+
+// Project-specific
+CURVES.folderOpen        // Mechanical hinge feel
+CURVES.photoBurst        // Energetic expansion
+CURVES.searchGrow        // Responsive UI growth
+CURVES.metamorphosis     // Smooth transformation
+```
