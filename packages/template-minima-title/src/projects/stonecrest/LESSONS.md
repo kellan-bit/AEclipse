@@ -3,6 +3,8 @@
 Reusable patterns and lessons from building the Stonecrest animation.
 Apply these to all future animation projects.
 
+**IMPORTANT:** Also read `CLAUDE_CONTEXT.md` for persistent instructions and user preferences.
+
 ---
 
 ## Lesson 1: Visual Fidelity Before Motion
