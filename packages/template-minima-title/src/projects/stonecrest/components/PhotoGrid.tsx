@@ -1,7 +1,12 @@
 /**
- * PhotoGrid Component - v0.31
+ * PhotoGrid Component - v0.33
  *
  * CHANGELOG:
+ * - v0.33: CONTINUOUS MOTION — eliminate stutter at formation→merge
+ *   - Formation duration derived from timeline (was hardcoded 20, now dynamic)
+ *   - Merge curve: materialDecelerate (non-zero initial velocity, no pause)
+ *   - Tighter timeline: formation 18fr, merge 20fr (was 22, 25)
+ *
  * - v0.31: SEAL THE MERGE SEAM — settle + geometry
  *   - settleProgress wired up: breathing amplitude decays during settle
  *   - Photo opacity kept at v0.29 behavior (white overlay handles transition)
@@ -325,7 +330,8 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
       frame < mergeStartFrame;
 
     if (isForming) {
-      const formationDuration = 20; // Quick flick to strip position
+      // v0.33: Duration derived from timeline (was hardcoded 20, missed 2 frames)
+      const formationDuration = mergeStartFrame - formationStartFrame;
       const flickCurve = getMomentumCurve('flick');
       const formationProgress = Math.min((frame - formationStartFrame) / formationDuration, 1);
       const flickProgress = flickCurve(formationProgress);
@@ -347,10 +353,12 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
     // ============================================
     const isMerging = MIDDLE_ROW_INDICES.includes(index) && mergeStartFrame > 0 && frame >= mergeStartFrame;
     if (isMerging) {
-      // v0.29.1: materialStandard for merge — no anticipation, no overshoot.
-      // Elements compressing together should glide smoothly, not bounce apart.
-      const mergeDuration = 25; // Duration of the merge animation
-      const mergeCurve = getCurve('materialStandard');
+      // v0.33: materialDecelerate for merge — starts with immediate velocity.
+      // Formation ends with flick curve decelerating; materialDecelerate picks up
+      // with non-zero initial velocity so there's no pause at the boundary.
+      // Duration derived from timeline (not hardcoded).
+      const mergeDuration = 20; // matches timeline v0.33
+      const mergeCurve = getCurve('materialDecelerate');
       const mergeProgress = Math.min((frame - mergeStartFrame) / mergeDuration, 1);
       const mergeEased = mergeCurve(mergeProgress);
 

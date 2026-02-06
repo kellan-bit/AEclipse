@@ -9,8 +9,8 @@ This file contains persistent instructions, preferences, and context that should
 ## Project Overview
 
 Building an Apple-style property introduction animation for Stonecrest using Remotion.
-- **Current version:** v0.32 (The Morph Envelope — Phase 3, Step 2)
-- **Next:** Phase 3, Step 3 - Continuous Motion Arcs — C¹ velocity continuity
+- **Current version:** v0.33 (Continuous Motion — Phase 3, Step 2.5)
+- **Next:** Phase 3, Step 3 - Full Motion Arcs — Hermite interpolation across all phases
 - **Philosophy:** Fluidity = seamlessness, not effects
 - **v0.20 Philosophy:** Invisible enhancement - feel depth, don't see technique
 - **v0.26 Philosophy:** Declarative motion > imperative interpolation
@@ -32,7 +32,8 @@ Building an Apple-style property introduction animation for Stonecrest using Rem
 - Phase 3: The Relay Architecture - **IN PROGRESS**
   - Step 1: Seal the Merge Seam (v0.31) - **COMPLETE**
   - Step 2: The Morph Envelope (v0.32) - **COMPLETE**
-  - Step 3: Continuous Motion Arcs (v0.33) - **NEXT**
+  - Step 2.5: Continuous Motion (v0.33) - **COMPLETE** (stutter fix + faster morphs)
+  - Step 3: Full Motion Arcs (v0.34) - **NEXT**
 - Phase 4: Motion Presets Library - PLANNED
 - Phase 5: Component Refactor - PLANNED
 
@@ -356,8 +357,9 @@ This project is a TRAINING GROUND for animation principles. Each fix should buil
 | v0.30 | **TIMELINE ARCHITECTURE** - createTimeline + useTimeline |
 | v0.31 | **SEAL THE MERGE SEAM** - Geometry match (189px), settle wiring |
 | v0.32 | **THE MORPH ENVELOPE** - One DOM element from merge to website |
+| v0.33 | **CONTINUOUS MOTION** - Stutter fix + faster morphs (C¹ velocity) |
 
 ---
 
-**Last updated:** 2026-02-06 (v0.32)
+**Last updated:** 2026-02-06 (v0.33)
 **Update this file INCREMENTALLY - don't wait until end of session.**

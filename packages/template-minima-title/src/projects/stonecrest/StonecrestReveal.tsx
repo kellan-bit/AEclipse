@@ -1,7 +1,12 @@
 /**
- * Stonecrest v0.32 - THE MORPH ENVELOPE (Phase 3, Step 2)
+ * Stonecrest v0.33 - CONTINUOUS MOTION (Phase 3, Step 2.5)
  *
  * CHANGELOG:
+ * - v0.33: Continuous Motion — eliminate stutter, faster morphs
+ *   - Timeline tightened: formation 18fr, merge 20fr, searchGrow 18fr, expand 32fr
+ *   - Merge curve: materialDecelerate (non-zero initial velocity at boundary)
+ *   - Formation duration now derived dynamically (no more hardcoded mismatch)
+ *
  * - v0.32: Morph Envelope — one element from merge to website
  *   - SearchBar renders BEFORE PhotoGrid in DOM (behind, not on top)
  *   - Bar visible from merge start (frame 200), masked by photos above

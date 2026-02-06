@@ -1208,3 +1208,36 @@ One container exists continuously from state A through state Z. Content changes 
 - **Video editing** — match cuts work because the "container" (framing) stays continuous
 
 **The Rule:** When two elements need to look like one transformation, make ONE element exist the entire time. Render it behind the source, let the source mask it, then remove the source. The audience never sees a swap because there is no swap.
+
+---
+
+## Lesson 27: C¹ Continuity — Match Velocity at Phase Boundaries (v0.33)
+
+**Problem:** Photos shrink during formation (scale 1.0→0.85), pause, then shrink again during merge (0.85→0.45). The stutter breaks the flow even though each individual curve is smooth.
+
+**Root Causes:**
+1. **Duration mismatch:** Formation hardcoded `duration=20` but timeline said 22 → 2 dead frames where scale was locked at 0.85
+2. **Velocity discontinuity:** Both `flick` (formation end) and `materialStandard` (merge start) curves have zero velocity at the boundary → perceptible "double-zero dead zone"
+
+**The Math:**
+- C⁰ continuity: position matches at boundary. `scale=0.85` at formation end = `scale=0.85` at merge start. ✓
+- C¹ continuity: velocity ALSO matches. `d(scale)/dt = 0` at formation end, `d(scale)/dt = 0` at merge start. Both zero — technically C¹, but perceptually dead.
+- The fix: use a merge curve with **non-zero initial velocity** so motion carries forward.
+
+**The Fix:**
+1. Derive durations from timeline (`mergeStartFrame - formationStartFrame`), never hardcode
+2. Switch merge from `materialStandard` bezier(0.4, 0, 0.2, 1) to `materialDecelerate` bezier(0, 0, 0.2, 1)
+   - materialStandard: control point at x=0.4 → slow start (near-zero velocity at t=0)
+   - materialDecelerate: control point at x=0 → immediate velocity at t=0
+
+**Bezier Velocity Rule of Thumb:**
+- `bezier(0, ...)` = maximum initial velocity (curve leaves origin steeply)
+- `bezier(0.4, ...)` = slow initial velocity (curve leaves origin gradually)
+- `bezier(..., 1)` = zero final velocity (smooth stop)
+- `bezier(..., 0.5)` = non-zero final velocity (abrupt stop)
+
+**Global Application:**
+- **Any multi-phase animation:** Check velocity at every boundary, not just position
+- **Curve selection:** Pick curves based on entry/exit velocity needs, not just "looks smooth"
+- **Duration derivation:** Always derive from the source of truth (timeline), never hardcode duplicates
+- **The test:** Slow playback to 0.25x and watch the boundary. If you see a micro-pause, it's a velocity mismatch.

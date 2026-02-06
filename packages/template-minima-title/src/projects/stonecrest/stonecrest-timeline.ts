@@ -52,16 +52,17 @@ export const stonecrestTimeline = createTimeline<StonecrestPhase>({
   filter:         { start: 115, duration: 60 },
 
   // Act 4: The Transform
+  // v0.33: Tightened morph timing — faster, more fluid
   // Middle row forms strip, merges into search bar, typing
-  formation:      { start: 178, duration: 22 },
-  searchEmerge:   { start: 197, duration: 28 },   // overlaps merge (3fr head start)
-  merge:          { start: 200, duration: 25 },
-  searchGrow:     { start: 225, duration: 23 },    // bar springs to full size
-  typing:         { start: 252, duration: 48 },
+  formation:      { start: 178, duration: 18 },    // was 22 — snappier strip
+  searchEmerge:   { start: 193, duration: 23 },    // overlaps merge (3fr head start)
+  merge:          { start: 196, duration: 20 },    // was 25 — tighter compression
+  searchGrow:     { start: 216, duration: 18 },    // was 23 — quicker bar growth
+  typing:         { start: 238, duration: 48 },
 
   // Act 5: The Website
   // Bar expands to browser viewport, website content revealed
-  expand:         { start: 295, duration: 40 },
-  websiteReveal:  { start: 335, duration: 10 },
-  hold:           { start: 345, duration: 75 },
+  expand:         { start: 281, duration: 32 },    // was 40 — snappier expand
+  websiteReveal:  { start: 313, duration: 10 },
+  hold:           { start: 323, duration: 75 },
 });

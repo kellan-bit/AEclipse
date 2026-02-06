@@ -4,6 +4,33 @@ All notable changes to the Stonecrest property introduction animation.
 
 ---
 
+## [v0.33] - 2026-02-06
+
+### Changed - "Continuous Motion" (Phase 3, Step 2.5)
+Eliminate the formation→merge stutter and speed up all morph phases.
+
+**The stutter root cause:**
+- Formation used hardcoded `duration=20` but timeline was 22 → 2 dead frames at scale 0.85
+- Both flick (formation) and materialStandard (merge) curves had zero velocity at the boundary
+- Result: shrink → **pause** → shrink
+
+**Fixes:**
+- **PhotoGrid.tsx**: Formation duration now derived from timeline (`mergeStartFrame - formationStartFrame`)
+- **PhotoGrid.tsx**: Merge curve changed from `materialStandard` → `materialDecelerate`
+  - materialStandard: bezier(0.4, 0, 0.2, 1) — zero initial velocity (pause)
+  - materialDecelerate: bezier(0, 0, 0.2, 1) — immediate velocity (continuous)
+- **stonecrest-timeline.ts**: Tightened morph phases:
+  - formation: 22→18 frames (snappier strip)
+  - merge: 25→20 frames (tighter compression)
+  - searchGrow: 23→18 frames (quicker bar growth)
+  - expand: 40→32 frames (snappier website reveal)
+  - Total animation: 420→398 frames (saved ~0.7s at 30fps)
+
+**Principle: C⁰ vs C¹ Continuity**
+C⁰ = position matches at boundary (values line up). C¹ = velocity also matches (no perceptible pause). Both curves had zero velocity at the boundary, creating a double-zero dead zone. Fix: use a curve with non-zero initial velocity so motion carries across the boundary.
+
+---
+
 ## [v0.32] - 2026-02-06
 
 ### Changed - "The Morph Envelope" (Phase 3, Step 2)
