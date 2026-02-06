@@ -1,7 +1,14 @@
 /**
- * PhotoGrid Component - v0.18.2
+ * PhotoGrid Component - v0.18.3
  *
  * CHANGELOG:
+ * - v0.18.3: Photos DRAMATICALLY larger during peek (VISIBILITY FIX)
+ *   - Scale: [0.15, 0.4] → [0.5, 0.85] - photos now 50-85% size, not tiny
+ *   - Rise higher: folderLidY - 40 (well above folder)
+ *   - Lower clip line so more of photo is visible
+ *   - Burst starts from 0.85 scale (matching peek end)
+ *   - Root cause: clipping worked, but tiny photos were invisible
+ *
  * - v0.18.2: Photos CLIPPED to folder opening (CRITICAL FIX)
  *   - Added clipPath to hide portion of photos below folder lid
  *   - Photos now visually emerge THROUGH the folder opening
@@ -128,19 +135,19 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
 
     // ============================================
     // PHASE 1: PEEK (photos EMERGE from inside folder)
-    // v0.18.2: Photos clipped to folder opening - only visible portion above lid
+    // v0.18.3: Photos MUCH larger and higher - clearly visible emergence
     // ============================================
     let x = folderX;
-    // Photos rise from inside folder to above lid during peek
-    let y = interpolate(peekProgress, [0, 1], [folderInsideY, folderLidY]);
-    // Scale from tiny to small as they emerge
-    let scale = interpolate(peekProgress, [0, 1], [0.15, 0.4]);
+    // Photos rise MUCH higher - well above folder (40px higher than before)
+    let y = interpolate(peekProgress, [0, 1], [folderInsideY, folderLidY - 40]);
+    // Scale from 0.5 to 0.85 - large enough to SEE clearly (was 0.15-0.4 = invisible)
+    let scale = interpolate(peekProgress, [0, 1], [0.5, 0.85]);
     let rotation = 0;
-    // Fade in as they emerge
-    let opacity = interpolate(peekProgress, [0, 0.2, 1], [0, 0.8, 1]);
-    // v0.18.2: Clip to folder opening - hide bottom portion during peek
-    // clipTop is the Y coordinate of the folder lid (photos below this are hidden)
-    let clipTop: number | null = centerY - 30; // Folder lid line
+    // Full opacity quickly (was [0, 0.2, 1] → [0, 0.8, 1] = slow fade)
+    let opacity = interpolate(peekProgress, [0, 0.1], [0, 1]);
+    // v0.18.3: Lower clip line so more of photo is visible during emergence
+    // Clip line at centerY - 10 (was centerY - 30 = too aggressive)
+    let clipTop: number | null = centerY - 10;
 
     // ============================================
     // PHASE 2: BURST (expand to grid positions)
@@ -162,11 +169,13 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
       );
 
       // Position springs from above folder lid to grid positions
+      // v0.18.3: Start from new higher position (folderLidY - 40)
       x = springTo(burstSpring, [folderX, gridX]);
-      y = springTo(burstSpring, [folderLidY, gridY]);
+      y = springTo(burstSpring, [folderLidY - 40, gridY]);
 
-      // Scale: spring from peek size (0.4) to full size with natural overshoot
-      scale = springTo(burstSpring, [0.4, 1]);
+      // Scale: spring from peek size (0.85) to full size with natural overshoot
+      // v0.18.3: Updated from 0.4 to match new larger peek end scale
+      scale = springTo(burstSpring, [0.85, 1]);
 
       // Minimal rotation during burst (subtle, not chaotic)
       const targetRotation = (gridPos.col - 1) * 1.5; // -1.5, 0, 1.5 degrees
