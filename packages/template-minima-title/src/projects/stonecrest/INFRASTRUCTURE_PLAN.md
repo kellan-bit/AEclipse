@@ -88,81 +88,63 @@ const burstFrame = t.startOf('photoBurst');
 
 ---
 
-### Phase 3: Animation State Machine (v0.28)
-**Status**: PLANNED
-**Goal**: Clean state transitions for complex multi-phase animations
+### Phase 3: The Relay Architecture (v0.31–v0.33)
+**Status**: IN PROGRESS (Step 1 starting)
+**Goal**: Make animation FLOW — one continuous gesture, not 18 separate phases
 
-#### Deliverables
-1. **State machine pattern** - Replace if/else chains
-2. **State transitions** - Automatic blending between states
-3. **State debugging** - Visual state inspector
+#### The Problem (Evidence)
 
-#### Example Target API
-```tsx
-const photoStates = createAnimationStateMachine({
-  states: {
-    hidden: { scale: 0, opacity: 0, y: 'inside-folder' },
-    peeking: { scale: 0.85, opacity: 1, y: 'above-folder' },
-    bursting: { scale: 1, opacity: 1, y: 'grid-position' },
-    breathing: { scale: 'breathe(1, 0.005)', opacity: 1 },
-    disappearing: { scale: 0.9, opacity: 0, blur: 2, y: '-15' },
-    forming: { scale: 0.85, x: 'strip-position' },
-    merging: { scale: 0.5, opacity: 0, blur: 'curve(0,3,0)', desaturation: 0.8 }
-  },
-  transitions: {
-    'hidden->peeking': { spring: 'gentle', duration: 20 },
-    'peeking->bursting': { spring: 'bouncy', stagger: 3 },
-    // ...
-  }
-});
-```
+The animation is built as **separate components taking turns**:
+- At frame 224: PhotoGrid renders 3 whitened photos (~189px wide)
+- At frame 225: PhotoGrid returns null, SearchBar appears (280px wide)
+- **One-frame element swap** — 48% width jump masked by white overlay
+- Every phase boundary has velocity=0 → velocity=0 (micro-pauses)
+- `settleProgress` is calculated but never used (dead code)
+
+#### Three Principles
+1. **The Relay Principle** — Flow = ONE entity transforming, not multiple taking turns
+2. **C¹ Continuity** — Velocity must match at phase boundaries (not just position)
+3. **The Envelope Pattern** — Wrap separate elements in ONE morphing container
+
+#### Step 1: Seal the Merge Seam (v0.31)
+**Earns**: Most visible discontinuity fixed
+
+Changes:
+- `StonecrestReveal.tsx`: searchBarVisible during merge (not after)
+- `SearchBarV2.tsx`: Merged dimensions match photo cluster geometry
+- `PhotoGrid.tsx`: Merge end-state matches bar start-state + settle wired up
+- Opacity crossfade: bar fades in as photos fade out (no swap)
+
+#### Step 2: The Morph Envelope (v0.32)
+**Earns**: One DOM element from merge through website reveal
+
+Changes:
+- NEW: `components/MorphEnvelope.tsx` — single div with geometric keyframes
+- Photos render INSIDE envelope during merge (overflow:hidden)
+- Envelope morphs: cluster → bar → website (one element)
+- Content crossfades inside envelope
+- SearchBarV2 refactored from container to content renderer
+
+#### Step 3: Continuous Motion Arcs (v0.33)
+**Earns**: No micro-pauses at any phase boundary
+
+Changes:
+- NEW: `motion/arc.ts` — createMotionArc(), Hermite interpolation
+- C¹ continuous position/scale arcs spanning all phases
+- Exit velocity of phase N = entry velocity of phase N+1
+- Applied to PhotoGrid, StonecrestReveal, MacFolderLayers
 
 ---
 
-### Phase 4: Motion Presets Library (v0.29)
+### Phase 4: Motion Presets Library
 **Status**: PLANNED
 **Goal**: Reusable motion recipes for common patterns
 
-#### Deliverables
-1. **Preset system** - Named motion configurations
-2. **Apple Motion Curves** - Exact replicas of iOS/macOS curves
-3. **Composition operators** - Combine presets
-4. **Documentation** - Visual curve previewer
-
-#### Example Presets
-```tsx
-PRESETS = {
-  // Apple system animations
-  appleSpring: { type: 'spring', tension: 210, friction: 20 },
-  appleEaseIn: { type: 'bezier', curve: [0.42, 0, 1, 1] },
-  appleEaseOut: { type: 'bezier', curve: [0, 0, 0.58, 1] },
-  appleEaseInOut: { type: 'bezier', curve: [0.42, 0, 0.58, 1] },
-
-  // Project-specific
-  folderOpen: { type: 'spring', tension: 120, friction: 14 },
-  photoBurst: { type: 'spring', tension: 180, friction: 12 },
-  searchBarGrow: { type: 'spring', tension: 250, friction: 18 },
-
-  // Effect modifiers
-  withAnticipation: (preset, amount) => {...},
-  withOvershoot: (preset, amount) => {...},
-  withSettleWiggle: (preset) => {...},
-}
-```
-
 ---
 
-### Phase 5: Component Refactor (v0.30)
+### Phase 5: Component Refactor
 **Status**: PLANNED
-**Goal**: Apply new infrastructure to all components
-
-#### Components to Refactor
-1. `PhotoGrid.tsx` - Use state machine, timeline phases
-2. `SearchBar.tsx` - Use motion primitives
-3. `MacFolderLayers.tsx` - Use motion presets
-4. `WebsiteUI.tsx` - Use timeline system
-5. `MouseCursor.tsx` - Use motion hooks
-6. `StonecrestReveal.tsx` - Use declarative timeline
+**Goal**: Propagate timeline to child components, replace legacy hooks
 
 ---
 
@@ -398,6 +380,7 @@ If new infrastructure introduces regressions:
 
 **Last Updated**: 2026-02-06
 **Phase 1 Completed**: 2026-02-06
+**Phase 2 Completed**: 2026-02-06
 
 ---
 
