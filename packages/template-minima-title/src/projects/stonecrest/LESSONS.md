@@ -1241,3 +1241,39 @@ One container exists continuously from state A through state Z. Content changes 
 - **Curve selection:** Pick curves based on entry/exit velocity needs, not just "looks smooth"
 - **Duration derivation:** Always derive from the source of truth (timeline), never hardcode duplicates
 - **The test:** Slow playback to 0.25x and watch the boundary. If you see a micro-pause, it's a velocity mismatch.
+
+---
+
+## Lesson 28: Don't Fix Handoffs — Eliminate Them (v0.34)
+
+**Problem:** v0.33 tried to fix the formation→merge stutter by swapping curves (materialStandard → materialDecelerate). The stutter persisted because the flick curve's settle phase creates 12 dead frames, and materialDecelerate still has zero initial velocity.
+
+**The Insight:** No curve swap can fix two separate curves with a handoff. The momentum curve's settle phase is designed to come to rest — that's its job. Any "matching" curve would need to pick up from near-zero velocity, creating a perceptible pause. The problem isn't the curves. The problem is the boundary.
+
+**The Fix:** Replace the two blocks (`isForming` + `isMerging`) with ONE `isTransforming` block using a single `anticipateSmall` bezier over 38 frames. The old "strip position" becomes a waypoint the curve passes through, not a destination.
+
+```typescript
+// Before: TWO curves, handoff at frame 196
+// Formation: scale 1.0 → 0.85 (flick, 18fr) → 12 dead frames
+// Merge: scale 0.85 → 0.45 (materialDecelerate, 20fr) → zero initial velocity
+// = shrink → PAUSE → shrink
+
+// After: ONE curve, no handoff
+// Transform: scale 1.0 → 0.45 (anticipateSmall, 38fr)
+// = continuous shrink with subtle breath at start
+```
+
+**Why anticipateSmall works:**
+- `bezier(0.38, -0.1, 0.69, 0.88)` — single cubic, no flat spots by definition
+- y1=-0.1: slight anticipation (scale briefly >1.0) gives the "achoo" feel
+- Continuous velocity throughout — no dead zones possible with one bezier
+
+**Effects sub-progress:** White overlay, borderRadius, desaturation only needed in the latter half. Compute `effectsLinear` as a 0→1 sub-range over the merge portion of the unified block.
+
+**Global Application:**
+- When two sequential phases animate the same property, merge them into one
+- Intermediate states (strip position, hover state, loading state) are waypoints, not destinations
+- A single cubic bezier CANNOT have a flat spot — use this guarantee when you need continuous motion
+- Momentum curves (sneeze, flick, whip) are great for TERMINAL phases (burst out, land, settle). For TRANSITIONAL phases (formation→merge), use a single smooth curve instead.
+
+**The Rule:** If the motion stops in the middle and shouldn't, you have too many curves. Merge them into one.

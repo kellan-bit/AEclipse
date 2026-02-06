@@ -4,6 +4,29 @@ All notable changes to the Stonecrest property introduction animation.
 
 ---
 
+## [v0.34] - 2026-02-06
+
+### Changed - "Unified Transform" (Phase 3, Step 3)
+Formation and merge are now ONE continuous motion — no phase boundary, no stutter.
+
+**Why v0.33 didn't fix it:**
+- Flick curve reaches 95% by frame 6/18 → 12 dead frames of near-zero motion
+- materialDecelerate bezier(0,0,0.2,1) has zero initial velocity (slope at t=0 = 0)
+- Combined: ~15 frames of barely perceptible motion in the middle of the shrink
+- No curve swap fixes two separate curves with a handoff
+
+**The fix: eliminate the boundary.**
+- **PhotoGrid.tsx**: Replaced separate `isForming` + `isMerging` blocks with unified `isTransforming`
+- Single `anticipateSmall` bezier(0.38, -0.1, 0.69, 0.88) over 38 frames
+- Scale: 1.0 → 0.45 in one arc (slight anticipation briefly >1.0 = "breath")
+- Position: grid → merged center directly (strip is a waypoint, not a stop)
+- Effects (white overlay, borderRadius, desaturation) fire in latter portion via `effectsLinear`
+
+**Principle: Don't fix handoffs — eliminate them.**
+Two curves with matched velocity at a boundary will always be perceptually worse than one continuous curve. When two phases animate the same property in sequence, merge them.
+
+---
+
 ## [v0.33] - 2026-02-06
 
 ### Changed - "Continuous Motion" (Phase 3, Step 2.5)

@@ -1,7 +1,13 @@
 /**
- * PhotoGrid Component - v0.33
+ * PhotoGrid Component - v0.34
  *
  * CHANGELOG:
+ * - v0.34: UNIFIED TRANSFORM — one continuous motion for formation+merge
+ *   - Replaces separate formation (flick) and merge (materialDecelerate) blocks
+ *   - Single anticipateSmall curve over 38 frames eliminates stutter
+ *   - Strip position is a waypoint, not a stop
+ *   - Effects (overlay, radius, desaturation) fire in latter portion only
+ *
  * - v0.33: CONTINUOUS MOTION — eliminate stutter at formation→merge
  *   - Formation duration derived from timeline (was hardcoded 20, now dynamic)
  *   - Merge curve: materialDecelerate (non-zero initial velocity, no pause)
@@ -317,86 +323,78 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
     }
 
     // ============================================
-    // PHASE 5A: FORMATION (middle row → horizontal strip)
-    // v0.28: Momentum 'flick' — snappy strip formation with slight anticipation
+    // PHASE 5: UNIFIED TRANSFORM (formation + merge as one motion)
+    // v0.34: Eliminates the formation→merge stutter by removing the phase
+    //   boundary entirely. One curve drives scale, position, and rotation
+    //   over the full 38-frame span. The old "strip position" is a waypoint
+    //   the curve passes through, not a stop. Effects (white overlay,
+    //   borderRadius, desaturation) fire in the latter portion only.
     // ============================================
-    // Strip target positions (tighter than grid)
-    const stripOffsets: Record<number, number> = { 3: -150, 4: 0, 5: 150 };
-    const stripX = centerX + (stripOffsets[index] || 0);
+    const mergedOffset = (index - 4) * (photoWidth * 0.5 * 0.6); // -54, 0, +54
+    const targetX = centerX + mergedOffset;
 
-    const isForming = MIDDLE_ROW_INDICES.includes(index) &&
+    const isTransforming = MIDDLE_ROW_INDICES.includes(index) &&
       formationStartFrame > 0 &&
-      frame >= formationStartFrame &&
-      frame < mergeStartFrame;
+      frame >= formationStartFrame;
 
-    if (isForming) {
-      // v0.33: Duration derived from timeline (was hardcoded 20, missed 2 frames)
-      const formationDuration = mergeStartFrame - formationStartFrame;
-      const flickCurve = getMomentumCurve('flick');
-      const formationProgress = Math.min((frame - formationStartFrame) / formationDuration, 1);
-      const flickProgress = flickCurve(formationProgress);
+    if (isTransforming) {
+      const mergeDuration = 20; // matches timeline
+      const transformEnd = mergeStartFrame + mergeDuration;
+      const totalDuration = transformEnd - formationStartFrame; // 38
 
-      // Slide from grid to strip position with flick momentum
-      x = gridX + (stripX - gridX) * flickProgress;
-      // Y stays at grid Y (horizontal movement only)
-      scale = 1 + (0.85 - 1) * flickProgress;
-      // Align rotation to 0 as photos form strip
-      const currentRotation = rotation;
-      rotation = currentRotation + (0 - currentRotation) * flickProgress;
-    }
+      // Linear progress over the full span
+      const linearProgress = Math.min(
+        (frame - formationStartFrame) / totalDuration, 1
+      );
 
-    // ============================================
-    // PHASE 5B: MORPH-MERGE (photos physically become the search bar)
-    // v0.29: MORPH — no fade. Photos compress together, white frost grows
-    //   over them, borderRadius morphs to match search bar shape.
-    //   The merged rectangle IS the search bar.
-    // ============================================
-    const isMerging = MIDDLE_ROW_INDICES.includes(index) && mergeStartFrame > 0 && frame >= mergeStartFrame;
-    if (isMerging) {
-      // v0.33: materialDecelerate for merge — starts with immediate velocity.
-      // Formation ends with flick curve decelerating; materialDecelerate picks up
-      // with non-zero initial velocity so there's no pause at the boundary.
-      // Duration derived from timeline (not hardcoded).
-      const mergeDuration = 20; // matches timeline v0.33
-      const mergeCurve = getCurve('materialDecelerate');
-      const mergeProgress = Math.min((frame - mergeStartFrame) / mergeDuration, 1);
-      const mergeEased = mergeCurve(mergeProgress);
+      // Single curve: slight anticipation → continuous motion → smooth stop
+      // anticipateSmall: bezier(0.38, -0.1, 0.69, 0.88)
+      // - y1=-0.1: photos briefly scale UP ~1% ("breath" before compression)
+      // - Single cubic bezier = no flat spots, no dead frames, no handoffs
+      const transformCurve = getCurve('anticipateSmall');
+      const easedProgress = transformCurve(linearProgress);
 
-      // Position: compress from strip to TIGHT center (gap closes to 0)
-      // End positions: photos touch each other at center
-      const mergedGap = 0; // No gap — photos form one continuous rect
-      const mergedOffset = (index - 4) * (photoWidth * 0.5 * 0.6); // Tight cluster
-      x = stripX + (mergedX + mergedOffset - stripX) * mergeEased;
-      y = gridY + (mergedY - gridY) * mergeEased;
+      // POSITION: grid → merged center (strip is a waypoint, not a stop)
+      x = gridX + (targetX - gridX) * easedProgress;
+      // Y: gridY ≈ centerY for middle row — slight correction to exact center
+      y = gridY + (mergedY - gridY) * easedProgress;
 
-      // Scale: compress to match search bar height
-      // Formation ends at 0.85, target is roughly search bar proportions
-      scale = 0.85 + (0.45 - 0.85) * mergeEased;
+      // SCALE: 1.0 → 0.45 in one arc
+      // (anticipation briefly pushes above 1.0 before shrinking)
+      scale = 1.0 + (0.45 - 1.0) * easedProgress;
+
+      // ROTATION: zero out any residual from burst
+      rotation = rotation * (1 - Math.min(easedProgress * 2, 1));
+
+      // --- EFFECTS: latter portion only (original merge window) ---
+      const mergePortionStart =
+        (mergeStartFrame - formationStartFrame) / totalDuration; // ~0.474
+      const effectsLinear = Math.max(0, Math.min(1,
+        (linearProgress - mergePortionStart) / (1 - mergePortionStart)
+      ));
 
       // v0.29: WHITE OVERLAY — "frost on glass" effect
-      // Starts at 30% merge progress, fully white by 90%
-      // This replaces the opacity fade — photos don't disappear, they whiten
-      whiteOverlay = interpolate(mergeProgress, [0.3, 0.9], [0, 1], {
+      // Starts at 30% of merge portion, fully white by 90%
+      whiteOverlay = interpolate(effectsLinear, [0.3, 0.9], [0, 1], {
         extrapolateLeft: 'clamp',
         extrapolateRight: 'clamp',
       });
 
-      // v0.29: borderRadius morphs from photo (8) to search bar (25)
-      morphedRadius = 8 + (25 - 8) * mergeEased;
+      // borderRadius morphs from photo (8) to search bar (25)
+      morphedRadius = 8 + (25 - 8) * effectsLinear;
 
       // DESATURATION: progressive grayscale as photos whiten
-      desaturation = Math.min(0.8, mergeProgress * 1.2);
+      desaturation = Math.min(0.8, effectsLinear * 1.2);
 
-      // v0.29: Photos stay opaque — white overlay handles the visual transition.
-      // Only fade opacity in last 10% for DOM cleanup.
-      opacity = mergeProgress > 0.9
-        ? interpolate(mergeProgress, [0.9, 1], [1, 0], {
+      // Photos stay opaque — white overlay handles the visual transition.
+      // Only fade opacity in last 10% for DOM cleanup (envelope handoff).
+      opacity = effectsLinear > 0.9
+        ? interpolate(effectsLinear, [0.9, 1], [1, 0], {
             extrapolateLeft: 'clamp',
             extrapolateRight: 'clamp',
           })
         : 1;
 
-      // No blur — the white overlay is the transition, not blur
       blur = 0;
     }
 

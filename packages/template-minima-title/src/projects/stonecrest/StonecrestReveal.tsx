@@ -1,7 +1,11 @@
 /**
- * Stonecrest v0.33 - CONTINUOUS MOTION (Phase 3, Step 2.5)
+ * Stonecrest v0.34 - UNIFIED TRANSFORM (Phase 3, Step 3)
  *
  * CHANGELOG:
+ * - v0.34: Unified Transform — one continuous motion for formation+merge
+ *   - PhotoGrid: single anticipateSmall curve over 38 frames (no phase boundary)
+ *   - Eliminates the formation→merge stutter entirely
+ *
  * - v0.33: Continuous Motion — eliminate stutter, faster morphs
  *   - Timeline tightened: formation 18fr, merge 20fr, searchGrow 18fr, expand 32fr
  *   - Merge curve: materialDecelerate (non-zero initial velocity at boundary)
