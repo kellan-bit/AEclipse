@@ -18,6 +18,7 @@ import { TitleCardScene } from './scenes/TitleCardScene';
 // Projects
 import { StonecrestIntro } from './projects/stonecrest/StonecrestIntro';
 import { StonecrestReveal } from './projects/stonecrest/StonecrestReveal';
+import { stonecrestTimeline } from './projects/stonecrest/stonecrest-timeline';
 
 // ============================================
 // SCHEMAS - Enable UI editing for all compositions
@@ -203,7 +204,7 @@ export const RemotionRoot: React.FC = () => {
         <Composition
           id="StonecrestReveal"
           component={StonecrestReveal}
-          durationInFrames={420}
+          durationInFrames={stonecrestTimeline.total}
           fps={30}
           width={1920}
           height={1080}

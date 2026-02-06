@@ -1103,3 +1103,34 @@ This is about **contract violations during refactoring**:
 - **Database schema** — when you merge tables, queries referencing the old table fail silently
 
 **The Rule:** When a component absorbs another's responsibility, it also absorbs its *lifetime*. A container that becomes the final element must never have an early exit condition.
+
+---
+
+## Lesson 24: Declarative Timelines Over Magic Numbers (v0.30)
+
+**Problem:** StonecrestReveal.tsx had 25 hardcoded frame constants in a flat object. Changing timing required updating multiple interconnected values. Progress calculations were boilerplate: `interpolate(frame, [START, END], [0, 1], { clamp })` repeated 6+ times.
+
+**What Happened:** Replaced the flat `TIMELINE` object with `createTimeline()` + `useTimeline()`. 18 named phases with typed queries. Code went from `interpolate(frame, [TIMELINE.PHOTOS_PEEK, TIMELINE.PHOTOS_BURST], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: EASE.enter })` to `t.progress('photoPeek', EASE.enter)`.
+
+**Right Approach: NAME YOUR TEMPORAL BOUNDARIES**
+
+A flat object of frame numbers is like an array of magic indices — the meaning is lost in the noise. Named phases give you:
+1. **Autocomplete** — `t.progress('pho...')` shows all photo phases
+2. **Computed relationships** — `t.endOf('filter')` instead of `TIMELINE.DISAPPEAR_END`
+3. **Single source of truth** — duration is defined once, `start + duration = end` is computed
+4. **Semantic visibility** — `t.isAfter('merge')` reads like English
+
+**The Gradual Migration Pattern:**
+Don't refactor everything at once. The timeline system was introduced in the orchestrator (`StonecrestReveal.tsx`) while child components (`PhotoGrid`, `SearchBarV2`) still receive raw frame numbers. This means:
+- Zero risk to working animations
+- Each component can be migrated independently later
+- The timeline object can be passed down when ready
+
+**Global Application:**
+- **CSS** — design tokens (`--spacing-md`) over magic `16px` values
+- **APIs** — named routes (`/users/:id`) over computed URL strings
+- **Music** — bar numbers and rehearsal marks over raw timestamps
+- **State machines** — named states over boolean flag combinations
+- **SQL** — named columns over positional indices
+
+**The Rule:** When temporal boundaries have names, the code explains itself. `t.progress('filter')` is documentation that `interpolate(frame, [115, 175], [0, 1])` can never be.

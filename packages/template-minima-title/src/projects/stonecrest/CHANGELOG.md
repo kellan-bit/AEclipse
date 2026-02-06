@@ -4,6 +4,36 @@ All notable changes to the Stonecrest property introduction animation.
 
 ---
 
+## [v0.30] - 2026-02-06
+
+### Changed - "Timeline Architecture"
+Flat TIMELINE object (25 magic frame constants) replaced with a declarative, typed timeline system.
+
+- **NEW: `motion/timeline.ts`** — Core timeline infrastructure
+  - `createTimeline()` factory: converts phase configs into frozen Timeline with query methods
+  - `useTimeline()` hook: binds Timeline to current Remotion frame
+  - Typed interfaces: `PhaseConfig`, `Phase`, `Timeline<T>`, `TimelineContext<T>`
+  - Generic over phase name strings — autocomplete works in IDE
+
+- **NEW: `stonecrest-timeline.ts`** — Stonecrest animation phases
+  - 18 named phases mapping all 25 old TIMELINE constants
+  - 5-act structure: Folder → Reveal → Filter → Transform → Website
+
+- **StonecrestReveal.tsx**: v0.29 → v0.30
+  - Deleted flat `TIMELINE` object (45 lines of magic numbers)
+  - `useTimeline(stonecrestTimeline)` → `t.progress()`, `t.isIn()`, `t.startOf()`
+  - All `interpolate()` progress calls → `t.progress('phaseName', ease)`
+  - All visibility checks → `t.isAfter()` / `t.isBefore()`
+  - Child components still receive frame numbers (gradual migration)
+
+- **Root.tsx**: `durationInFrames={420}` → `stonecrestTimeline.total`
+
+- **motion/index.ts**: Exports `createTimeline`, `useTimeline`, and all timeline types
+
+- Zero visual regression — identical output at all frames
+
+---
+
 ## [v0.29.1] - 2026-02-06
 
 ### Fixed - "Right Curve for Right Motion" + Blank Frame Bug

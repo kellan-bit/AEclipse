@@ -117,6 +117,16 @@ export {
   useConditionalSpring,
 } from './hooks';
 
+// Timeline system (v0.30)
+export {
+  createTimeline,
+  useTimeline,
+  type PhaseConfig,
+  type Phase,
+  type Timeline,
+  type TimelineContext,
+} from './timeline';
+
 // ============================================
 // BACKWARD COMPATIBILITY (Legacy motion.ts)
 // Re-exports for existing components

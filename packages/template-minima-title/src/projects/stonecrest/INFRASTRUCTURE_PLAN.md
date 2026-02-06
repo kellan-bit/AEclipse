@@ -52,32 +52,39 @@ This document outlines a multi-session infrastructure improvement focused on mak
 
 ---
 
-### Phase 2: Timeline Architecture (v0.27)
-**Status**: PLANNED
+### Phase 2: Timeline Architecture (v0.30)
+**Status**: COMPLETE
+**Completed**: 2026-02-06
 **Goal**: Declarative, composable timeline system
 
 #### Deliverables
-1. **Phase system** - Named phases with automatic overlapping
-2. **Keyframe syntax** - Declarative keyframe definitions
-3. **Timeline sequencer** - Automatic gap elimination
-4. **Event system** - Named events instead of magic frame numbers
+1. **Phase system** - Named phases with typed queries ✓
+2. **createTimeline() factory** - Converts phase configs into frozen Timeline ✓
+3. **useTimeline() hook** - Binds Timeline to current Remotion frame ✓
+4. **Typed interfaces** - PhaseConfig, Phase, Timeline\<T\>, TimelineContext\<T\> ✓
 
-#### Example Target API
+#### Actual API (implemented)
 ```tsx
-const timeline = createTimeline(fps, {
-  phases: {
-    folderInteraction: { start: 0, duration: 50 },
-    photoEmergence: { start: 48, duration: 100, overlap: 12 },
-    photoFilter: { start: 140, duration: 70 },
-    metamorphosis: { start: 200, duration: 80, overlap: 15 },
-    websiteReveal: { start: 270, duration: 80, overlap: 20 },
-  }
+const timeline = createTimeline<StonecrestPhase>({
+  photoPeek:  { start: 44,  duration: 16 },
+  photoBurst: { start: 60,  duration: 40 },
+  filter:     { start: 115, duration: 60 },
+  // ... 18 phases total
 });
 
-// Usage
-const progress = timeline.getPhaseProgress('photoEmergence', frame);
-const isInPhase = timeline.isInPhase('metamorphosis', frame);
+// Usage in component
+const t = useTimeline(timeline);
+const progress = t.progress('photoPeek', 'easeOut');
+const isFiltering = t.isIn('filter');
+const burstFrame = t.startOf('photoBurst');
 ```
+
+#### Files Created/Modified
+- NEW: `motion/timeline.ts` — interfaces, createTimeline(), useTimeline()
+- NEW: `stonecrest-timeline.ts` — 18 named phases
+- MODIFIED: `motion/index.ts` — exports timeline system
+- MODIFIED: `StonecrestReveal.tsx` — uses useTimeline(), no flat TIMELINE
+- MODIFIED: `Root.tsx` — uses stonecrestTimeline.total
 
 ---
 
