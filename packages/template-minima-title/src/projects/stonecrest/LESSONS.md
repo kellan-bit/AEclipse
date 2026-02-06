@@ -1,0 +1,224 @@
+# Animation Lessons Learned
+
+Reusable patterns and lessons from building the Stonecrest animation.
+Apply these to all future animation projects.
+
+---
+
+## Lesson 1: Visual Fidelity Before Motion
+
+**Problem:** Built animation logic before ensuring visual elements looked correct.
+
+**What Happened:** The MacFolder component was animated beautifully, but it was
+just a blue rectangle - not a Mac folder. All that motion work was wasted on
+an incorrect visual.
+
+**Rule:** Screenshot each key element in isolation before animating.
+
+**Checklist:**
+- [ ] Does this element look correct when static?
+- [ ] Would someone recognize what this is supposed to be?
+- [ ] Compare to reference images before proceeding
+
+---
+
+## Lesson 2: "Apple-Style" Requires Apple Details
+
+**Problem:** Said "Mac folder" but implemented a colored box.
+
+**What Apple Design Actually Has:**
+- Distinctive shapes (not just rounded rectangles)
+- Gradient fills (not flat colors)
+- Inner shadows and depth
+- Subtle highlights on edges
+- Specific proportions and spacing
+
+**Rule:** When referencing a brand style, study actual examples.
+
+**Process:**
+1. Find 3-5 reference images of the actual element
+2. Note specific details: colors, shapes, shadows, proportions
+3. Implement those specific details
+4. Compare side-by-side with reference
+
+---
+
+## Lesson 3: Spring Physics is Non-Negotiable
+
+**Problem:** Used linear interpolation everywhere, resulting in mechanical motion.
+
+**Why Linear Looks Wrong:**
+- Real objects have mass and momentum
+- They overshoot their target and settle back
+- They accelerate and decelerate naturally
+
+**Rule:** Every position/scale/rotation change needs easing or spring physics.
+
+**Remotion Spring Example:**
+```tsx
+import { spring, useCurrentFrame, useVideoConfig } from 'remotion';
+
+const frame = useCurrentFrame();
+const { fps } = useVideoConfig();
+
+const scale = spring({
+  frame,
+  fps,
+  config: {
+    damping: 12,
+    stiffness: 200,
+    mass: 0.5,
+  },
+});
+```
+
+**When to Use What:**
+- **Spring:** Objects that should feel physical (photos landing, buttons pressing)
+- **Ease-out:** Objects entering the screen
+- **Ease-in:** Objects leaving the screen
+- **Ease-in-out:** Objects moving from one position to another
+- **Linear:** Only for constant motion (scrolling, progress bars)
+
+---
+
+## Lesson 4: Spatial Relationships Matter
+
+**Problem:** Photos appeared disconnected from folder (scale mismatch, no emergence).
+
+**The Issue:**
+- Folder was 80px wide
+- Photos in grid were 200px+ wide
+- No visual connection showing photos coming FROM the folder
+
+**Rule:** If B comes from A, show the connection visually.
+
+**How to Show Connection:**
+1. Scale: A should be large enough to plausibly contain B
+2. Position: B should start at/near A's position
+3. Timing: Show B emerging, not just appearing
+4. Overlap: Brief moment where B is partially inside A
+
+---
+
+## Lesson 5: Test Visually Early and Often
+
+**Problem:** Discovered major visual issues only after full implementation.
+
+**The Cost:**
+- Hours of animation work on incorrect visuals
+- Debugging motion when the real issue was appearance
+- Delayed feedback loop
+
+**Rule:** Check frames at 0%, 25%, 50%, 75%, 100% after each component change.
+
+**Quick Visual Check Process:**
+1. Make change
+2. Scrub to key frames in timeline
+3. Pause and examine
+4. Ask: "Does this look right?"
+5. Fix visual issues before moving to next component
+
+---
+
+## Lesson 6: Document Decisions
+
+**Problem:** No record of why things were built certain ways.
+
+**Why Documentation Matters:**
+- Future you won't remember why you made choices
+- Team members need context
+- Similar problems will come up again
+- Avoids repeating mistakes
+
+**What to Document:**
+- What changed and why
+- What approaches were tried and rejected
+- Lessons learned from failures
+- Reference materials used
+
+**Where to Document:**
+- `CHANGELOG.md` - Version history
+- `LESSONS.md` - Reusable patterns (this file)
+- Component comments - Inline explanations
+- Plan files - Design decisions
+
+---
+
+## Lesson 7: Animation is Storytelling, Not Effects
+
+**Problem (v0.1-v0.2):** Treated animation as "clips with effects."
+
+**The Wrong Approach:**
+- Every clip gets the same 5 effects
+- Effects are applied uniformly
+- Transitions connect clips
+- No narrative purpose
+
+**The Right Approach:**
+- Animation serves a story
+- Each moment has a purpose
+- Viewer's attention is guided
+- Motion creates meaning
+
+**Questions to Ask:**
+- What should the viewer focus on now?
+- What emotion should this moment create?
+- How does this motion serve the narrative?
+- What would be lost if this animation was removed?
+
+---
+
+## Quick Reference: Easing Curves
+
+```tsx
+import { Easing } from 'remotion';
+
+// For elements appearing (entering)
+Easing.out(Easing.cubic)    // Starts fast, slows down
+
+// For elements disappearing (exiting)
+Easing.in(Easing.cubic)     // Starts slow, speeds up
+
+// For elements moving between positions
+Easing.inOut(Easing.cubic)  // Slow-fast-slow
+
+// Apple's default animation curve
+Easing.bezier(0.25, 0.1, 0.25, 1)
+
+// Overshoot (bounce past target)
+Easing.bezier(0.34, 1.56, 0.64, 1)
+```
+
+---
+
+## Quick Reference: Shadow Depths
+
+```tsx
+// Resting state
+boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+
+// Hover state
+boxShadow: '0 4px 16px rgba(0,0,0,0.2)'
+
+// Lifted/active state
+boxShadow: '0 8px 32px rgba(0,0,0,0.25)'
+
+// Pressed state
+boxShadow: '0 1px 4px rgba(0,0,0,0.2)'
+```
+
+---
+
+## Quick Reference: Timing Guidelines
+
+Based on Carbon Design System and Apple HIG:
+
+| Animation Type | Duration | Notes |
+|---------------|----------|-------|
+| Micro-interaction | 100-200ms | Button press, toggle |
+| Small movement | 200-300ms | Menu open, tooltip |
+| Medium movement | 300-400ms | Modal, panel |
+| Large movement | 400-500ms | Page transition |
+| Complex sequence | 500ms+ | Multi-step animation |
+
+**Stagger Timing:** 30-50ms between items (not 100ms+)
