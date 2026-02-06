@@ -57,30 +57,35 @@ export const OVERLAP = {
 /**
  * Spring configurations for Remotion's spring()
  * v0.17: These are now USED (previously defined but unused)
+ * v0.17.1: Increased damping for smoother motion (less bounce)
  */
 export const SPRING = {
   // Gentle settle (photos landing in grid, website reveal)
+  // High damping = smooth arrival, minimal overshoot
   gentle: {
-    damping: 15,
+    damping: 28,
     stiffness: 100,
     mass: 1,
   },
   // Responsive (UI elements, search bar)
+  // Medium-high damping = snappy but controlled
   responsive: {
-    damping: 20,
-    stiffness: 200,
+    damping: 30,
+    stiffness: 180,
     mass: 0.8,
   },
-  // Bouncy (photo burst, emphasis moments)
+  // Bouncy (photo burst) - still has energy but more controlled
+  // Higher damping than before to avoid excessive oscillation
   bouncy: {
-    damping: 10,
-    stiffness: 150,
+    damping: 22,
+    stiffness: 140,
     mass: 1,
   },
-  // v0.17: Folder lid (mechanical hinge feel)
+  // Folder lid (mechanical hinge feel)
+  // Smooth, deliberate movement
   folder: {
-    damping: 18,
-    stiffness: 120,
+    damping: 26,
+    stiffness: 100,
     mass: 1.2,
   },
 };

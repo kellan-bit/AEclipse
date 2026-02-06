@@ -72,7 +72,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         transform: 'translate(-50%, -50%)',
         width: barWidth,
         height: barHeight,
-        background: expandProgress < 0.5
+        background: expandSpring < 0.5
           ? 'rgba(255, 255, 255, 0.95)'
           : 'rgba(255, 255, 255, 1)',
         borderRadius,
