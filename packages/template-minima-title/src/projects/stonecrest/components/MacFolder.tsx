@@ -1,13 +1,14 @@
 /**
- * MacFolder Component - v0.16.1
+ * MacFolder Component - v0.16.2
  *
  * CHANGELOG:
- * - v0.16.1: SVG shape refinement (closer to real macOS folder)
- *   - Smaller tab (38px × 12px, was 60px × 18px)
- *   - Front panel perspective: flares wider at bottom (156px→164px)
- *   - Curved bottom edge with bezier (peak at y:156)
- *   - Enhanced rim highlight gradient
- *   - Based on Google Images reference comparison
+ * - v0.16.2: Complete SVG rebuild (proper macOS structure)
+ *   - Simple rounded rectangles (not perspective geometry)
+ *   - Layered gradients for depth illusion
+ *   - Based on WhiteSur icon theme reference
+ *   - Key insight: depth comes from GRADIENTS, not 3D geometry
+ *
+ * - v0.16.1: (Reverted) Attempted perspective/curved geometry
  *
  * - v0.16: Authentic macOS folder (THE FOLDER)
  *   - Updated gradient colors to match Apple palette (#78C5EF → #51A0D5 → #2C528C)
@@ -102,11 +103,11 @@ export const MacFolder: React.FC<MacFolderProps> = ({
     ? Math.sin(openProgress * Math.PI * 10) * 3 * (1 - openProgress * 5)
     : 0;
 
-  // Gradient IDs (unique per instance to avoid conflicts)
-  const gradientId = `folder-gradient-${x}-${y}`;
-  const frontGradientId = `folder-front-gradient-${x}-${y}`;
-  const lidGradientId = `folder-lid-gradient-${x}-${y}`;
-  const rimGradientId = `folder-rim-gradient-${x}-${y}`; // v0.16.1
+  // Gradient IDs (unique per instance to avoid conflicts) - v0.16.2 simplified
+  const mainGradientId = `folder-main-${x}-${y}`;
+  const bottomGradientId = `folder-bottom-${x}-${y}`;
+  const edgeGradientId = `folder-edge-${x}-${y}`;
+  const lidGradientId = `folder-lid-${x}-${y}`;
   const shadowId = `folder-shadow-${x}-${y}`;
 
   return (
@@ -167,170 +168,151 @@ export const MacFolder: React.FC<MacFolderProps> = ({
         style={{ overflow: 'visible' }}
       >
         <defs>
-          {/* Back panel gradient - Apple Blue palette */}
-          <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#8BD0F5" />
-            <stop offset="50%" stopColor="#5BB5E8" />
-            <stop offset="100%" stopColor="#3FA8E5" />
+          {/* v0.16.2: Main body gradient - light top to medium bottom */}
+          <linearGradient id={mainGradientId} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#83d4fb" />
+            <stop offset="100%" stopColor="#60c0f0" />
           </linearGradient>
 
-          {/* Front panel gradient - darker Apple blues */}
-          <linearGradient id={frontGradientId} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#51A0D5" />
-            <stop offset="50%" stopColor="#3D8CC7" />
-            <stop offset="100%" stopColor="#2C6BA8" />
+          {/* v0.16.2: Bottom strip gradient - darker for depth */}
+          <linearGradient id={bottomGradientId} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#008ea2" stopOpacity="0.25" />
+            <stop offset="75%" stopColor="#008ea2" stopOpacity="0.15" />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity="0.15" />
           </linearGradient>
 
-          {/* Lid gradient - mid tones */}
+          {/* v0.16.2: Edge lighting - bright at edges, transparent middle */}
+          <linearGradient id={edgeGradientId} x1="0%" y1="50%" x2="100%" y2="50%">
+            <stop offset="0%" stopColor="#46a2d7" stopOpacity="0.5" />
+            <stop offset="10%" stopColor="#46a2d7" stopOpacity="0" />
+            <stop offset="90%" stopColor="#46a2d7" stopOpacity="0" />
+            <stop offset="100%" stopColor="#46a2d7" stopOpacity="0.5" />
+          </linearGradient>
+
+          {/* v0.16.2: Lid gradient for animated portion */}
           <linearGradient id={lidGradientId} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#6BC0ED" />
-            <stop offset="100%" stopColor="#4AADE0" />
-          </linearGradient>
-
-          {/* Rim highlight gradient - v0.16.1 */}
-          <linearGradient id={rimGradientId} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="rgba(255,255,255,0.5)" />
-            <stop offset="50%" stopColor="rgba(255,255,255,0.2)" />
-            <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+            <stop offset="0%" stopColor="#7dd0f8" />
+            <stop offset="100%" stopColor="#5ab8e8" />
           </linearGradient>
 
           {/* Drop shadow filter */}
-          <filter id={shadowId} x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="4" stdDeviation="8" floodOpacity="0.3" />
+          <filter id={shadowId} x="-20%" y="-20%" width="140%" height="160%">
+            <feDropShadow dx="0" dy="6" stdDeviation="10" floodOpacity="0.25" />
           </filter>
         </defs>
 
-        {/* Back panel of folder - v0.16.1: adjusted tab connection */}
+        {/* v0.16.2: Tab (small protrusion at top-left) */}
         <path
-          d={`
-            M 16 30
-            L 16 140
-            Q 16 150, 26 150
-            L 174 150
-            Q 184 150, 184 140
-            L 184 30
-            Q 184 20, 174 20
-            L 60 20
-            L 55 28
-            L 26 28
-            Q 16 28, 16 38
-            Z
-          `}
-          fill={`url(#${gradientId})`}
+          d="M 20 38 L 20 28 Q 20 22, 28 22 L 58 22 Q 66 22, 70 30 L 76 38 Z"
+          fill="#46a2d7"
+        />
+
+        {/* v0.16.2: Tab shadow overlay */}
+        <path
+          d="M 20 38 L 20 28 Q 20 22, 28 22 L 58 22 Q 66 22, 70 30 L 76 38 Z"
+          fill="rgba(0,0,0,0.35)"
+          opacity="0.35"
+        />
+
+        {/* v0.16.2: Main body - simple rounded rectangle */}
+        <rect
+          x="16"
+          y="35"
+          width="168"
+          height="112"
+          rx="10"
+          ry="10"
+          fill={`url(#${mainGradientId})`}
           filter={`url(#${shadowId})`}
         />
 
-        {/* Tab on back panel - v0.16.1: smaller, more subtle */}
-        <path
-          d={`
-            M 22 30
-            L 22 24
-            Q 22 18, 28 18
-            L 48 18
-            Q 54 18, 56 24
-            L 60 30
-            Z
-          `}
-          fill="#8BD0F5"
+        {/* v0.16.2: Bottom gradient strip (depth) */}
+        <rect
+          x="16"
+          y="127"
+          width="168"
+          height="20"
+          rx="0"
+          ry="0"
+          fill={`url(#${bottomGradientId})`}
+          clipPath="inset(0 0 0 0 round 0 0 10px 10px)"
         />
 
-        {/* Inner shadow on back panel (depth) */}
+        {/* v0.16.2: Bottom rounded corners overlay */}
         <path
-          d={`
-            M 20 35
-            L 180 35
-            L 180 45
-            L 20 45
-            Z
-          `}
-          fill="rgba(0,0,0,0.08)"
+          d="M 16 137 L 16 137 Q 16 147, 26 147 L 174 147 Q 184 147, 184 137 L 184 127 L 16 127 Z"
+          fill={`url(#${bottomGradientId})`}
         />
 
-        {/* Front panel (lid) - animates open - v0.16.1: trapezoid perspective */}
+        {/* v0.16.2: Edge lighting overlay */}
+        <rect
+          x="16"
+          y="35"
+          width="168"
+          height="112"
+          rx="10"
+          ry="10"
+          fill={`url(#${edgeGradientId})`}
+        />
+
+        {/* v0.16.2: Top highlight strip */}
+        <rect
+          x="18"
+          y="37"
+          width="164"
+          height="4"
+          rx="2"
+          fill="#ffffff"
+          opacity="0.15"
+        />
+
+        {/* v0.16.2: Front panel (lid) - animates open */}
         <g
           style={{
-            transformOrigin: '100px 120px',
+            transformOrigin: '100px 110px',
             transform: `rotateX(${lidRotation}deg) translateY(${lidTranslateY}px)`,
           }}
         >
-          <path
-            d={`
-              M 22 60
-              L 178 60
-              Q 183 60, 184 64
-              L 186 116
-              Q 187 120, 182 120
-              L 18 120
-              Q 13 120, 14 116
-              L 16 64
-              Q 17 60, 22 60
-              Z
-            `}
+          {/* Lid body */}
+          <rect
+            x="18"
+            y="50"
+            width="164"
+            height="60"
+            rx="6"
+            ry="6"
             fill={`url(#${lidGradientId})`}
           />
 
-          {/* Fold line on lid */}
-          <line
-            x1="24"
-            y1="90"
-            x2="176"
-            y2="90"
-            stroke="rgba(255,255,255,0.15)"
-            strokeWidth="1"
+          {/* Lid top highlight */}
+          <rect
+            x="20"
+            y="52"
+            width="160"
+            height="3"
+            rx="1.5"
+            fill="#ffffff"
+            opacity="0.2"
           />
 
-          {/* Top edge highlight - v0.16.1: adjusted to new lid width */}
+          {/* Lid fold line */}
           <line
-            x1="22"
-            y1="61"
-            x2="178"
-            y2="61"
-            stroke="rgba(255,255,255,0.35)"
-            strokeWidth="2"
+            x1="25"
+            y1="80"
+            x2="175"
+            y2="80"
+            stroke="rgba(255,255,255,0.12)"
+            strokeWidth="1"
           />
         </g>
 
-        {/* Front panel (stationary bottom) - v0.16.1: curved bottom edge */}
-        <path
-          d={`
-            M 14 120
-            L 186 120
-            L 187 140
-            Q 187 148, 180 150
-            L 160 152
-            Q 100 158, 40 152
-            L 20 150
-            Q 13 148, 13 140
-            Z
-          `}
-          fill={`url(#${frontGradientId})`}
-        />
-
-        {/* Bottom edge shadow - v0.16.1: follows curved bottom */}
-        <path
-          d={`
-            M 160 152
-            Q 100 157, 40 152
-            L 20 150
-            Q 14 148, 14 141
-            L 14 140
-            L 186 140
-            L 186 141
-            Q 186 148, 180 150
-            L 160 152
-            Z
-          `}
-          fill="rgba(0,0,0,0.12)"
-        />
-
-        {/* Highlight on front panel edge - v0.16.1: adjusted width */}
-        <line
-          x1="18"
-          y1="121"
-          x2="182"
-          y2="121"
-          stroke="rgba(255,255,255,0.25)"
-          strokeWidth="1.5"
+        {/* v0.16.2: Front bottom panel highlight */}
+        <rect
+          x="18"
+          y="110"
+          width="164"
+          height="2"
+          fill="rgba(255,255,255,0.2)"
         />
       </svg>
 
