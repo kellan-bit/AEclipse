@@ -467,3 +467,55 @@ Complete feature → Update LESSONS.md → Update CLAUDE_CONTEXT.md → Commit a
 - Frame 325: Clean handoff complete
 
 **Rule:** Elements should transform, not teleport. If you can point to "where A ends and B begins," the transition isn't seamless enough.
+
+---
+
+## Lesson 14: Always Provide Test Commands
+
+**Problem:** After implementing changes, user needs to manually figure out how to pull and test.
+
+**Rule:** After every commit/push, ALWAYS provide these commands:
+
+**Standard Pull + Run:**
+```bash
+cd ~/Documents/AEclipse && git pull origin claude/analyze-program-functionality-gb52b && cd packages/template-minima-title && bun run dev
+```
+
+**If Local Changes Exist:**
+```bash
+cd ~/Documents/AEclipse && git stash && git pull origin claude/analyze-program-functionality-gb52b && git stash pop && cd packages/template-minima-title && bun run dev
+```
+
+**Also Include:**
+- Verification frames table (key frames to scrub to)
+- What to look for at each frame
+- Expected visual state
+
+**Example Format:**
+```
+| Frame | What to See |
+|-------|-------------|
+| 275 | Middle row in grid, about to form strip |
+| 310 | Photos blurring, search bar ghost appearing |
+```
+
+**Render Verification Frames (one command):**
+```bash
+cd ~/Documents/AEclipse/packages/template-minima-title && \
+mkdir -p review && \
+bun remotion still StonecrestReveal --frame=275 --output=review/f275.png && \
+bun remotion still StonecrestReveal --frame=310 --output=review/f310.png && \
+bun remotion still StonecrestReveal --frame=325 --output=review/f325.png && \
+bun remotion still StonecrestReveal --frame=350 --output=review/f350.png && \
+echo "Done! Review frames saved to review/"
+```
+
+**Commit & Push Frames for Claude Review:**
+```bash
+cd ~/Documents/AEclipse && \
+git add packages/template-minima-title/review/ && \
+git commit -m "Review frames" && \
+git push origin claude/analyze-program-functionality-gb52b
+```
+
+**Rule:** Every push should be immediately testable by the user.
