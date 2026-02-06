@@ -1,7 +1,12 @@
 /**
- * Stonecrest v0.17 - Spring Physics System
+ * Stonecrest v0.18 - Transitions & Pacing
  *
  * CHANGELOG:
+ * - v0.18: Cursor direction + faster pacing
+ *   - Cursor now enters from RIGHT side (more natural for clicking)
+ *   - Reduced hesitation time for snappier feel
+ *   - Tightened Act 1 timing
+ *
  * - v0.17: Spring physics for all major animations
  *   - MacFolder lid uses SPRING.folder profile
  *   - Passed openStartFrame to MacFolder for spring-based opening
@@ -68,39 +73,39 @@ const BANNER_IMAGE = 'assets/minima/Photos/Homes/Stonecrest/Basil_ex01_Final_202
 // ============================================
 
 const TIMELINE = {
-  // Act 1: The Folder
+  // Act 1: The Folder - v0.18: Tightened timing for snappier feel
   MOUSE_ENTER: 0,
-  MOUSE_ARRIVE: 30,
-  HESITATION_START: 30,
-  HESITATION_END: 55,
-  FIRST_CLICK: 60,
-  SECOND_CLICK: 68,
+  MOUSE_ARRIVE: 20,       // Was 30 - faster approach
+  HESITATION_START: 20,
+  HESITATION_END: 35,     // Was 55 - shorter hesitation (15 frames vs 25)
+  FIRST_CLICK: 40,        // Was 60 - earlier click
+  SECOND_CLICK: 46,       // Was 68 - tighter double-click
 
-  // Act 2: The Reveal
-  FOLDER_OPEN_START: 75,
-  PHOTOS_PEEK: 90,
-  PHOTOS_BURST: 110,
-  PHOTOS_SETTLE: 160,
-  PHOTOS_HOLD: 200,
+  // Act 2: The Reveal - v0.18: Earlier start
+  FOLDER_OPEN_START: 52,  // Was 75 - opens sooner after click
+  PHOTOS_PEEK: 65,        // Was 90
+  PHOTOS_BURST: 85,       // Was 110
+  PHOTOS_SETTLE: 135,     // Was 160
+  PHOTOS_HOLD: 170,       // Was 200
 
-  // Act 3: The Filter
-  DISAPPEAR_START: 210,
-  DISAPPEAR_END: 290,
-  MIDDLE_ROW_HOLD: 320,
+  // Act 3: The Filter - v0.18: Tightened
+  DISAPPEAR_START: 180,   // Was 210
+  DISAPPEAR_END: 250,     // Was 290
+  MIDDLE_ROW_HOLD: 275,   // Was 320
 
-  // Act 4: The Transform
-  MERGE_START: 330,
-  MERGE_END: 380,
-  TYPING_START: 390,
-  TYPING_END: 440,
+  // Act 4: The Transform - v0.18: Tightened
+  MERGE_START: 285,       // Was 330
+  MERGE_END: 330,         // Was 380
+  TYPING_START: 340,      // Was 390
+  TYPING_END: 390,        // Was 440
 
-  // Act 5: The Website
-  EXPAND_START: 450,
-  EXPAND_END: 510,
-  WEBSITE_REVEAL: 520,
+  // Act 5: The Website - v0.18: Tightened
+  EXPAND_START: 400,      // Was 450
+  EXPAND_END: 460,        // Was 510
+  WEBSITE_REVEAL: 470,    // Was 520
 
-  // End
-  TOTAL: 600,
+  // End - v0.18: Shorter total (saved ~50 frames / 1.7s)
+  TOTAL: 550,
 };
 
 // ============================================
@@ -116,10 +121,11 @@ export const StonecrestReveal: React.FC = () => {
 
   // ============================================
   // MOUSE ANIMATION
+  // v0.18: Cursor enters from RIGHT (more natural approach angle)
   // ============================================
 
-  const mouseStartX = -50;
-  const mouseStartY = height / 2 - 100;
+  const mouseStartX = width + 50;  // v0.18: Changed from -50 (left) to right side
+  const mouseStartY = height / 2 - 80;
   const folderX = centerX;
   const folderY = centerY;
 
