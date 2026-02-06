@@ -1,7 +1,13 @@
 /**
- * PhotoGrid Component - v0.17
+ * PhotoGrid Component - v0.18.1
  *
  * CHANGELOG:
+ * - v0.18.1: Photos emerge FROM INSIDE folder
+ *   - Photos start at folderInsideY (inside folder body)
+ *   - Rise upward to folderLidY during peek phase
+ *   - Creates illusion of photos coming OUT of folder, not appearing on top
+ *   - Critical fix for visual storytelling
+ *
  * - v0.17: Spring physics for burst and merge
  *   - Burst uses SPRING.bouncy with staggered delay (center first)
  *   - Merge uses SPRING.gentle for smooth convergence
@@ -97,9 +103,10 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
   const gridStartY = centerY - gridHeight / 2;
 
   // Folder position (where photos emerge from)
-  // v0.17.2: Offset Y by -40px so photos emerge from folder lid, not center
+  // v0.18.1: Photos emerge from INSIDE folder, moving UPWARD through lid opening
   const folderX = centerX;
-  const folderY = centerY - 40;
+  const folderInsideY = centerY + 20;   // Start position: INSIDE the folder body
+  const folderLidY = centerY - 50;       // Exit position: just above the folder lid
 
   const getPhotoState = (index: number): PhotoState => {
     const gridPos = GRID_POSITIONS[index] || { row: 1, col: 1 };
@@ -113,13 +120,17 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
     const mergedY = centerY;
 
     // ============================================
-    // PHASE 1: PEEK (photos appear at folder, small)
+    // PHASE 1: PEEK (photos EMERGE from inside folder)
+    // v0.18.1: Photos start INSIDE folder and move UP through lid opening
     // ============================================
     let x = folderX;
-    let y = folderY;
-    let scale = interpolate(peekProgress, [0, 1], [0, 0.35]);
+    // Photos rise from inside folder to above lid during peek
+    let y = interpolate(peekProgress, [0, 1], [folderInsideY, folderLidY]);
+    // Scale from tiny to small as they emerge
+    let scale = interpolate(peekProgress, [0, 1], [0.1, 0.4]);
     let rotation = 0;
-    let opacity = peekProgress;
+    // Fade in as they emerge
+    let opacity = interpolate(peekProgress, [0, 0.3, 1], [0, 0.7, 1]);
 
     // ============================================
     // PHASE 2: BURST (expand to grid positions)
@@ -141,12 +152,13 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
         0                // no base delay
       );
 
-      // Position springs from folder to grid
+      // Position springs from above folder lid to grid positions
+      // v0.18.1: Start from folderLidY (where peek ends), not folderInsideY
       x = springTo(burstSpring, [folderX, gridX]);
-      y = springTo(burstSpring, [folderY, gridY]);
+      y = springTo(burstSpring, [folderLidY, gridY]);
 
-      // Scale: spring naturally overshoots then settles
-      scale = springTo(burstSpring, [0.35, 1]);
+      // Scale: spring from peek size (0.4) to full size with natural overshoot
+      scale = springTo(burstSpring, [0.4, 1]);
 
       // Minimal rotation during burst (subtle, not chaotic)
       const targetRotation = (gridPos.col - 1) * 1.5; // -1.5, 0, 1.5 degrees

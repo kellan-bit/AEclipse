@@ -1,7 +1,13 @@
 /**
- * Stonecrest v0.18 - Transitions & Pacing
+ * Stonecrest v0.18.1 - Photo Emergence Fix
  *
  * CHANGELOG:
+ * - v0.18.1: Fixed photo emergence timing (CRITICAL)
+ *   - Photos now appear AFTER folder lid is visually open (frame 75, not 65)
+ *   - Folder opens immediately after double-click (frame 48, not 52)
+ *   - PhotoGrid updated to make photos rise FROM INSIDE folder
+ *   - This fixes "photos appearing on top of closed folder" issue
+ *
  * - v0.18: Cursor direction + faster pacing
  *   - Cursor now enters from RIGHT side (more natural for clicking)
  *   - Reduced hesitation time for snappier feel
@@ -81,11 +87,12 @@ const TIMELINE = {
   FIRST_CLICK: 40,        // Was 60 - earlier click
   SECOND_CLICK: 46,       // Was 68 - tighter double-click
 
-  // Act 2: The Reveal - v0.18: Earlier start
-  FOLDER_OPEN_START: 52,  // Was 75 - opens sooner after click
-  PHOTOS_PEEK: 65,        // Was 90
-  PHOTOS_BURST: 85,       // Was 110
-  PHOTOS_SETTLE: 135,     // Was 160
+  // Act 2: The Reveal - v0.18.1: Fixed photo emergence timing
+  // Key insight: Photos can only appear AFTER lid is visually open (~25 frames into spring)
+  FOLDER_OPEN_START: 48,  // Immediate after double-click (was 52 = 6 frame gap)
+  PHOTOS_PEEK: 75,        // CRITICAL FIX: Wait until lid is open (was 65 = too early)
+  PHOTOS_BURST: 90,       // Start burst while peek is finishing (was 85)
+  PHOTOS_SETTLE: 140,     // Spring settle (was 135)
   PHOTOS_HOLD: 170,       // Was 200
 
   // Act 3: The Filter - v0.18: Tightened
