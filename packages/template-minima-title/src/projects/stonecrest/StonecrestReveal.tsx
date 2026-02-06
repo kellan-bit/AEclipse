@@ -197,21 +197,21 @@ export const StonecrestReveal: React.FC = () => {
 
   // ============================================
   // FOLDER ANIMATION
+  // v0.18.5: Folder hidden IMMEDIATELY when burst starts (no slow fade)
   // ============================================
 
-  const folderVisible = frame < TIMELINE.PHOTOS_SETTLE;
+  // Folder visible until burst starts + 5 frames (quick exit, not lingering)
+  const folderVisible = frame < TIMELINE.PHOTOS_BURST + 5;
   const isHovered = frame >= TIMELINE.MOUSE_ARRIVE && frame < TIMELINE.PHOTOS_BURST;
-  // v0.16: Label selection highlight (like macOS Finder) - triggers after double-click
-  const isSelected = frame >= TIMELINE.SECOND_CLICK && frame < TIMELINE.PHOTOS_SETTLE;
+  const isSelected = frame >= TIMELINE.SECOND_CLICK && frame < TIMELINE.PHOTOS_BURST + 5;
 
   // v0.17: Folder opening now uses spring physics in MacFolder component
   // We pass openStartFrame and the component handles the spring animation internally
 
-  // v0.18.5: Folder fades out QUICKLY once photos burst (was too slow)
-  // Fade in 20 frames instead of 60 - folder should be gone before photos settle
+  // v0.18.5: VERY fast fade - 5 frames only (was 20, still too slow)
   const folderOpacity = interpolate(
     frame,
-    [TIMELINE.PHOTOS_BURST, TIMELINE.PHOTOS_BURST + 20],
+    [TIMELINE.PHOTOS_BURST, TIMELINE.PHOTOS_BURST + 5],
     [1, 0],
     { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
   );
