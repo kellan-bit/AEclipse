@@ -41,7 +41,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   const y = interpolate(expandProgress, [0, 1], [centerY, centerY]);
 
   // Opacity for search bar UI elements
-  const searchUIOpacity = interpolate(expandProgress, [0, 0.3], [1, 0]);
+  // v0.15: Keep content visible until 70% (was 30% - too early)
+  const searchUIOpacity = interpolate(expandProgress, [0, 0.7], [1, 0]);
 
   return (
     <div

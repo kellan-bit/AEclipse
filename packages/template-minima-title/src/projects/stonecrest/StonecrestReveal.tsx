@@ -1,7 +1,12 @@
 /**
- * Stonecrest v0.14 - Apple-Style Folder Reveal Animation
+ * Stonecrest v0.15 - Structural Improvements
  *
  * CHANGELOG:
+ * - v0.15: White background, smooth tail transition
+ *   - Changed from dark desktop to white background
+ *   - Website reveal starts earlier (overlap with search bar)
+ *   - Removed dead 10-frame gap between transitions
+ *
  * - v0.14: Unified motion system, fixed photo timeline
  *   - Added peekProgress (frames 90-110)
  *   - Fixed burstProgress to start at frame 110
@@ -254,44 +259,30 @@ export const StonecrestReveal: React.FC = () => {
 
   // ============================================
   // WEBSITE UI ANIMATION
+  // v0.15: Start EARLIER to overlap with search bar expansion
   // ============================================
 
-  const websiteVisible = frame >= TIMELINE.EXPAND_END;
+  // Start website reveal 30 frames before search bar finishes (overlap)
+  const websiteVisible = frame >= TIMELINE.EXPAND_START + 30;
 
+  // Website fades in while search bar is still expanding (smoother transition)
   const websiteRevealProgress = interpolate(
     frame,
-    [TIMELINE.WEBSITE_REVEAL, TIMELINE.WEBSITE_REVEAL + 40],
+    [TIMELINE.EXPAND_START + 40, TIMELINE.EXPAND_END + 20],
     [0, 1],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.bezier(0, 0, 0.2, 1) }
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: EASE.default }
   );
 
   // ============================================
-  // BACKGROUND
+  // BACKGROUND - v0.15: White/branded instead of dark desktop
   // ============================================
 
-  // Background transitions from dark desktop to white website
-  const bgColor = interpolate(
-    frame,
-    [TIMELINE.EXPAND_START, TIMELINE.EXPAND_END],
-    [0, 1],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
-  );
-
-  const backgroundColor = `rgb(${30 + bgColor * 225}, ${30 + bgColor * 225}, ${32 + bgColor * 223})`;
+  // Clean white background throughout (user preference)
+  const backgroundColor = '#FFFFFF';
 
   return (
     <AbsoluteFill style={{ backgroundColor, overflow: 'hidden' }}>
-      {/* Desktop background gradient (fades out) */}
-      {frame < TIMELINE.EXPAND_END && (
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'radial-gradient(ellipse at 50% 50%, rgba(50,50,55,1) 0%, rgba(25,25,28,1) 100%)',
-            opacity: 1 - expandProgress,
-          }}
-        />
-      )}
+      {/* v0.15: Removed dark desktop gradient - clean white background */}
 
       {/* Mac Folder */}
       {folderVisible && (
