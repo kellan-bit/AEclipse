@@ -1,7 +1,14 @@
 /**
- * MacFolder Component - v0.16
+ * MacFolder Component - v0.16.1
  *
  * CHANGELOG:
+ * - v0.16.1: SVG shape refinement (closer to real macOS folder)
+ *   - Smaller tab (38px × 12px, was 60px × 18px)
+ *   - Front panel perspective: flares wider at bottom (156px→164px)
+ *   - Curved bottom edge with bezier (peak at y:156)
+ *   - Enhanced rim highlight gradient
+ *   - Based on Google Images reference comparison
+ *
  * - v0.16: Authentic macOS folder (THE FOLDER)
  *   - Updated gradient colors to match Apple palette (#78C5EF → #51A0D5 → #2C528C)
  *   - Dark label text (#141414) for white background
@@ -99,6 +106,7 @@ export const MacFolder: React.FC<MacFolderProps> = ({
   const gradientId = `folder-gradient-${x}-${y}`;
   const frontGradientId = `folder-front-gradient-${x}-${y}`;
   const lidGradientId = `folder-lid-gradient-${x}-${y}`;
+  const rimGradientId = `folder-rim-gradient-${x}-${y}`; // v0.16.1
   const shadowId = `folder-shadow-${x}-${y}`;
 
   return (
@@ -179,13 +187,20 @@ export const MacFolder: React.FC<MacFolderProps> = ({
             <stop offset="100%" stopColor="#4AADE0" />
           </linearGradient>
 
+          {/* Rim highlight gradient - v0.16.1 */}
+          <linearGradient id={rimGradientId} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="rgba(255,255,255,0.5)" />
+            <stop offset="50%" stopColor="rgba(255,255,255,0.2)" />
+            <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+          </linearGradient>
+
           {/* Drop shadow filter */}
           <filter id={shadowId} x="-20%" y="-20%" width="140%" height="140%">
             <feDropShadow dx="0" dy="4" stdDeviation="8" floodOpacity="0.3" />
           </filter>
         </defs>
 
-        {/* Back panel of folder */}
+        {/* Back panel of folder - v0.16.1: adjusted tab connection */}
         <path
           d={`
             M 16 30
@@ -195,25 +210,25 @@ export const MacFolder: React.FC<MacFolderProps> = ({
             Q 184 150, 184 140
             L 184 30
             Q 184 20, 174 20
-            L 80 20
-            L 70 30
-            L 26 30
-            Q 16 30, 16 40
+            L 60 20
+            L 55 28
+            L 26 28
+            Q 16 28, 16 38
             Z
           `}
           fill={`url(#${gradientId})`}
           filter={`url(#${shadowId})`}
         />
 
-        {/* Tab on back panel */}
+        {/* Tab on back panel - v0.16.1: smaller, more subtle */}
         <path
           d={`
-            M 20 30
-            L 20 20
-            Q 20 12, 28 12
-            L 62 12
-            Q 70 12, 74 20
-            L 80 30
+            M 22 30
+            L 22 24
+            Q 22 18, 28 18
+            L 48 18
+            Q 54 18, 56 24
+            L 60 30
             Z
           `}
           fill="#8BD0F5"
@@ -231,7 +246,7 @@ export const MacFolder: React.FC<MacFolderProps> = ({
           fill="rgba(0,0,0,0.08)"
         />
 
-        {/* Front panel (lid) - animates open */}
+        {/* Front panel (lid) - animates open - v0.16.1: trapezoid perspective */}
         <g
           style={{
             transformOrigin: '100px 120px',
@@ -240,15 +255,15 @@ export const MacFolder: React.FC<MacFolderProps> = ({
         >
           <path
             d={`
-              M 20 60
-              L 180 60
-              Q 184 60, 184 64
-              L 184 116
-              Q 184 120, 180 120
-              L 20 120
-              Q 16 120, 16 116
+              M 22 60
+              L 178 60
+              Q 183 60, 184 64
+              L 186 116
+              Q 187 120, 182 120
+              L 18 120
+              Q 13 120, 14 116
               L 16 64
-              Q 16 60, 20 60
+              Q 17 60, 22 60
               Z
             `}
             fill={`url(#${lidGradientId})`}
@@ -256,62 +271,66 @@ export const MacFolder: React.FC<MacFolderProps> = ({
 
           {/* Fold line on lid */}
           <line
-            x1="25"
+            x1="24"
             y1="90"
-            x2="175"
+            x2="176"
             y2="90"
             stroke="rgba(255,255,255,0.15)"
             strokeWidth="1"
           />
 
-          {/* Top edge highlight */}
+          {/* Top edge highlight - v0.16.1: adjusted to new lid width */}
           <line
-            x1="20"
+            x1="22"
             y1="61"
-            x2="180"
+            x2="178"
             y2="61"
-            stroke="rgba(255,255,255,0.3)"
-            strokeWidth="1.5"
+            stroke="rgba(255,255,255,0.35)"
+            strokeWidth="2"
           />
         </g>
 
-        {/* Front panel (stationary bottom) */}
+        {/* Front panel (stationary bottom) - v0.16.1: curved bottom edge */}
         <path
           d={`
-            M 16 120
-            L 184 120
-            L 184 140
-            Q 184 150, 174 150
-            L 26 150
-            Q 16 150, 16 140
+            M 14 120
+            L 186 120
+            L 187 140
+            Q 187 148, 180 150
+            L 160 152
+            Q 100 158, 40 152
+            L 20 150
+            Q 13 148, 13 140
             Z
           `}
           fill={`url(#${frontGradientId})`}
         />
 
-        {/* Bottom edge shadow */}
+        {/* Bottom edge shadow - v0.16.1: follows curved bottom */}
         <path
           d={`
-            M 26 148
-            L 174 148
-            Q 180 148, 182 144
-            L 182 140
-            L 18 140
-            L 18 144
-            Q 20 148, 26 148
+            M 160 152
+            Q 100 157, 40 152
+            L 20 150
+            Q 14 148, 14 141
+            L 14 140
+            L 186 140
+            L 186 141
+            Q 186 148, 180 150
+            L 160 152
             Z
           `}
-          fill="rgba(0,0,0,0.15)"
+          fill="rgba(0,0,0,0.12)"
         />
 
-        {/* Highlight on front panel edge */}
+        {/* Highlight on front panel edge - v0.16.1: adjusted width */}
         <line
-          x1="20"
+          x1="18"
           y1="121"
-          x2="180"
+          x2="182"
           y2="121"
-          stroke="rgba(255,255,255,0.2)"
-          strokeWidth="1"
+          stroke="rgba(255,255,255,0.25)"
+          strokeWidth="1.5"
         />
       </svg>
 
