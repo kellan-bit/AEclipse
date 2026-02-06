@@ -2,10 +2,10 @@
  * Stonecrest v0.31 - SEAL THE MERGE SEAM (Phase 3, Step 1)
  *
  * CHANGELOG:
- * - v0.31: Seal the Merge Seam — eliminate one-frame element swap
- *   - searchBarVisible renders during merge (frame 197), not after (frame 225)
- *   - Bar opacity crossfades with photo white overlay (no hard cut)
- *   - Merged dimensions match photo cluster geometry (189px)
+ * - v0.31: Seal the Merge Seam — geometry match
+ *   - Merged dimensions match photo cluster geometry (189px, was 280px)
+ *   - settleProgress wired up in PhotoGrid (breathing amplitude decay)
+ *   - Lesson: crossfade between separate DOM elements = double exposure
  *
  * - v0.30: Declarative timeline system replaces flat TIMELINE object
  *   - All 25 frame constants → 18 typed phases via createTimeline()
@@ -197,10 +197,9 @@ export const StonecrestReveal: React.FC = () => {
   // SEARCH BAR ANIMATION
   // ============================================
 
-  // v0.31: Bar renders DURING merge (underneath whitening photos), not after.
-  // Eliminates the one-frame element swap at frame 225.
-  // Bar opacity ramps 0→1 in SearchBarV2 during solidify phase (crossfade).
-  const searchBarVisible = !t.isBefore('searchEmerge');
+  // v0.31: Bar appears after merge with matched geometry (189px = photo cluster width).
+  // v0.29 white overlay handles the visual transition — no crossfade needed.
+  const searchBarVisible = t.isAfter('merge');
 
   const typingProgress = getTypingProgress(
     t.frame,

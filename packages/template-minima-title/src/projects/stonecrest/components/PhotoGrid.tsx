@@ -2,10 +2,10 @@
  * PhotoGrid Component - v0.31
  *
  * CHANGELOG:
- * - v0.31: SEAL THE MERGE SEAM — sync fade with bar crossfade
- *   - Photo opacity fades 1→0 over merge progress 0.3→1.0 (was 0.9→1.0)
- *   - Synced with SearchBarV2 solidify opacity (bar fades 0→1 over same range)
+ * - v0.31: SEAL THE MERGE SEAM — settle + geometry
  *   - settleProgress wired up: breathing amplitude decays during settle
+ *   - Photo opacity kept at v0.29 behavior (white overlay handles transition)
+ *   - Merge geometry produces 189px cluster (matches SearchBarV2 merged width)
  *
  * - v0.29.1: Curve Selection Fix
  *   - FILTER: materialAccelerate replaces sneeze (no anticipation for exit)
@@ -379,13 +379,14 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
       // DESATURATION: progressive grayscale as photos whiten
       desaturation = Math.min(0.8, mergeProgress * 1.2);
 
-      // v0.31: Opacity fades 1→0 from 30%→100% merge, synchronized with
-      // SearchBarV2 solidify opacity (bar fades 0→1 over same range).
-      // Combined visual weight stays ~100% throughout the crossfade.
-      opacity = interpolate(mergeProgress, [0.3, 1], [1, 0], {
-        extrapolateLeft: 'clamp',
-        extrapolateRight: 'clamp',
-      });
+      // v0.29: Photos stay opaque — white overlay handles the visual transition.
+      // Only fade opacity in last 10% for DOM cleanup.
+      opacity = mergeProgress > 0.9
+        ? interpolate(mergeProgress, [0.9, 1], [1, 0], {
+            extrapolateLeft: 'clamp',
+            extrapolateRight: 'clamp',
+          })
+        : 1;
 
       // No blur — the white overlay is the transition, not blur
       blur = 0;

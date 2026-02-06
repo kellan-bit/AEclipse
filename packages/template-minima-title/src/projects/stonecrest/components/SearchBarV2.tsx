@@ -2,11 +2,10 @@
  * SearchBar Component - v0.31
  *
  * CHANGELOG:
- * - v0.31: SEAL THE MERGE SEAM — opacity crossfade + dimension match
- *   - Merged dimensions match actual photo cluster (189×54, not 280×54)
- *   - Opacity ramps 0→1 during solidify (crossfade with whitening photos)
- *   - Eliminates one-frame element swap at merge→bar boundary
- *   - Search UI content hidden during solidify (only visible after growth)
+ * - v0.31: SEAL THE MERGE SEAM — geometry match
+ *   - Merged dimensions match actual photo cluster (189×54, was 280×54)
+ *   - Eliminates 48% width jump at merge→bar boundary
+ *   - Bar still appears after merge (v0.29 white overlay handles transition)
  *
  * - v0.29: THE MORPH — Bar IS the website container
  *   - Bar starts at merged-photo geometry, fully opaque
@@ -94,9 +93,9 @@ export const SearchBarV2: React.FC<SearchBarProps> = ({
 
   // ============================================
   // STAGE 1: MORPH FROM PHOTOS
-  // v0.31: Bar fades in during solidify (opacity crossfade with photos).
-  // Photos have white overlay growing → bar appears underneath.
-  // Combined visual weight stays ~100% throughout the transition.
+  // v0.29: Bar starts at merged-photo geometry (189px), fully opaque.
+  // Springs to search bar size (500×50).
+  // v0.31: Geometry matched to photo cluster (189px, not 280px).
   // ============================================
 
   const solidifyProgress = usePhaseProgress(
@@ -156,13 +155,11 @@ export const SearchBarV2: React.FC<SearchBarProps> = ({
   let barOpacity: number;
 
   if (isSolidifying) {
-    // v0.31: Bar fades in during solidify — crossfade with whitening photos
-    // solidifyProgress goes 0→1 over the merge duration (bounce curve)
-    // Bar opacity ramps in sync so combined visual weight stays ~100%
+    // Bar at merged-photo geometry, fully opaque
     barWidth = DIMENSIONS.merged.width;
     barHeight = DIMENSIONS.merged.height;
     borderRadius = DIMENSIONS.merged.borderRadius;
-    barOpacity = solidifyProgress;
+    barOpacity = 1.0;
   } else if (isGrowing) {
     // Stage 2: Spring from merged size to search bar size
     barWidth = growthValues.width;
@@ -183,23 +180,13 @@ export const SearchBarV2: React.FC<SearchBarProps> = ({
     barOpacity = 1.0;
   }
 
-  // Search UI opacity:
-  // - During solidify: 0 (bar is plain white, matching whitened photos)
-  // - During growth: fades in 0→1 (search icon/text appear as bar grows)
-  // - During expand: fades out 1→0 (dissolves into website content)
-  const searchUIOpacity = isSolidifying
-    ? 0
-    : isExpanding
-      ? interpolate(expandProgress, [0, 0.7], [1, 0], {
-          extrapolateLeft: 'clamp',
-          extrapolateRight: 'clamp',
-        })
-      : isGrowing
-        ? interpolate(growthValues.width,
-            [DIMENSIONS.merged.width, DIMENSIONS.merged.width + 60],
-            [0, 1],
-            { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
-        : 1;
+  // Search UI opacity: fades out during expansion (content dissolves into website)
+  const searchUIOpacity = isExpanding
+    ? interpolate(expandProgress, [0, 0.7], [1, 0], {
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      })
+    : 1;
 
   // ============================================
   // TYPING DISPLAY

@@ -1137,44 +1137,32 @@ Don't refactor everything at once. The timeline system was introduced in the orc
 
 ---
 
-## Lesson 25: The Relay Principle — Flow Requires One Entity (v0.31)
+## Lesson 25: Geometry Match Before Crossfade (v0.31)
 
-**Problem:** The photo→search bar transition was a one-frame element swap. At frame 224, PhotoGrid rendered 3 whitened photos spanning ~189px. At frame 225, PhotoGrid returned `null` and SearchBar appeared at 280px — a 48% width jump in a single frame. White overlay masked it somewhat, but the animation felt like "separate animations layered on top of each other."
+**Problem:** The photo→search bar transition had a 48% width jump: photos compress to ~189px, but the search bar appeared at 280px.
 
-**What Happened:** Three discontinuities fixed:
-1. **Timing**: Bar now renders during merge (frame 197), not after (frame 225)
-2. **Geometry**: Bar merged dimensions match photo cluster bounding box (189px, not 280px)
-3. **Opacity**: Bar fades 0→1 as photos fade 1→0 (crossfade, not swap)
+**First Attempt (FAILED — Double Exposure):**
+Tried making bar visible during merge with opacity ramping 0→1 while photos faded 1→0. This created visible "double exposure" — both DOM elements simultaneously visible on screen, bar ON TOP of photos. User saw photo thumbnails AND a white bar competing for attention.
 
-**Right Approach: THE RELAY PRINCIPLE**
+**Why Crossfade Failed:**
+1. Bar renders AFTER PhotoGrid in DOM order (higher z-index) — sits ON TOP, not underneath
+2. Bar appeared at frame 197 (searchEmerge), but merge doesn't start until 200
+3. Two separate DOM elements crossfading ≠ one element morphing. The brain perceives two objects.
 
-Flow requires **one entity** transforming through states, not multiple entities taking turns. When Component A fades out and Component B fades in at the same position, the brain perceives two separate objects — even if the timing is perfect. True flow requires:
+**Correct Fix:** Pure geometry match. Keep v0.29 timing (bar appears after merge via white overlay), fix width: 280px → 189px.
 
-1. **Geometric continuity** — the bounding box of A's final state must exactly match B's initial state
-2. **Opacity crossfade** — combined visual weight stays ~100% throughout (A at 60% + B at 40% = 100%)
-3. **Temporal overlap** — B must be rendering BEFORE A disappears (not the frame after)
-
-**The Element Swap Antipattern:**
-```
-// BAD: Hard swap (one-frame cut)
-const showA = frame < 225;
-const showB = frame >= 225;
-
-// GOOD: Crossfade with temporal overlap
-const showA = frame < 230;  // A lingers
-const showB = frame >= 197;  // B starts early
-const opacityA = interpolate(frame, [200, 225], [1, 0]);
-const opacityB = interpolate(frame, [200, 225], [0, 1]);
-```
+**The Hierarchy of Transition Fixes:**
+1. **Geometry match** — cheapest, most impactful. Identical dimensions make swaps nearly invisible.
+2. **Single-element morph** — wrap both in one container (Envelope Pattern). Content changes inside; container morphs.
+3. **Multi-element crossfade** — hardest. Often creates "double exposure" unless elements are visually identical.
 
 **Dead Code = Missing Transition:**
-`settleProgress` was calculated but never used — photos locked into grid positions instantly. Wiring it up (breathing amplitude decays during settle) created a "landing" feel. Dead code in animation often means a transition was intended but never implemented.
+`settleProgress` was calculated but never used — wiring it up (breathing amplitude decays) created a "landing" feel.
 
 **Global Application:**
-- **Web UX** — page transitions need shared element animation, not unmount/mount
-- **Video editing** — cross-dissolve > hard cut for related scenes
-- **Music** — tied notes create legato; separate attacks create staccato
-- **Presentation slides** — morph transition > slide transition for related content
-- **Game design** — avatar transformation > character swap for power-ups
+- **Web UX** — match dimensions before animating between states
+- **CSS transitions** — transform from matched dimensions > width/height between mismatched sizes
+- **Video editing** — match cuts work because geometry is continuous even when content changes
+- **Game design** — sprite swap at identical bounding box is invisible; different sizes = "pop"
 
-**The Rule:** If the audience can identify the moment one element disappears and another appears, you have a cut, not flow. Flow means you can't point to the swap frame.
+**The Rule:** Fix geometry first. Only add crossfade complexity with a single container (Envelope Pattern), not two separate DOM elements.

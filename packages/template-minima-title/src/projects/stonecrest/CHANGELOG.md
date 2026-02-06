@@ -7,23 +7,19 @@ All notable changes to the Stonecrest property introduction animation.
 ## [v0.31] - 2026-02-06
 
 ### Changed - "Seal the Merge Seam" (Phase 3, Step 1)
-The photo→search bar transition had a one-frame element swap: PhotoGrid vanished at frame 224 and SearchBar appeared at frame 225 with a 48% width jump (189px→280px). This version eliminates the swap with an opacity crossfade and geometric matching.
+The photo→search bar transition had a 48% width jump: photo cluster compressed to ~189px but search bar appeared at 280px. Fixed with geometry matching.
 
-- **StonecrestReveal.tsx**: `searchBarVisible` now renders bar during merge (frame 197), not after (frame 225)
 - **SearchBarV2.tsx**: Merged dimensions 280×54 → 189×54 (exact match to photo cluster bounding box)
-  - Bar opacity ramps 0→1 during solidify phase (crossfade with whitening photos)
-  - Search UI content hidden during solidify (plain white rectangle matches photos)
-  - Search UI fades in during growth phase as bar expands
-- **PhotoGrid.tsx**: Photo opacity fade synced with bar crossfade
-  - Was: fade 1→0 only in last 10% of merge (progress 0.9→1.0)
-  - Now: fade 1→0 from 30%→100% merge (synced with bar solidify)
-  - settleProgress wired up: breathing amplitude decays during settle phase
+  - Bar timing unchanged (still appears after merge via v0.29 white overlay)
+- **PhotoGrid.tsx**: settleProgress wired up — breathing amplitude decays during settle
   - Creates gradual "landing" feel instead of instant lock-into-place
+  - Photo opacity kept at v0.29 behavior (white overlay handles transition)
+
+**Lesson learned:** Attempted opacity crossfade (bar fading in during merge) created "double exposure" — two DOM elements visible simultaneously. Reverted to geometry-only fix. True crossfade requires single-element approach (Step 2: Morph Envelope).
 
 **Principles applied:**
-- The Relay Principle: one entity morphing, not two swapping
-- Opacity crossfade > hard element swap
-- Geometric matching: photo cluster bounding box = bar merged dimensions
+- Geometry match > opacity crossfade for separate DOM elements
+- Fix cheapest layer first (dimensions), add complexity only when needed
 
 ---
 
