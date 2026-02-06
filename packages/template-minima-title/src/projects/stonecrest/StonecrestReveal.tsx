@@ -117,44 +117,51 @@ const BANNER_IMAGE = 'assets/minima/Photos/Homes/Stonecrest/Basil_ex01_Final_202
 // ============================================
 
 const TIMELINE = {
-  // Act 1: The Folder - v0.18: Tightened timing for snappier feel
+  // Act 1: The Folder
+  // v0.28.1: Compressed mouse approach (12fr, not 20)
   MOUSE_ENTER: 0,
-  MOUSE_ARRIVE: 20,       // Was 30 - faster approach
-  HESITATION_START: 20,
-  HESITATION_END: 35,     // Was 55 - shorter hesitation (15 frames vs 25)
-  FIRST_CLICK: 40,        // Was 60 - earlier click
-  SECOND_CLICK: 46,       // Was 68 - tighter double-click
+  MOUSE_ARRIVE: 12,
+  HESITATION_START: 12,
+  HESITATION_END: 22,
+  FIRST_CLICK: 26,
+  SECOND_CLICK: 32,
 
-  // Act 2: The Reveal - v0.18.5: Overlapping phases for flow
-  // Photos start peeking WHILE folder is still opening (overlap, not sequential)
-  FOLDER_OPEN_START: 48,  // Immediate after double-click
-  PHOTOS_PEEK: 60,        // v0.18.5: Earlier! Photos peek while lid is opening (was 75)
-  PHOTOS_BURST: 80,       // v0.18.5: Earlier burst, tighter with peek (was 90)
-  PHOTOS_SETTLE: 140,     // Spring settle (was 135)
-  PHOTOS_HOLD: 170,       // Was 200
+  // Act 2: The Reveal
+  // v0.28.1: Overlap everything — peek starts while folder opens,
+  // burst starts while peek is still happening, disappear starts
+  // immediately after burst settles (no 30-frame gap)
+  FOLDER_OPEN_START: 34,
+  PHOTOS_PEEK: 44,
+  PHOTOS_BURST: 60,
+  PHOTOS_SETTLE: 100,       // Was 140 — burst lands directly, no dead time
+  PHOTOS_HOLD: 110,          // Was 170 — shortened hold
 
-  // Act 3: The Filter - v0.18: Tightened
-  DISAPPEAR_START: 180,   // Was 210
-  DISAPPEAR_END: 250,     // Was 290
-  MIDDLE_ROW_HOLD: 275,   // Was 320
+  // Act 3: The Filter
+  // v0.28.1: Disappear starts RIGHT after photos settle (was 40-frame gap)
+  DISAPPEAR_START: 115,      // Was 180 — starts 5 frames after hold
+  DISAPPEAR_END: 175,        // Was 250 — same 60-frame duration
+  MIDDLE_ROW_HOLD: 175,      // Was 275 — no dead time after filter
 
-  // Act 4: The Transform - v0.21: LEAP 2 Metamorphosis
-  FORMATION_START: 275,   // NEW: Photos form horizontal strip
-  MERGE_START: 300,       // CHANGED: Was 285 - merge starts after formation
-  SEARCH_EMERGE: 297,     // v0.22: Bar ghost appears 3 frames BEFORE merge (was 310)
-  MERGE_END: 325,         // CHANGED: Was 330 - tighter merge
-  SEARCH_SOLIDIFIED: 325, // NEW: Bar fully opaque, photos gone
-  SEARCH_BAR_READY: 350,  // NEW: Bar at full 500x50
-  TYPING_START: 355,      // ADJUSTED: Was 340
-  TYPING_END: 405,        // Was 390
+  // Act 4: The Transform
+  // v0.28.1: Formation starts immediately when filter ends (was 25-frame gap)
+  FORMATION_START: 178,      // Was 275 — starts 3 frames after filter (overlap)
+  MERGE_START: 200,          // Was 300
+  SEARCH_EMERGE: 197,        // Was 297 — 3 frames before merge (same overlap pattern)
+  MERGE_END: 225,            // Was 325
+  SEARCH_SOLIDIFIED: 225,    // Was 325
+  SEARCH_BAR_READY: 248,     // Was 350
+  TYPING_START: 252,         // Was 355
+  TYPING_END: 300,           // Was 405
 
-  // Act 5: The Website - v0.21: Adjusted for new timing
-  EXPAND_START: 420,      // ADJUSTED: Was 400
-  EXPAND_END: 460,        // Was 510
-  WEBSITE_REVEAL: 470,    // Was 520
+  // Act 5: The Website
+  // v0.28.1: Expansion starts while typing finishes (overlap, was 15-frame gap)
+  EXPAND_START: 295,         // Was 420 — starts 5 frames BEFORE typing ends
+  EXPAND_END: 335,           // Was 460
+  WEBSITE_REVEAL: 345,       // Was 470
 
-  // End - v0.18: Shorter total (saved ~50 frames / 1.7s)
-  TOTAL: 550,
+  // End
+  // v0.28.1: Total reduced from 550 to 420 (saved 130 frames / 4.3s)
+  TOTAL: 420,
 };
 
 // ============================================
