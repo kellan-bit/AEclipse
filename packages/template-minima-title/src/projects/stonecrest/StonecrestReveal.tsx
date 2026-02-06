@@ -1,7 +1,12 @@
 /**
- * Stonecrest v0.18.4 - Split Folder Layers
+ * Stonecrest v0.18.5 - Overlapping Phases
  *
  * CHANGELOG:
+ * - v0.18.5: Overlap folder open + photo peek for seamless flow
+ *   - PHOTOS_PEEK: 75 → 60 (photos start while lid still opening)
+ *   - PHOTOS_BURST: 90 → 80 (tighter timing)
+ *   - Creates continuous motion instead of sequential phases
+ *
  * - v0.18.4: Split folder into body + lid for proper z-ordering
  *   - MacFolderBack renders BEHIND photos
  *   - MacFolderLid renders ABOVE photos
@@ -95,11 +100,11 @@ const TIMELINE = {
   FIRST_CLICK: 40,        // Was 60 - earlier click
   SECOND_CLICK: 46,       // Was 68 - tighter double-click
 
-  // Act 2: The Reveal - v0.18.1: Fixed photo emergence timing
-  // Key insight: Photos can only appear AFTER lid is visually open (~25 frames into spring)
-  FOLDER_OPEN_START: 48,  // Immediate after double-click (was 52 = 6 frame gap)
-  PHOTOS_PEEK: 75,        // CRITICAL FIX: Wait until lid is open (was 65 = too early)
-  PHOTOS_BURST: 90,       // Start burst while peek is finishing (was 85)
+  // Act 2: The Reveal - v0.18.5: Overlapping phases for flow
+  // Photos start peeking WHILE folder is still opening (overlap, not sequential)
+  FOLDER_OPEN_START: 48,  // Immediate after double-click
+  PHOTOS_PEEK: 60,        // v0.18.5: Earlier! Photos peek while lid is opening (was 75)
+  PHOTOS_BURST: 80,       // v0.18.5: Earlier burst, tighter with peek (was 90)
   PHOTOS_SETTLE: 140,     // Spring settle (was 135)
   PHOTOS_HOLD: 170,       // Was 200
 
