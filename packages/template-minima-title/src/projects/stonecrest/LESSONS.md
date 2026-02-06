@@ -1277,3 +1277,36 @@ One container exists continuously from state A through state Z. Content changes 
 - Momentum curves (sneeze, flick, whip) are great for TERMINAL phases (burst out, land, settle). For TRANSITIONAL phases (formation→merge), use a single smooth curve instead.
 
 **The Rule:** If the motion stops in the middle and shouldn't, you have too many curves. Merge them into one.
+
+---
+
+## Lesson 29: Audit the Whole Animation, Not Just the Latest Change (v0.35-v0.38)
+
+**Problem:** After v0.34 fixed the biggest stutter, the user said "can still be better" but couldn't articulate exactly what. Multiple small issues across the entire animation accumulated into an overall "mechanical" feel.
+
+**What Happened:** A full-animation audit (scrubbing every frame, checking every phase boundary) revealed 8 issues across 6 files — none catastrophic alone, but collectively they created micro-pauses, pops, and inconsistencies that undermined the fluid feel.
+
+**The Eight Issues Found:**
+1. **Timeline gaps** (7 dead frames total) — filter→formation 3fr, searchGrow→typing 4fr
+2. **Breathing cutoff** — oscillation stopped mid-cycle at formation boundary
+3. **Width-keyed opacity** — search text popped in based on bar width, not time
+4. **Render gate delay** — website content waited 5 frames after expand started
+5. **Click instant pop** — mouse cursor used `transition: 'none'` on click
+6. **Anticipation denominator** — folder bulge math divided by wrong duration
+7. **Clip path pop** — 1-frame instant clip removal at burst start
+8. **Dead code** — 13 unused hooks, 17 unused curves (noted, not fixed)
+
+**Right Approach: SYSTEMATIC AUDIT**
+1. Scrub the full animation at 1x and 0.25x speed
+2. At every phase boundary, check: is velocity continuous? Any 1-frame pops?
+3. Check every component interaction: do mouse, folder, and photos feel unified?
+4. Check content timing: does text/content appear naturally or abruptly?
+5. Fix in priority order: critical → high → moderate → minor
+
+**Global Application:**
+- **Code review** — review the whole PR, not just the diff
+- **Music mixing** — listen to the full track after each adjustment
+- **UI design** — test the full user flow, not just the changed screen
+- **Writing** — read the whole piece aloud after editing one section
+
+**The Rule:** Individual fixes optimize locally. Periodic full audits catch the systemic issues that accumulate between focused changes. Schedule audits, don't wait for them.

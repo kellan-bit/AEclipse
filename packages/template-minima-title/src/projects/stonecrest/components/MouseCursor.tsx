@@ -1,7 +1,9 @@
 /**
- * MouseCursor Component - v0.17.2
+ * MouseCursor Component - v0.38
  *
  * CHANGELOG:
+ * - v0.37: Click transition always animates (was instant pop with 'none')
+ *
  * - v0.17.2: Authentic Apple cursor (no outline stroke)
  *   - Removed thick black stroke that made it look hand-drawn
  *   - Single path with white fill and thin black edge
@@ -52,7 +54,8 @@ export const MouseCursor: React.FC<MouseCursorProps> = ({
         pointerEvents: 'none',
         zIndex: 1000,
         filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
-        transition: isClicking ? 'none' : 'transform 0.05s ease-out',
+        // v0.37: Always use CSS transition — 'none' caused instant pop on click
+        transition: 'transform 0.05s ease-out',
       }}
     >
       {/* Apple-style pointer cursor - v0.17.2: No outline stroke */}

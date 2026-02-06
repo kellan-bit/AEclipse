@@ -1,7 +1,10 @@
 /**
- * PhotoGrid Component - v0.34
+ * PhotoGrid Component - v0.38
  *
  * CHANGELOG:
+ * - v0.38: Clip path fade (3-frame reveal instead of 1-frame pop at burst start)
+ * - v0.35: Breathing dampen — oscillation fades to zero over 5 frames before formation
+ *
  * - v0.34: UNIFIED TRANSFORM — one continuous motion for formation+merge
  *   - Replaces separate formation (flick) and merge (materialDecelerate) blocks
  *   - Single anticipateSmall curve over 38 frames eliminates stutter
@@ -248,8 +251,13 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
       rotation = targetRotation * 1.5 * Math.max(0, rotationProgress);
 
       opacity = 1;
-      // Remove clipping once burst starts - photos are free
-      clipTop = null;
+      // v0.38: Fade clip over first 3 burst frames instead of instant removal.
+      // At frame 60, clipTop jumped from centerY-10 to null (1-frame visibility pop).
+      // Now the clip line rapidly moves upward over 3 frames for smooth reveal.
+      const burstAge = frame - burstStartFrame;
+      clipTop = burstAge < 3
+        ? centerY - 10 - (burstAge / 3) * 200
+        : null;
 
       // Elevation: lifted during burst, settles to hover
       elevation = effectiveFrame < 0
@@ -269,14 +277,22 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
         // Late settle (1): smaller oscillation (0.005) — resting state
         const maxAmplitude = 0.01;
         const minAmplitude = 0.005;
-        const breatheAmplitude = maxAmplitude + (minAmplitude - maxAmplitude) * settleProgress;
+
+        // v0.35: Dampen breathing over last 5 frames before formation
+        // Prevents mid-cycle oscillation cutoff at phase boundary
+        const framesToFormation = formationStartFrame - frame;
+        const breatheDampen = formationStartFrame > 0 && framesToFormation <= 5
+          ? Math.max(0, framesToFormation / 5)
+          : 1;
+
+        const breatheAmplitude = (maxAmplitude + (minAmplitude - maxAmplitude) * settleProgress) * breatheDampen;
 
         const breathePhase = (frame + index * 5) * 0.08;
         const breatheAmount = Math.sin(breathePhase) * breatheAmplitude;
         scale = scale * (1 + breatheAmount);
 
         // Micro-float: amplitude also decays (2px landing → 1px resting)
-        const floatAmplitude = 2 - settleProgress;
+        const floatAmplitude = (2 - settleProgress) * breatheDampen;
         const floatAmount = Math.sin(breathePhase * 0.7) * floatAmplitude;
         y = y + floatAmount;
       }

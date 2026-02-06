@@ -1,7 +1,9 @@
 /**
- * MacFolderLayers - v0.28
+ * MacFolderLayers - v0.38
  *
  * CHANGELOG:
+ * - v0.37: Fixed anticipation denominator (10→14 frames, was missing 4-frame lead-in)
+ *
  * - v0.28: Momentum system applied
  *   - Lid opening: replaced spring + manual anticipation with momentum 'throw'
  *     - Single momentum curve handles anticipation + action + settle
@@ -48,17 +50,17 @@ function useFolderState(props: MacFolderLayerProps) {
   const hoverScale = isHovered ? SCALE.hover : 1;
   const hoverBrightness = isHovered ? 1.05 : 1;
 
-  // v0.28: Momentum 'tap' replaces manual anticipation pulse.
-  // The 'tap' curve has built-in anticipation (slight press-in) + overshoot + settle.
-  // This means the folder "breathes" through the click naturally.
+  // v0.37: Fixed anticipation denominator — phase spans 14 frames (4 before + 10 during),
+  // not 10. Old code divided by 10, compressing the curve into the wrong window.
   const tapCurve = getMomentumCurve('tap');
-  const tapDuration = 10; // Quick tap feel
+  const anticipationStart = openStartFrame - 4;
+  const tapDuration = 14; // Full phase: 4 anticipation + 10 open
   const isAnticipating = openStartFrame > 0 &&
-    frame >= openStartFrame - 4 &&
-    frame < openStartFrame + tapDuration;
+    frame >= anticipationStart &&
+    frame < anticipationStart + tapDuration;
 
   const anticipationProgress = isAnticipating
-    ? Math.min((frame - (openStartFrame - 4)) / tapDuration, 1)
+    ? Math.min((frame - anticipationStart) / tapDuration, 1)
     : 0;
   // Tap curve goes from 0 → past 1 → 1 (the achoo pattern)
   // Map to scale: 1 → 1.025 → 1 (the bulge)

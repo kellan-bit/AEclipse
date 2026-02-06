@@ -1,5 +1,5 @@
 /**
- * Stonecrest Animation Timeline - v0.30
+ * Stonecrest Animation Timeline - v0.35
  *
  * Declarative phase definitions for the Stonecrest property reveal.
  * Maps the 5-act story structure to typed, queryable phases.
@@ -52,17 +52,17 @@ export const stonecrestTimeline = createTimeline<StonecrestPhase>({
   filter:         { start: 115, duration: 60 },
 
   // Act 4: The Transform
-  // v0.33: Tightened morph timing — faster, more fluid
+  // v0.35: Closed gaps — formation starts at filter end, typing at searchGrow end
   // Middle row forms strip, merges into search bar, typing
-  formation:      { start: 178, duration: 18 },    // was 22 — snappier strip
-  searchEmerge:   { start: 193, duration: 23 },    // overlaps merge (3fr head start)
-  merge:          { start: 196, duration: 20 },    // was 25 — tighter compression
-  searchGrow:     { start: 216, duration: 18 },    // was 23 — quicker bar growth
-  typing:         { start: 238, duration: 48 },
+  formation:      { start: 175, duration: 18 },    // was 178 — no gap after filter
+  searchEmerge:   { start: 190, duration: 23 },    // overlaps merge (3fr head start)
+  merge:          { start: 193, duration: 20 },    // was 196
+  searchGrow:     { start: 213, duration: 18 },    // was 216
+  typing:         { start: 231, duration: 48 },    // was 238 — no gap after searchGrow
 
   // Act 5: The Website
   // Bar expands to browser viewport, website content revealed
-  expand:         { start: 281, duration: 32 },    // was 40 — snappier expand
-  websiteReveal:  { start: 313, duration: 10 },
-  hold:           { start: 323, duration: 75 },
+  expand:         { start: 274, duration: 32 },    // was 281
+  websiteReveal:  { start: 306, duration: 10 },
+  hold:           { start: 316, duration: 75 },
 });

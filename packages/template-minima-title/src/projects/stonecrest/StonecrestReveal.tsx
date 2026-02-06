@@ -1,7 +1,16 @@
 /**
- * Stonecrest v0.34 - UNIFIED TRANSFORM (Phase 3, Step 3)
+ * Stonecrest v0.38 - POLISH PASS (Zero Dead Frames)
  *
  * CHANGELOG:
+ * - v0.35-v0.38: The Large Jump — 8 fixes across all components
+ *   - v0.35: Closed 7 dead frames (filter→formation gap, searchGrow→typing gap)
+ *   - v0.35: Breathing dampens to zero before formation (no mid-cycle cutoff)
+ *   - v0.36: Search text fades in over time (was keyed to bar width)
+ *   - v0.36: Website content render gate 15%→5% (appears 4 frames sooner)
+ *   - v0.37: Mouse click always animates (was instant pop)
+ *   - v0.37: Folder anticipation uses correct 14-frame denominator (was 10)
+ *   - v0.38: Burst clip path fades over 3 frames (was 1-frame pop)
+ *
  * - v0.34: Unified Transform — one continuous motion for formation+merge
  *   - PhotoGrid: single anticipateSmall curve over 38 frames (no phase boundary)
  *   - Eliminates the formation→merge stutter entirely

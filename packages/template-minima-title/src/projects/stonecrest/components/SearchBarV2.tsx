@@ -1,7 +1,9 @@
 /**
- * SearchBar Component - v0.32 (Morph Envelope)
+ * SearchBar Component - v0.38
  *
  * CHANGELOG:
+ * - v0.36: Text opacity time-keyed (was width-keyed), website render gate 15%→5%
+ *
  * - v0.32: MORPH ENVELOPE — bar renders behind photos during merge
  *   - Renders BEFORE PhotoGrid in DOM (lower z-index = behind)
  *   - Visible from merge start; search UI hidden during solidify
@@ -185,9 +187,13 @@ export const SearchBarV2: React.FC<SearchBarProps> = ({
     barOpacity = 1.0;
   }
 
-  // v0.32: Search UI hidden during solidify (bar is plain white, masked by
-  // photos above in DOM order). Fades in during growth as bar expands.
-  // Fades out during expansion (content dissolves into website).
+  // v0.36: Search UI fade-in keyed to TIME, not width.
+  // Old: width-keyed (189→249px) caused text to pop in during ~20% of growth.
+  // New: time-keyed (15-50% of growth duration) — gradual 6-frame fade-in.
+  const growthProgress = isGrowing
+    ? (frame - photosFullyMergedFrame) / growthDuration
+    : 0;
+
   const searchUIOpacity = isSolidifying
     ? 0
     : isExpanding
@@ -196,10 +202,10 @@ export const SearchBarV2: React.FC<SearchBarProps> = ({
           extrapolateRight: 'clamp',
         })
       : isGrowing
-        ? interpolate(growthValues.width,
-            [DIMENSIONS.merged.width, DIMENSIONS.merged.width + 60],
-            [0, 1],
-            { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
+        ? interpolate(growthProgress, [0.15, 0.5], [0, 1], {
+            extrapolateLeft: 'clamp',
+            extrapolateRight: 'clamp',
+          })
         : 1;
 
   // ============================================
@@ -289,12 +295,13 @@ export const SearchBarV2: React.FC<SearchBarProps> = ({
       {/* v0.29: Website content renders INSIDE the expanding bar.
           Same container, content swap — the bar IS the website.
           Fades in as search UI fades out. Clipped by overflow:hidden. */}
-      {isExpanding && renderExpandedContent && expandProgress > 0.15 && (
+      {/* v0.36: Render gate 15%→5% — website content appears within 1-2 frames */}
+      {isExpanding && renderExpandedContent && expandProgress > 0.05 && (
         <div
           style={{
             position: 'absolute',
             inset: 0,
-            opacity: interpolate(expandProgress, [0.15, 0.55], [0, 1], {
+            opacity: interpolate(expandProgress, [0.05, 0.55], [0, 1], {
               extrapolateLeft: 'clamp',
               extrapolateRight: 'clamp',
             }),

@@ -4,6 +4,29 @@ All notable changes to the Stonecrest property introduction animation.
 
 ---
 
+## [v0.35–v0.38] - 2026-02-06
+
+### Changed - "The Large Jump" (Zero Dead Frames)
+Full-animation audit and fix pass — 8 issues across 6 files. Every phase now flows into the next.
+
+**v0.35 — Close Timeline Gaps + Breathing Transition**
+- `stonecrest-timeline.ts`: Closed filter→formation gap (3 dead frames: 175-178) and searchGrow→typing gap (4 dead frames: 234-238). All downstream phases shifted. Total 391 frames (was 398).
+- `PhotoGrid.tsx`: Breathing oscillation dampens to zero over 5 frames before formation start (prevents mid-cycle cutoff at phase boundary).
+
+**v0.36 — SearchBar Text + Website Content Timing**
+- `SearchBarV2.tsx`: Search text opacity keyed to time (15-50% of growth), not bar width (189→249px). Gradual 6-frame fade-in instead of abrupt pop.
+- `SearchBarV2.tsx`: Website content render gate 15%→5% — appears within 1-2 frames of expand start.
+
+**v0.37 — Interaction Polish**
+- `MouseCursor.tsx`: Click transition always animates (was instant pop via `transition: 'none'`). Cursor and folder now both ease into pressed state.
+- `MacFolderLayers.tsx`: Anticipation denominator fixed — tapDuration 10→14 (covers full 4-frame lead-in + 10-frame open phase). Bulge accelerates smoothly.
+
+**v0.38 — Clip Path + Polish**
+- `PhotoGrid.tsx`: Burst clip path fades over 3 frames (rapidly moves clip line upward) instead of instant removal at frame 60.
+- All file headers updated to v0.38.
+
+---
+
 ## [v0.34] - 2026-02-06
 
 ### Changed - "Unified Transform" (Phase 3, Step 3)

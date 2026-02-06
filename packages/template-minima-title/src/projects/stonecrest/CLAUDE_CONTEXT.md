@@ -9,7 +9,7 @@ This file contains persistent instructions, preferences, and context that should
 ## Project Overview
 
 Building an Apple-style property introduction animation for Stonecrest using Remotion.
-- **Current version:** v0.34 (Unified Transform — Phase 3, Step 3)
+- **Current version:** v0.38 (The Large Jump — Zero Dead Frames)
 - **Next:** Phase 4 - Motion Presets Library / Phase 5 - Component Refactor
 - **Philosophy:** Fluidity = seamlessness, not effects
 - **v0.20 Philosophy:** Invisible enhancement - feel depth, don't see technique
@@ -35,6 +35,7 @@ Building an Apple-style property introduction animation for Stonecrest using Rem
   - Step 2.5: Continuous Motion (v0.33) - **COMPLETE** (faster morphs)
   - Step 3: Unified Transform (v0.34) - **COMPLETE** (one motion, no boundary)
 - Phase 3 COMPLETE
+- Phase 3.5: The Large Jump (v0.35-v0.38) - **COMPLETE** (full audit, 8 fixes)
 - Phase 4: Motion Presets Library - PLANNED
 - Phase 5: Component Refactor - PLANNED
 
