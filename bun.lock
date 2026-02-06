@@ -991,6 +991,17 @@
         "react-dom": ">=16.8.0",
       },
     },
+    "packages/minima-brand": {
+      "name": "@minima/brand",
+      "version": "1.0.0",
+      "dependencies": {
+        "remotion": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/react": "19.2.7",
+        "typescript": "5.9.3",
+      },
+    },
     "packages/motion-blur": {
       "name": "@remotion/motion-blur",
       "version": "4.0.418",
@@ -1546,6 +1557,26 @@
         "@remotion/eslint-config-flat": "workspace:*",
         "eslint": "9.19.0",
         "prettier": "3.6.0",
+      },
+    },
+    "packages/template-minima-title": {
+      "name": "template-minima-title",
+      "version": "1.0.0",
+      "dependencies": {
+        "@minima/brand": "workspace:*",
+        "@remotion/cli": "workspace:*",
+        "@remotion/transitions": "workspace:*",
+        "react": "19.2.3",
+        "react-dom": "19.2.3",
+        "remotion": "workspace:*",
+        "zod": "3.22.3",
+      },
+      "devDependencies": {
+        "@remotion/eslint-config-flat": "workspace:*",
+        "@types/react": "19.2.7",
+        "eslint": "9.19.0",
+        "prettier": "3.6.0",
+        "typescript": "5.9.3",
       },
     },
     "packages/template-music-visualization": {
@@ -3211,6 +3242,8 @@
     "@mediafox/react": ["@mediafox/react@1.0.4", "", { "peerDependencies": { "@mediafox/core": "^1.0.4", "react": ">=18.0.0" } }, "sha512-2HsQBqIU1X6QBfPk+da3LX29zMCclHJ8xBpxKsSR54GSPcSfbR9xMNzCq6mIItU0AUw8e5Y4KD92p1G2LoRcww=="],
 
     "@mediapipe/tasks-vision": ["@mediapipe/tasks-vision@0.10.17", "", {}, "sha512-CZWV/q6TTe8ta61cZXjfnnHsfWIdFhms03M9T7Cnd5y2mdpylJM0rF1qRq+wsQVRMLz1OYPVEBU9ph2Bx8cxrg=="],
+
+    "@minima/brand": ["@minima/brand@workspace:packages/minima-brand"],
 
     "@mjackson/node-fetch-server": ["@mjackson/node-fetch-server@0.2.0", "", {}, "sha512-EMlH1e30yzmTpGLQjlFmaDAjyOeZhng1/XCd7DExR8PNAnG/G1tyruZxEoUe11ClnwGhGrtsdnyyUx1frSzjng=="],
 
@@ -7225,6 +7258,8 @@
     "template-helloworld": ["template-helloworld@workspace:packages/template-helloworld"],
 
     "template-javascript": ["template-javascript@workspace:packages/template-javascript"],
+
+    "template-minima-title": ["template-minima-title@workspace:packages/template-minima-title"],
 
     "template-music-visualization": ["template-music-visualization@workspace:packages/template-music-visualization"],
 
