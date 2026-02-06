@@ -28,8 +28,8 @@ Building an Apple-style property introduction animation for Stonecrest using Rem
 - Phase 1.5: Momentum System (v0.27) - **COMPLETE** (hooks defined)
 - Phase 1.5b: Apply Momentum (v0.28) - **COMPLETE** (hooks applied to components)
 - Phase 1.5c: The Morph (v0.29) - **COMPLETE** (geometry morphs replace opacity transitions)
-- Phase 2: Timeline Architecture (v0.30) - **NEXT**
-- Phase 3: Animation State Machine - PLANNED
+- Phase 2: Timeline Architecture (v0.30) - **COMPLETE** (createTimeline + useTimeline)
+- Phase 3: Animation State Machine - **NEXT**
 - Phase 4: Motion Presets Library - PLANNED
 - Phase 5: Component Refactor - PLANNED
 
@@ -38,7 +38,9 @@ Building an Apple-style property introduction animation for Stonecrest using Rem
 - `motion/curves.ts` - Comprehensive easing library (40+ named curves)
 - `motion/core.ts` - MotionValue class and transitions
 - `motion/hooks.ts` - React hooks (useSpring, useTween, etc.)
+- `motion/timeline.ts` - Timeline system (createTimeline, useTimeline)
 - `motion/index.ts` - Unified exports
+- `stonecrest-timeline.ts` - 18 named phases for Stonecrest animation
 
 ### Proof of Concept
 - `components/SearchBarV2.tsx` - Refactored with new motion system
@@ -136,11 +138,9 @@ in the browser so the user can preview the animation in real time.
 cat > /tmp/pull-and-preview.sh << 'SCRIPT'
 #!/bin/bash
 cd ~/Documents/AEclipse
-git stash
 CLAUDE_BRANCH="claude/stonecrest-template-improvements-O5TmO"
 git fetch origin "$CLAUDE_BRANCH"
 git checkout "origin/$CLAUDE_BRANCH" -- packages/template-minima-title/src
-git stash pop 2>/dev/null
 echo "✓ Pulled latest src from $CLAUDE_BRANCH"
 echo "Launching Remotion Studio..."
 cd packages/template-minima-title
@@ -220,12 +220,13 @@ git fetch origin && git pull origin <branch-name>
 ```
 Then use the Read tool to view PNGs in `packages/template-minima-title/out/frames/`.
 
-### Lessons Learned (v0.29.1)
+### Lessons Learned (v0.30)
 - Multi-line `&&` chains break when pasted from markdown (terminal sees `cmdand`)
 - Always use a script file (`/tmp/grab-frames.sh`) instead
 - Never hardcode the branch name — use `git rev-parse --abbrev-ref HEAD`
 - User may be on a different branch than Claude — always fetch from Claude's branch explicitly
 - `git checkout origin/<branch> -- <path>` pulls specific files without switching branches
+- **NEVER `git stash pop` in pull scripts** — it reapplies local changes on top of checked-out files, creating merge conflict markers that crash the build. Just `git checkout` the files directly (overwrites local changes to those files only)
 
 ---
 
@@ -351,5 +352,5 @@ This project is a TRAINING GROUND for animation principles. Each fix should buil
 
 ---
 
-**Last updated:** 2026-02-06 (v0.29.1)
+**Last updated:** 2026-02-06 (v0.30)
 **Update this file INCREMENTALLY - don't wait until end of session.**
