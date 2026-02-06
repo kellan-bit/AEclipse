@@ -97,8 +97,9 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
   const gridStartY = centerY - gridHeight / 2;
 
   // Folder position (where photos emerge from)
+  // v0.17.2: Offset Y by -40px so photos emerge from folder lid, not center
   const folderX = centerX;
-  const folderY = centerY;
+  const folderY = centerY - 40;
 
   const getPhotoState = (index: number): PhotoState => {
     const gridPos = GRID_POSITIONS[index] || { row: 1, col: 1 };

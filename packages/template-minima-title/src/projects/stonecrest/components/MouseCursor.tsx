@@ -1,7 +1,12 @@
 /**
- * MouseCursor Component - v0.14
+ * MouseCursor Component - v0.17.2
  *
  * CHANGELOG:
+ * - v0.17.2: Authentic Apple cursor (no outline stroke)
+ *   - Removed thick black stroke that made it look hand-drawn
+ *   - Single path with white fill and thin black edge
+ *   - Matches real macOS pointer appearance
+ *
  * - v0.14: Simplified hesitation to subtle 1-2px drift (was exaggerated sine waves)
  *   - Removed layered sine/cosine jitter
  *   - Click animation now uses proper easing
@@ -10,8 +15,8 @@
  * - v0.12: Initial implementation with theatrical hesitation
  *
  * LESSONS APPLIED:
+ * - Lesson 2: "Apple-Style" Requires Apple Details
  * - Lesson 7: Professional Animation = Consistency Over Effects
- * - Subtlety over theatricality
  */
 
 import React from 'react';
@@ -50,7 +55,7 @@ export const MouseCursor: React.FC<MouseCursorProps> = ({
         transition: isClicking ? 'none' : 'transform 0.05s ease-out',
       }}
     >
-      {/* Apple-style pointer cursor */}
+      {/* Apple-style pointer cursor - v0.17.2: No outline stroke */}
       <svg
         width="24"
         height="36"
@@ -58,18 +63,13 @@ export const MouseCursor: React.FC<MouseCursorProps> = ({
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        {/* Cursor outline (black) */}
+        {/* Single cursor shape - white fill with subtle black edge */}
         <path
-          d="M2 2L2 28L8.5 21.5L13 32L17 30.5L12.5 20L22 20L2 2Z"
-          fill="black"
-          stroke="black"
-          strokeWidth="2"
-          strokeLinejoin="round"
-        />
-        {/* Cursor fill (white) */}
-        <path
-          d="M4 5L4 24L9 19L13.5 29L15 28.5L10.5 19L19 19L4 5Z"
+          d="M3 3L3 26L8 21L12 30L15 29L11 20L19 20L3 3Z"
           fill="white"
+          stroke="#1a1a1a"
+          strokeWidth="1"
+          strokeLinejoin="round"
         />
       </svg>
     </div>
