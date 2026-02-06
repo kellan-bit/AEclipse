@@ -112,29 +112,54 @@ Import from: `@minima-brand/colors` and `@minima-brand/themes`
 
 ---
 
-## Testing Workflow — Frame Grab & Push
+## Testing Workflow — Preview & Frame Grab
 
-**EVERY TIME you make visual changes, give the user TWO commands to run (copy one at a time).**
-
-The user runs these on their machine, frames get pushed to git, then you pull and view them.
+**EVERY TIME you make visual changes, give the user commands to preview and optionally grab frames.**
 
 ### Remotion Setup
 - Composition ID: `StonecrestReveal`
 - Entry point: `src/index.ts`
 - Resolution: 1920×1080, 30fps
 - Working dir: `packages/template-minima-title/`
-- CLI tool: `bunx remotion still`
+- Dev server: `bun run dev` (launches Remotion Studio in browser)
+- Frame capture: `bunx remotion still`
 
 ### IMPORTANT: Multi-line commands get garbled when copy-pasted from markdown.
-Always use the **two-step script approach** below. NEVER give a multi-line `&&` chain.
+Always use the **script file approach** below. NEVER give a multi-line `&&` chain.
 
-### Step 1: Pull latest code (user runs this FIRST)
+### Step 1: Pull & Preview (user runs this FIRST)
+
+This pulls the latest code from Claude's branch and launches Remotion Studio
+in the browser so the user can preview the animation in real time.
 
 ```bash
-cd ~/Documents/AEclipse && git stash && git pull origin HEAD && git stash pop
+cat > /tmp/pull-and-preview.sh << 'SCRIPT'
+#!/bin/bash
+cd ~/Documents/AEclipse
+git stash
+CLAUDE_BRANCH="claude/stonecrest-template-improvements-O5TmO"
+git fetch origin "$CLAUDE_BRANCH"
+git checkout "origin/$CLAUDE_BRANCH" -- packages/template-minima-title/src
+git stash pop 2>/dev/null
+echo "✓ Pulled latest src from $CLAUDE_BRANCH"
+echo "Launching Remotion Studio..."
+cd packages/template-minima-title
+bun run dev
+SCRIPT
+chmod +x /tmp/pull-and-preview.sh
 ```
 
-### Step 2: Create and run the frame-grab script
+Then run:
+```bash
+bash /tmp/pull-and-preview.sh
+```
+
+**NOTE for Claude:** Update the `CLAUDE_BRANCH` variable in the script to match
+whatever branch you are currently pushing to. Check with `git rev-parse --abbrev-ref HEAD`.
+
+### Step 2: Frame Grab & Push (optional — for Claude to review)
+
+Only needed when Claude needs to see rendered frames (user can't describe the issue).
 
 **Command 1 — Create the script** (user copies this):
 ```bash
@@ -199,7 +224,8 @@ Then use the Read tool to view PNGs in `packages/template-minima-title/out/frame
 - Multi-line `&&` chains break when pasted from markdown (terminal sees `cmdand`)
 - Always use a script file (`/tmp/grab-frames.sh`) instead
 - Never hardcode the branch name — use `git rev-parse --abbrev-ref HEAD`
-- User may be on a different branch than expected — always check
+- User may be on a different branch than Claude — always fetch from Claude's branch explicitly
+- `git checkout origin/<branch> -- <path>` pulls specific files without switching branches
 
 ---
 
