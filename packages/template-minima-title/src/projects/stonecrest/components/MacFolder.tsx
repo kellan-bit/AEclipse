@@ -1,7 +1,13 @@
 /**
- * MacFolder Component - v0.14
+ * MacFolder Component - v0.16
  *
  * CHANGELOG:
+ * - v0.16: Authentic macOS folder (THE FOLDER)
+ *   - Updated gradient colors to match Apple palette (#78C5EF → #51A0D5 → #2C528C)
+ *   - Dark label text (#141414) for white background
+ *   - Click state: label highlighted with blue bg (like macOS Finder)
+ *   - Source: Apple Blue Logo colors, GitHub macOS-Big-Sur-folder-icons research
+ *
  * - v0.14: Improved hover glow and added click feedback
  *   - Increased hover glow opacity from 0.25 to 0.45
  *   - Added pulsing glow animation on hover
@@ -21,7 +27,9 @@
  * LESSONS APPLIED:
  * - Lesson 2: "Apple-Style" requires actual Apple details
  * - Lesson 7: Subtle, purposeful effects over theatrical
- * - Reference: macOS Sonoma folder icon
+ * - Lesson 8: Preferred asset sources (macosicons.com, jim-nielsen)
+ * - Lesson 9: Use brand colors consistently
+ * - Reference: macOS Sonoma folder icon, Apple Blue palette
  */
 
 import React from 'react';
@@ -31,7 +39,8 @@ import { SCALE } from '../motion';
 interface MacFolderProps {
   label: string;
   isHovered: boolean;
-  isClicking: boolean; // NEW: click feedback
+  isClicking: boolean; // Click feedback
+  isSelected: boolean; // NEW: Label highlight (like macOS Finder selection)
   openProgress: number; // 0 = closed, 1 = fully open
   x: number;
   y: number;
@@ -41,6 +50,7 @@ export const MacFolder: React.FC<MacFolderProps> = ({
   label,
   isHovered,
   isClicking,
+  isSelected,
   openProgress,
   x,
   y,
@@ -149,24 +159,24 @@ export const MacFolder: React.FC<MacFolderProps> = ({
         style={{ overflow: 'visible' }}
       >
         <defs>
-          {/* Back panel gradient */}
+          {/* Back panel gradient - Apple Blue palette */}
           <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#7DD3FC" />
-            <stop offset="50%" stopColor="#38BDF8" />
-            <stop offset="100%" stopColor="#0EA5E9" />
+            <stop offset="0%" stopColor="#8BD0F5" />
+            <stop offset="50%" stopColor="#5BB5E8" />
+            <stop offset="100%" stopColor="#3FA8E5" />
           </linearGradient>
 
-          {/* Front panel gradient */}
+          {/* Front panel gradient - darker Apple blues */}
           <linearGradient id={frontGradientId} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#0EA5E9" />
-            <stop offset="40%" stopColor="#0284C7" />
-            <stop offset="100%" stopColor="#0369A1" />
+            <stop offset="0%" stopColor="#51A0D5" />
+            <stop offset="50%" stopColor="#3D8CC7" />
+            <stop offset="100%" stopColor="#2C6BA8" />
           </linearGradient>
 
-          {/* Lid gradient */}
+          {/* Lid gradient - mid tones */}
           <linearGradient id={lidGradientId} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#38BDF8" />
-            <stop offset="100%" stopColor="#0EA5E9" />
+            <stop offset="0%" stopColor="#6BC0ED" />
+            <stop offset="100%" stopColor="#4AADE0" />
           </linearGradient>
 
           {/* Drop shadow filter */}
@@ -206,7 +216,7 @@ export const MacFolder: React.FC<MacFolderProps> = ({
             L 80 30
             Z
           `}
-          fill="#7DD3FC"
+          fill="#8BD0F5"
         />
 
         {/* Inner shadow on back panel (depth) */}
@@ -305,18 +315,21 @@ export const MacFolder: React.FC<MacFolderProps> = ({
         />
       </svg>
 
-      {/* Label */}
+      {/* Label - macOS Finder style with selection highlight */}
       <div
         style={{
           marginTop: 12,
           fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif',
           fontSize: 14,
           fontWeight: 500,
-          color: '#FFFFFF',
+          color: isSelected ? '#FFFFFF' : '#141414', // White text when selected, brand black otherwise
           textAlign: 'center',
-          textShadow: '0 1px 4px rgba(0,0,0,0.6)',
+          backgroundColor: isSelected ? '#0A84FF' : 'transparent', // macOS selection blue
+          padding: isSelected ? '2px 8px' : '2px 4px',
+          borderRadius: 4,
           maxWidth: folderWidth + 40,
           letterSpacing: '-0.01em',
+          transition: 'background-color 0.1s ease-out, color 0.1s ease-out',
         }}
       >
         {label}

@@ -169,6 +169,8 @@ export const StonecrestReveal: React.FC = () => {
 
   const folderVisible = frame < TIMELINE.PHOTOS_SETTLE;
   const isHovered = frame >= TIMELINE.MOUSE_ARRIVE && frame < TIMELINE.PHOTOS_BURST;
+  // v0.16: Label selection highlight (like macOS Finder) - triggers after double-click
+  const isSelected = frame >= TIMELINE.SECOND_CLICK && frame < TIMELINE.PHOTOS_SETTLE;
 
   const folderOpenProgress = interpolate(
     frame,
@@ -291,6 +293,7 @@ export const StonecrestReveal: React.FC = () => {
             label="Stonecrest (secret)"
             isHovered={isHovered}
             isClicking={isClicking}
+            isSelected={isSelected}
             openProgress={folderOpenProgress}
             x={folderX}
             y={folderY}

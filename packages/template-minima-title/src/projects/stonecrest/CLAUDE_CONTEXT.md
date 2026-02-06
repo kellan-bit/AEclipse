@@ -9,8 +9,8 @@ This file contains persistent instructions, preferences, and context that should
 ## Project Overview
 
 Building an Apple-style property introduction animation for Stonecrest using Remotion.
-- **Current version:** v0.15
-- **Roadmap:** v0.16 → v0.20 (see plan file)
+- **Current version:** v0.16 (THE FOLDER - complete)
+- **Roadmap:** v0.17 → v0.20 (see plan file)
 - **Philosophy:** Fluidity = seamlessness, not effects
 
 ---
@@ -71,15 +71,15 @@ Update these files with any new learnings:
 
 ---
 
-## Current Roadmap (v0.16-v0.20)
+## Current Roadmap (v0.17-v0.20)
 
-### v0.16 - THE FOLDER
-- Replace folder SVG with authentic macOS folder
+### v0.16 - THE FOLDER ✅ COMPLETE
+- Updated gradient colors to Apple Blue palette
 - Dark label text (#141414)
-- Click state highlight
-- Source from icon archives
+- Click state highlight (#0A84FF blue)
+- Sourced from icon archives research
 
-### v0.17 - THE PHYSICS
+### v0.17 - THE PHYSICS (NEXT)
 - Spring physics system (spring.ts)
 - Object-specific spring profiles
 - Velocity handoff between phases
@@ -143,7 +143,8 @@ Update these files with any new learnings:
 | v0.13 | Folder visual rebuild (was blue rectangle) |
 | v0.14 | Unified motion system, simplified mouse |
 | v0.15 | White background, tail transition fix |
-| v0.16 | (Next) Authentic folder from icon archives |
+| v0.16 | Authentic folder: Apple gradients, dark label, click highlight |
+| v0.17 | (Next) Spring physics system |
 
 ---
 

@@ -4,6 +4,48 @@ All notable changes to the Stonecrest property introduction animation.
 
 ---
 
+## [v0.16] - 2026-02-06
+
+### Changed
+- **MacFolder.tsx**: Authentic macOS folder (THE FOLDER milestone)
+  - Updated gradient colors to Apple Blue palette (#8BD0F5 → #4AADE0 → #2C6BA8)
+  - Dark label text (#141414) for white background readability
+  - Added `isSelected` prop for macOS Finder-style label highlight
+  - Blue highlight (#0A84FF) on label after double-click
+  - Documented color sources: Apple Blue Logo palette, GitHub references
+
+- **StonecrestReveal.tsx**: Added selection state
+  - New `isSelected` state triggers after SECOND_CLICK
+  - Passed to MacFolder for label highlight
+
+### Why
+User decisions from v0.16 audit:
+- Source icons from icon archives (macosicons.com, jim-nielsen)
+- Label: Dark text (#141414) from minima brand palette
+- Click state: Label highlighted like real macOS Finder
+- Open animation: Custom peek (files peer out)
+
+Reference: CLAUDE_CONTEXT.md for persistent user preferences.
+
+---
+
+## [v0.15] - 2026-02-06
+
+### Changed
+- **StonecrestReveal.tsx**: White background and improved tail transition
+  - Removed dark desktop gradient
+  - Clean white (#FFFFFF) background throughout
+  - Search content visible until 70% (was 30%)
+  - Website reveal overlaps search bar expand
+
+### Why
+User feedback: "Prefer branded white background instead of black.
+The tail end transition still looks bad."
+
+Structural fix: Better overlap between search bar and website reveal phases.
+
+---
+
 ## [v0.14] - 2026-02-06
 
 ### Added
